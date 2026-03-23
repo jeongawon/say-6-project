@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layer 6 - Bedrock Report Generator</title>
+<style>
+:root {
+    --bg-primary: #0f1117;
+    --bg-secondary: #1a1d27;
+    --bg-tertiary: #242833;
+    --text-primary: #e4e4e7;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --accent-subtle: rgba(59, 130, 246, 0.1);
+    --positive: #22c55e;
+    --negative: #6b7280;
+    --warning: #f59e0b;
+    --critical: #ef4444;
+    --border: #2a2d37;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+/* Header */
+.header {
+    background: var(--bg-secondary);
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+}
+.header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+.header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+/* Section titles */
+.section-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+/* Scenario cards */
+.scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.scenario-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+.scenario-card:hover {
+    border-color: var(--text-muted);
+}
+.scenario-card.active {
+    border-color: var(--accent);
+    background: var(--bg-secondary);
+}
+.scenario-card.critical {
+    border-left: 3px solid var(--critical);
+}
+.scenario-card.urgent {
+    border-left: 3px solid var(--warning);
+}
+.scenario-card.routine {
+    border-left: 3px solid var(--positive);
+}
+.scenario-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.scenario-card p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Button row */
+.btn-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+/* Run button */
+.btn {
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn:hover {
+    background: var(--accent-hover);
+}
+.btn:disabled {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+/* Language select */
+.lang-select {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 9px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+/* Status text */
+.status-text {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* Loading */
+.loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+.loading.active {
+    display: block;
+}
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading p {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.loading p.sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+}
+
+/* Result area */
+.result-area {
+    display: none;
+}
+.result-area.active {
+    display: block;
+}
+
+/* Meta bar */
+.meta-bar {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.meta-item {
+    font-size: 13px;
+}
+.meta-item .label {
+    color: var(--text-muted);
+}
+.meta-item .value {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Risk badges */
+.risk-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.risk-CRITICAL {
+    background: var(--critical);
+    color: #ffffff;
+}
+.risk-URGENT {
+    background: var(--warning);
+    color: var(--bg-primary);
+}
+.risk-ROUTINE {
+    background: var(--positive);
+    color: var(--bg-primary);
+}
+
+/* Report sections */
+.report-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+.report-section h3 {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+}
+
+/* Summary content */
+.report-section .content {
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+}
+
+/* Structured grid */
+.structured-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px;
+}
+.struct-item {
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    padding: 12px;
+}
+.struct-item .field {
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    margin-bottom: 6px;
+}
+.struct-item .text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+.struct-item.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Actions list */
+.actions-list {
+    padding: 12px;
+    list-style: none;
+}
+.actions-list li {
+    background: var(--bg-tertiary);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+.actions-list li:last-child {
+    margin-bottom: 0;
+}
+.actions-list li .action-type {
+    font-size: 11px;
+    color: var(--warning);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Layer 6: Bedrock Report Generator</h1>
+    <p>Claude Sonnet 4.6 -- Chest X-Ray Report Generation</p>
+</div>
+
+<div class="container">
+    <div class="section-title">Scenario</div>
+    <div class="scenario-grid" id="scenarioGrid">
+        <div class="scenario-card urgent active" data-id="chf" onclick="selectScenario('chf')">
+            <h3>CHF (Heart Failure)</h3>
+            <p>72M, cardiomegaly + bilateral effusion + pulmonary edema<br>AFib, SpO2 91%</p>
+        </div>
+        <div class="scenario-card urgent" data-id="pneumonia" onclick="selectScenario('pneumonia')">
+            <h3>Pneumonia</h3>
+            <p>67M, LLL consolidation + fever 38.2C<br>ECG normal, RR 28</p>
+        </div>
+        <div class="scenario-card critical" data-id="tension_pneumo" onclick="selectScenario('tension_pneumo')">
+            <h3>Tension Pneumothorax</h3>
+            <p>25M, post-MVC left pneumothorax<br>Tracheal deviation R, SpO2 82%</p>
+        </div>
+        <div class="scenario-card routine" data-id="normal" onclick="selectScenario('normal')">
+            <h3>Normal</h3>
+            <p>35F, routine health screening<br>All indices within normal limits</p>
+        </div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn" id="runBtn" onclick="runReport()">Generate Report</button>
+        <select class="lang-select" id="langSelect">
+            <option value="ko">Korean</option>
+            <option value="en">English</option>
+        </select>
+        <span class="status-text" id="statusText"></span>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Generating report via Bedrock Claude Sonnet 4.6...</p>
+        <p class="sub">Estimated 3-8 seconds</p>
+    </div>
+
+    <div class="result-area" id="resultArea">
+        <div class="meta-bar" id="metaBar"></div>
+
+        <div class="report-section">
+            <h3>Summary</h3>
+            <div class="content" id="summaryContent"></div>
+        </div>
+
+        <div class="report-section">
+            <h3>Structured Report</h3>
+            <div class="structured-grid" id="structuredGrid"></div>
+        </div>
+
+        <div class="report-section">
+            <h3>Narrative Report</h3>
+            <div class="content" id="narrativeContent"></div>
+        </div>
+
+        <div class="report-section">
+            <h3>Suggested Actions</h3>
+            <ul class="actions-list" id="actionsList"></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedScenario = 'chf';
+
+function selectScenario(id) {
+    selectedScenario = id;
+    document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-id="${id}"]`).classList.add('active');
+}
+
+async function runReport() {
+    const btn = document.getElementById('runBtn');
+    const loading = document.getElementById('loading');
+    const resultArea = document.getElementById('resultArea');
+    const statusText = document.getElementById('statusText');
+
+    btn.disabled = true;
+    loading.classList.add('active');
+    resultArea.classList.remove('active');
+    statusText.textContent = '';
+
+    try {
+        const startTime = Date.now();
+        const resp = await fetch(window.location.href, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                action: 'scenario',
+                scenario: selectedScenario,
+                report_language: document.getElementById('langSelect').value,
+            }),
+        });
+
+        const data = await resp.json();
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        if (data.error) {
+            statusText.textContent = `Error: ${data.error}`;
+            return;
+        }
+
+        const report = data.report || {};
+        const reportData = report.report || {};
+        const meta = report.metadata || {};
+
+        const riskLevel = reportData.risk_level || 'ROUTINE';
+        document.getElementById('metaBar').innerHTML = `
+            <div class="meta-item">
+                <span class="label">위험도: </span>
+                <span class="risk-badge risk-${riskLevel}">${riskLevel}</span>
+            </div>
+            <div class="meta-item">
+                <span class="label">모델: </span>
+                <span class="value">${meta.model_used || 'N/A'}</span>
+            </div>
+            <div class="meta-item">
+                <span class="label">입력 토큰: </span>
+                <span class="value">${meta.input_tokens || 0}</span>
+            </div>
+            <div class="meta-item">
+                <span class="label">출력 토큰: </span>
+                <span class="value">${meta.output_tokens || 0}</span>
+            </div>
+            <div class="meta-item">
+                <span class="label">Bedrock 지연: </span>
+                <span class="value">${meta.latency_ms || 0}ms</span>
+            </div>
+            <div class="meta-item">
+                <span class="label">전체 소요: </span>
+                <span class="value">${elapsed}s</span>
+            </div>
+            <div class="meta-item">
+                <span class="label">시나리오: </span>
+                <span class="value">${data.scenario_name || selectedScenario}</span>
+            </div>
+        `;
+
+        document.getElementById('summaryContent').textContent =
+            reportData.summary || '요약 없음';
+
+        const structured = reportData.structured || {};
+        const fields = ['heart', 'pleura', 'lungs', 'mediastinum', 'bones', 'devices', 'impression', 'recommendation'];
+        const fieldNames = {
+            heart: '심장 (Heart)', pleura: '흉막 (Pleura)', lungs: '폐 (Lungs)',
+            mediastinum: '종격동 (Mediastinum)', bones: '골격 (Bones)',
+            devices: '삽입기구 (Devices)', impression: '종합소견 (Impression)',
+            recommendation: '권고사항 (Recommendation)',
+        };
+        let gridHtml = '';
+        for (const field of fields) {
+            const isFullWidth = field === 'impression' || field === 'recommendation';
+            gridHtml += `
+                <div class="struct-item ${isFullWidth ? 'full-width' : ''}">
+                    <div class="field">${fieldNames[field] || field}</div>
+                    <div class="text">${structured[field] || '-'}</div>
+                </div>`;
+        }
+        document.getElementById('structuredGrid').innerHTML = gridHtml;
+
+        document.getElementById('narrativeContent').textContent =
+            reportData.narrative || '서술형 판독문 없음';
+
+        const actions = report.suggested_next_actions || [];
+        let actionsHtml = '';
+        if (actions.length === 0) {
+            actionsHtml = '<li>추가 조치 없음</li>';
+        }
+        for (const a of actions) {
+            const actionType = a.action || 'action';
+            const desc = a.description || a.modal || '';
+            const tests = a.tests ? a.tests.join(', ') : '';
+            actionsHtml += `
+                <li>
+                    <div class="action-type">${actionType}</div>
+                    <div>${desc}${tests ? ' (' + tests + ')' : ''}</div>
+                </li>`;
+        }
+        document.getElementById('actionsList').innerHTML = actionsHtml;
+
+        resultArea.classList.add('active');
+        statusText.textContent = `완료 (${elapsed}s)`;
+    } catch (err) {
+        statusText.textContent = `Error: ${err.message}`;
+    } finally {
+        btn.disabled = false;
+        loading.classList.remove('active');
+    }
+}
+</script>
+</body>
+</html>

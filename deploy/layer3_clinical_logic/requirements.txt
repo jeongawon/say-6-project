@@ -1,0 +1,2 @@
+# Layer 3 Clinical Logic — 순수 Python, 최소 의존성
+numpy

@@ -1,0 +1,16 @@
+{
+  "Atelectasis": 6.4596,
+  "Cardiomegaly": 7.6053,
+  "Consolidation": 31.0107,
+  "Edema": 15.8615,
+  "Enlarged Cardiomediastinum": 29.1075,
+  "Fracture": 40.7437,
+  "Lung Lesion": 24.6564,
+  "Lung Opacity": 5.3343,
+  "No Finding": 0.8822,
+  "Pleural Effusion": 6.079,
+  "Pleural Other": 63.7596,
+  "Pneumonia": 7.0851,
+  "Pneumothorax": 35.3416,
+  "Support Devices": 12.776
+}
