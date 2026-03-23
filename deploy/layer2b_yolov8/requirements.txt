@@ -1,0 +1,14 @@
+# PyTorch CPU only (Lambda용, GPU 불필요)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+
+# YOLOv8
+ultralytics==8.3.52
+
+# Image processing
+Pillow
+numpy
+
+# AWS
+boto3
