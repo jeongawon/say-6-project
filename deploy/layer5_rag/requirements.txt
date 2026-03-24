@@ -1,3 +1,0 @@
-# Layer 5 RAG 의존성
-faiss-cpu
-numpy
