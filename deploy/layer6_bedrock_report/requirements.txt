@@ -1,3 +1,0 @@
-# Layer 6 Bedrock Report - 의존성
-# boto3는 Lambda 런타임에 내장이지만, Docker 이미지에서는 명시 필요
-boto3>=1.34.0
