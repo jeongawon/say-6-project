@@ -28,7 +28,18 @@ from .rules import (
 )
 from .cross_validation import cross_validate
 from . import differential
+from .differential import deduplicate_differentials
 from .pertinent_negatives import get_pertinent_negatives
+
+import inspect
+
+
+def _call_analyze(module, input, other_results=None):
+    """Rule의 analyze()가 other_results 파라미터를 지원하면 전달, 아니면 생략."""
+    sig = inspect.signature(module.analyze)
+    if "other_results" in sig.parameters and other_results is not None:
+        return module.analyze(input, other_results=other_results)
+    return module.analyze(input)
 
 
 def run_clinical_logic(input: ClinicalLogicInput) -> dict:
@@ -48,35 +59,51 @@ def run_clinical_logic(input: ClinicalLogicInput) -> dict:
             detected_count: int,
         }
     """
-    # ================================================================
-    # Phase 1: 14개 질환별 Rule 실행 (순서 중요!)
-    # ================================================================
     results = {}
 
-    # 독립 실행 가능한 Rule들 (다른 결과에 의존하지 않음)
-    results["Cardiomegaly"] = cardiomegaly.analyze(input)
-    results["Pleural_Effusion"] = pleural_effusion.analyze(input)
-    results["Pneumothorax"] = pneumothorax.analyze(input)
-    results["Atelectasis"] = atelectasis.analyze(input)
-    results["Consolidation"] = consolidation.analyze(input)
-    results["Edema"] = edema.analyze(input)
-    results["Enlarged_Cardiomediastinum"] = enlarged_cm.analyze(input)
-    results["Fracture"] = fracture.analyze(input)
-    results["Lung_Lesion"] = lung_lesion.analyze(input)
-    results["Pleural_Other"] = pleural_other.analyze(input)
-    results["Support_Devices"] = support_devices.analyze(input)
-
-    # Lung Opacity: 다른 결과에 의존 → 나중에 실행
-    results["Lung_Opacity"] = lung_opacity.analyze(input, other_results=results)
-
-    # Pneumonia: 임상정보 + 다른 결과에 의존 → 가장 나중에
-    results["Pneumonia"] = pneumonia.analyze(input, other_results=results)
-
-    # No Finding: 전체 결과 확인 후 판정
-    results["No_Finding"] = no_finding.analyze(input, other_results=results)
+    # ================================================================
+    # Phase 1: 독립 Rule (다른 질환 결과에 의존하지 않는 단독 분석)
+    # ================================================================
+    phase1_rules = [
+        ("Cardiomegaly", cardiomegaly),
+        ("Pleural_Effusion", pleural_effusion),
+        ("Pneumothorax", pneumothorax),
+        ("Atelectasis", atelectasis),
+        ("Fracture", fracture),
+        ("Support_Devices", support_devices),
+        ("Lung_Lesion", lung_lesion),
+    ]
+    for name, module in phase1_rules:
+        results[name] = module.analyze(input)
 
     # ================================================================
-    # Phase 2: 교차 검증
+    # Phase 2: 교차 의존 Rule (Phase 1 결과를 참조할 수 있음)
+    #   - Enlarged_Cardiomediastinum: Cardiomegaly 결과 참조
+    #   - Consolidation: 독립이지만 Phase 3에서 참조되므로 여기 배치
+    #   - Edema: Atelectasis 결과 참조
+    #   - Pleural_Other: 다른 흉막 소견 참조 가능
+    # ================================================================
+    phase2_rules = [
+        ("Enlarged_Cardiomediastinum", enlarged_cm),
+        ("Consolidation", consolidation),
+        ("Edema", edema),
+        ("Pleural_Other", pleural_other),
+    ]
+    for name, module in phase2_rules:
+        results[name] = _call_analyze(module, input, other_results=results)
+
+    # ================================================================
+    # Phase 3: 집계 Rule (Phase 1+2 결과를 종합하여 최종 판정)
+    #   - Lung_Opacity: Consolidation, Edema 결과 필요
+    #   - Pneumonia: Consolidation + 임상정보 필요
+    #   - No_Finding: 전체 결과 확인 후 정상 판정
+    # ================================================================
+    results["Lung_Opacity"] = _call_analyze(lung_opacity, input, other_results=results)
+    results["Pneumonia"] = _call_analyze(pneumonia, input, other_results=results)
+    results["No_Finding"] = _call_analyze(no_finding, input, other_results=results)
+
+    # ================================================================
+    # Step 4: 교차 검증 (DenseNet + YOLO + Rule 결과 일치 확인)
     # ================================================================
     cross_val = {}
     for finding_name, result in results.items():
@@ -92,12 +119,14 @@ def run_clinical_logic(input: ClinicalLogicInput) -> dict:
         )
 
     # ================================================================
-    # Phase 3: 감별 진단
+    # Step 5: 감별 진단
     # ================================================================
     diff = differential.analyze(results, input)
+    # 중복 감별진단 제거 (같은 질환 그룹에서 첫 번째만 유지)
+    diff = deduplicate_differentials(diff)
 
     # ================================================================
-    # Phase 4: 위험도 분류 (3단계)
+    # Step 6: 위험도 분류 (3단계)
     #   CRITICAL — alert=True (긴장성 기흉, ETT 이탈 등)
     #   URGENT   — severity "severe"인 소견 2개 이상
     #   ROUTINE  — 그 외
@@ -121,7 +150,7 @@ def run_clinical_logic(input: ClinicalLogicInput) -> dict:
     )
 
     # ================================================================
-    # Phase 5: Pertinent Negatives (주소 기반 감별 필수 음성 소견)
+    # Step 7: Pertinent Negatives (주소 기반 감별 필수 음성 소견)
     # ================================================================
     chief_complaint = None
     if input.patient_info:

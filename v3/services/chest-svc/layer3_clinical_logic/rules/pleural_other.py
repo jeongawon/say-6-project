@@ -4,7 +4,11 @@ from ..models import ClinicalLogicInput
 from ..thresholds import get_threshold
 
 
-def analyze(input: ClinicalLogicInput) -> dict:
+def analyze(input: ClinicalLogicInput, other_results=None) -> dict:
+    # ── confidence 판정 기준 (14개 Rule 공통) ──────────────────
+    # "high"   — 2개 이상 독립 소스 일치 (CTR+DenseNet+YOLO 등)
+    # "medium" — 1개 소스 양성 + 합리적 근거
+    # "low"    — 1개 소스만 양성 + 근거 약함 (의사 확인 필요)
     a = input.anatomy
     d = input.densenet
     threshold = get_threshold("Pleural_Other")  # 0.25 (매우 희귀)
@@ -55,7 +59,18 @@ def analyze(input: ClinicalLogicInput) -> dict:
             recommendation = "CT 확인 + 직업병 상담 권장"
 
     severity = "mild"
-    confidence = "medium" if d.Pleural_Other > threshold else "low"
+
+    # DenseNet 단독 양성 (YOLO 흉막 미검출) → confidence 하향
+    if d.Pleural_Other > threshold and not yolo_pleural:
+        confidence = "low"
+        evidence.append("DenseNet 단독 양성 — 임상적 의의 제한적, CT 확인 권장")
+        if recommendation is None:
+            recommendation = "CT 확인 권장 (CXR에서 기타 흉막 이상은 비특이적)"
+    elif d.Pleural_Other > threshold and yolo_pleural:
+        # YOLO + DenseNet 동시 양성 → medium 유지
+        confidence = "medium"
+    else:
+        confidence = "low"
 
     return {
         "finding": "Pleural_Other",

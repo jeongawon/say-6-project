@@ -195,6 +195,7 @@ async def predict(req: PredictRequest):
             detected=f["detected"],
             confidence=f["confidence"],
             detail=f.get("detail", ""),
+            secondary=f.get("secondary", False),
         )
         for f in result["findings"]
     ]

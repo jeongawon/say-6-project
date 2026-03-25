@@ -102,6 +102,38 @@ def analyze(results: dict, input: ClinicalLogicInput) -> list:
     return matched
 
 
+# ================================================================
+# 감별진단 중복 제거용 그룹 정의
+# 같은 그룹에 속하는 진단명은 첫 번째만 유지하여 리포트 중복 방지
+# ================================================================
+DIAGNOSIS_GROUPS = {
+    "CHF": ["울혈성 심부전", "심인성 폐부종", "CHF", "Congestive Heart Failure", "심부전", "Heart Failure"],
+    "Pneumonia": ["감염성 폐렴", "세균성 폐렴", "바이러스성 폐렴", "폐렴"],
+    "Malignancy": ["폐암", "종격동 종양", "전이성 폐병변"],
+}
+
+
+def deduplicate_differentials(differentials: list) -> list:
+    """같은 그룹의 감별진단은 첫 번째만 유지."""
+    seen_groups = set()
+    result = []
+    for diff in differentials:
+        diagnosis = diff.get("diagnosis", "")
+        matched_group = None
+        for group_name, keywords in DIAGNOSIS_GROUPS.items():
+            if any(kw in diagnosis for kw in keywords):
+                matched_group = group_name
+                break
+        if matched_group:
+            if matched_group not in seen_groups:
+                seen_groups.add(matched_group)
+                result.append(diff)
+            # 같은 그룹이면 skip (중복 제거)
+        else:
+            result.append(diff)
+    return result
+
+
 def _extract_clinical_flags(input: ClinicalLogicInput, results: dict) -> dict:
     """환자 정보 + 결과에서 감별용 플래그 추출."""
     flags = {}
