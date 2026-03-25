@@ -5,6 +5,10 @@ from ..thresholds import get_threshold
 
 
 def analyze(input: ClinicalLogicInput) -> dict:
+    # ── confidence 판정 기준 (14개 Rule 공통) ──────────────────
+    # "high"   — 2개 이상 독립 소스 일치 (CTR+DenseNet+YOLO 등)
+    # "medium" — 1개 소스 양성 + 합리적 근거
+    # "low"    — 1개 소스만 양성 + 근거 약함 (의사 확인 필요)
     a = input.anatomy
     d = input.densenet
     threshold = get_threshold("Pneumothorax")

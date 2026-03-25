@@ -77,6 +77,18 @@ def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
     severity = "moderate" if d.Lung_Opacity > 0.7 else "mild"
     confidence = "high" if primary_cause != "Nonspecific" else "low"
 
+    # ── 원인 귀속 시 독립 소견 억제 ──
+    # primary_cause가 Nonspecific이 아니면
+    # 해당 Opacity는 다른 질환의 동반 증상이므로 독립 소견이 아님.
+    # confidence를 낮추고 independent=False로 표시하여 중복 보고를 방지한다.
+    independent = True
+    if primary_cause and primary_cause != "Nonspecific":
+        independent = False
+        confidence = "low"
+        evidence.append(
+            f"원인 귀속: {primary_cause} → 독립 소견이 아닌 동반 증상"
+        )
+
     return {
         "finding": "Lung_Opacity",
         "detected": detected,
@@ -86,6 +98,7 @@ def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
             "primary_cause": primary_cause,
             "lobe": location,
             "densenet_prob": round(d.Lung_Opacity, 4),
+            "independent": independent,
         },
         "location": location,
         "severity": severity,

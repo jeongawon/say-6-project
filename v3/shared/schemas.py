@@ -23,6 +23,7 @@ class Finding(BaseModel):
     detected: bool
     confidence: float
     detail: str = ""
+    secondary: bool = False           # True = 동반 소견 (독립 소견 아님)
 
 
 class PredictRequest(BaseModel):

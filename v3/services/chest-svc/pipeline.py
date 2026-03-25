@@ -244,12 +244,14 @@ async def run_pipeline(
     prior_results = _build_prior_results(context)
 
     # 임상 로직 엔진에 전달할 통합 입력 구성
+    # original_image_size: support_devices 등에서 px→cm 동적 환산에 사용
     clinical_input = ClinicalLogicInput(
         anatomy=anatomy,
         densenet=densenet_preds,
         yolo_detections=yolo_dets,
         patient_info=clinical_pi,
         prior_results=prior_results,
+        original_image_size=(pil_image.width, pil_image.height),  # 원본 이미지 크기 전달
     )
     clinical_result = run_clinical_logic(clinical_input)
     timings["clinical_logic"] = round(time.time() - t0, 4)
@@ -326,14 +328,25 @@ async def run_pipeline(
     # ══════════════════════════════════════════════════════════
 
     # 14개 질환별 판정 결과 — detected=True인 소견만 findings에 포함
+    # secondary 플래그: 다른 소견에 의한 동반 소견인지 여부
+    #   - secondary_to_cardiomegaly=True → 심비대에 의한 종격동 확대 (독립 소견 아님)
+    #   - independent=False → 원인 질환이 식별된 동반 증상 (예: Consolidation에 의한 Lung_Opacity)
+    # 오케스트레이터가 독립 소견과 동반 소견을 구분하여 판단 품질을 높일 수 있음
     findings_list = []
     for name, result in clinical_result.get("findings", {}).items():
         if result.get("detected", False):
+            quant = result.get("quantitative", {})
+            # 동반 소견 여부 판정: 심비대 이차 소견이거나 독립 소견이 아닌 경우
+            is_secondary = (
+                quant.get("secondary_to_cardiomegaly", False)
+                or (quant.get("independent") is False)  # independent 키가 명시적으로 False인 경우만
+            )
             findings_list.append({
                 "name": name,
                 "detected": True,
                 "confidence": _confidence_to_float(result.get("confidence", "medium")),
                 "detail": "; ".join(result.get("evidence", [])),
+                "secondary": is_secondary,  # True이면 동반 소견 (독립 소견이 아님)
             })
 
     # pertinent negatives (임상적으로 의미 있는 음성 소견)

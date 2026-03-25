@@ -4,7 +4,7 @@ from ..models import ClinicalLogicInput
 from ..thresholds import get_threshold
 
 
-def analyze(input: ClinicalLogicInput) -> dict:
+def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
     a = input.anatomy
     d = input.densenet
     threshold = get_threshold("Edema")
@@ -35,17 +35,47 @@ def analyze(input: ClinicalLogicInput) -> dict:
             "alert": False,
         }
 
-    # 양측 대칭성 분석
-    ratio = a.lung_area_ratio
-    symmetry_score = 1.0 - abs(1.0 - ratio) if ratio > 0 else 0.0
-    bilateral_symmetric = symmetry_score > 0.85
+    # ── Atelectasis 동반 시 대칭성 보정 ──
+    # 무기폐가 존재하면 한쪽 폐 면적이 줄어들어
+    # lung_area_ratio 기반 대칭성 판단이 부정확해진다.
+    # 이 경우 DenseNet 확률만으로 양측/편측을 추정한다.
+    atelectasis_present = False
+    if other_results:
+        atelectasis_present = other_results.get(
+            "Atelectasis", {}
+        ).get("detected", False)
 
-    if bilateral_symmetric:
-        evidence.append(f"양측 대칭 (symmetry score {symmetry_score:.2f})")
-        location = "bilateral"
+    if atelectasis_present:
+        # 무기폐 동반 → 폐 면적 비율 대칭성 판단 불가
+        symmetry_score = None
+        if d.Edema > 0.70:
+            # 심인성 폐부종은 대부분 양측성이므로, 고확률이면 bilateral 가정
+            bilateral_symmetric = True
+            location = "bilateral"
+            evidence.append(
+                "무기폐(Atelectasis) 동반 → 면적 기반 대칭성 판단 불가, "
+                f"DenseNet {d.Edema:.2f} > 0.70 → 양측(bilateral) 추정"
+            )
+        else:
+            # DenseNet 확률이 낮으면 위치를 특정할 수 없음
+            bilateral_symmetric = False
+            location = "indeterminate"
+            evidence.append(
+                "무기폐(Atelectasis) 동반 → 면적 기반 대칭성 판단 불가, "
+                f"DenseNet {d.Edema:.2f} ≤ 0.70 → 위치 미확정(indeterminate)"
+            )
     else:
-        evidence.append(f"비대칭 (symmetry score {symmetry_score:.2f})")
-        location = "unilateral"
+        # 무기폐 없음 → 기존 대칭성 로직 유지
+        ratio = a.lung_area_ratio
+        symmetry_score = 1.0 - abs(1.0 - ratio) if ratio > 0 else 0.0
+        bilateral_symmetric = symmetry_score > 0.85
+
+        if bilateral_symmetric:
+            evidence.append(f"양측 대칭 (symmetry score {symmetry_score:.2f})")
+            location = "bilateral"
+        else:
+            evidence.append(f"비대칭 (symmetry score {symmetry_score:.2f})")
+            location = "unilateral"
 
     # Butterfly 패턴
     butterfly = d.Edema > 0.75
@@ -83,7 +113,7 @@ def analyze(input: ClinicalLogicInput) -> dict:
         "confidence": confidence,
         "evidence": evidence,
         "quantitative": {
-            "symmetry_score": round(symmetry_score, 2),
+            "symmetry_score": round(symmetry_score, 2) if symmetry_score is not None else None,
             "butterfly": butterfly,
             "ctr": round(a.ctr, 4),
             "bilateral_symmetric": bilateral_symmetric,

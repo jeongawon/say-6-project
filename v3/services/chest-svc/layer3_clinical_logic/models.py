@@ -107,3 +107,5 @@ class ClinicalLogicInput:
     yolo_detections: List[YoloDetection] = field(default_factory=list)
     patient_info: Optional[PatientInfo] = None
     prior_results: List[PriorResult] = field(default_factory=list)
+    # 원본 이미지 크기 (width, height) — px→cm 변환에 사용
+    original_image_size: Optional[tuple] = None

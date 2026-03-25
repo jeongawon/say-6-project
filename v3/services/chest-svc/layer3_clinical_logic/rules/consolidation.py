@@ -5,6 +5,10 @@ from ..thresholds import get_threshold
 
 
 def analyze(input: ClinicalLogicInput) -> dict:
+    # ── confidence 판정 기준 (14개 Rule 공통) ──────────────────
+    # "high"   — 2개 이상 독립 소스 일치 (CTR+DenseNet+YOLO 등)
+    # "medium" — 1개 소스 양성 + 합리적 근거
+    # "low"    — 1개 소스만 양성 + 근거 약함 (의사 확인 필요)
     a = input.anatomy
     d = input.densenet
     threshold = get_threshold("Consolidation")
@@ -71,6 +75,21 @@ def analyze(input: ClinicalLogicInput) -> dict:
             else:
                 lobe = f"{side[0].upper()}LL"
             location = lobe
+
+    # ── YOLO bbox 없이 DenseNet만 양성일 때 위치 추정 (폐 면적비 기반) ──
+    if not yolo_consol and detected:
+        ratio = a.lung_area_ratio  # left / right
+        if ratio < 0.85:
+            location = "좌측 (폐 면적비 기반 추정)"
+            evidence.append(f"YOLO bbox 없음 — 좌/우 면적비 {ratio:.3f} → 좌측 경화 추정")
+        elif ratio > 1.20:
+            location = "우측 (폐 면적비 기반 추정)"
+            evidence.append(f"YOLO bbox 없음 — 좌/우 면적비 {ratio:.3f} → 우측 경화 추정")
+        else:
+            location = "indeterminate"
+            evidence.append(
+                f"YOLO bbox 없음 — 좌/우 면적비 {ratio:.3f} → 위치 불확정, CT 확인 권장"
+            )
 
     # bbox 면적 비율
     area_percent = None

@@ -20,7 +20,8 @@ def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
         "pleura_right": a.right_cp_status in (None, "sharp"),
         "pleura_left": a.left_cp_status in (None, "sharp"),
         "diaphragm": a.diaphragm_status in (None, "normal"),
-        "lung_ratio": 0.80 <= a.lung_area_ratio <= 1.05 if a.lung_area_ratio else True,
+        # 좌/우 폐 면적비: 해부학적으로 좌폐가 약간 작으므로 1.15까지 정상 허용
+        "lung_ratio": 0.85 <= a.lung_area_ratio <= 1.15 if a.lung_area_ratio else True,
         "yolo_clear": len(input.yolo_detections) == 0,
     }
 
