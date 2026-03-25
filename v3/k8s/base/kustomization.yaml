@@ -1,0 +1,17 @@
+# ── Kustomize Base 리소스 목록 ────────────────────────────────
+# 이 디렉토리의 모든 K8s 매니페스트를 나열
+# 새 서비스 추가 시 여기에 파일명 추가 (예: auth-svc.yaml, patient-svc.yaml)
+# 삭제 시에도 여기서 제거해야 kustomize build에서 빠짐
+# overlay(local/eks)에서 이 base를 참조하여 환경별 설정을 덮어씀
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml            # 네임스페이스 정의 (dr-ai)
+  - common-config.yaml        # 공통 환경변수 ConfigMap (Bedrock, DB, Redis 등)
+  - chest-svc.yaml            # 흉부 X-Ray 분석 서비스
+  - ecg-svc.yaml              # 심전도(ECG) 분석 서비스
+  - blood-svc.yaml            # 혈액 검사 분석 서비스
+  - central-orchestrator.yaml # 중앙 오케스트레이터
+  - rag-svc.yaml              # RAG 문헌 검색 서비스
+  - report-svc.yaml           # 리포트 생성 서비스

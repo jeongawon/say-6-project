@@ -1,0 +1,108 @@
+# ── rag-svc Deployment ───────────────────────────────────────
+# RAG(Retrieval-Augmented Generation) 서비스
+# 의학 문헌 벡터DB를 검색하여 분석 결과에 근거(reference)를 추가
+# 임베딩 모델을 /models에서 로드하므로 볼륨 마운트 필요
+# CPU 500m / Memory 1Gi — 임베딩 연산에 적절한 수준
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-svc
+  namespace: dr-ai
+  labels:
+    app: rag-svc
+    app.kubernetes.io/name: rag-svc
+    app.kubernetes.io/part-of: dr-ai
+    # component: shared-service — 여러 모달 서비스가 공유하는 공통 서비스
+    app.kubernetes.io/component: shared-service
+spec:
+  # 레플리카 1개 — 임베딩 모델 로딩 시 메모리 주의
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-svc
+  template:
+    metadata:
+      labels:
+        app: rag-svc
+        app.kubernetes.io/name: rag-svc
+        app.kubernetes.io/part-of: dr-ai
+    spec:
+      containers:
+        - name: rag-svc
+          # 이미지 태그는 overlay의 kustomization.yaml에서 오버라이드됨
+          image: rag-svc:latest
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          # ── 환경변수 주입 (2개의 ConfigMap) ──────────────
+          # common-config: Bedrock, DB, Redis 등 공통 설정
+          # dr-ai-config: 환경별(local/eks) 오버라이드 설정
+          envFrom:
+            - configMapRef:
+                name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
+            - configMapRef:
+                name: dr-ai-config         # 환경별 오버라이드 (local/eks)
+          # ── 리소스 설정 ──────────────────────────────────
+          # 임베딩 모델 로딩 + 벡터 검색에 메모리 필요
+          # requests 250m/512Mi, limits 500m/1Gi
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          # ── 모델 볼륨 마운트 ─────────────────────────────
+          # /models에 임베딩 모델 파일이 마운트됨 (읽기 전용)
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              readOnly: true
+          # ── Liveness Probe ───────────────────────────────
+          # 임베딩 모델 로딩에 약 15초 소요 — initialDelaySeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # ── Readiness Probe ──────────────────────────────
+          # 모델 로드 완료 후에만 트래픽 수신
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      # ── 볼륨 정의 ─────────────────────────────────────
+      # chest-svc와 동일한 models-pvc를 공유 (ReadOnlyMany)
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: models-pvc
+---
+# ── rag-svc Service ──────────────────────────────────────────
+# ClusterIP 타입 — 클러스터 내부 전용
+# central-orchestrator가 http://rag-svc:8000 으로 호출
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-svc
+  namespace: dr-ai
+  labels:
+    app: rag-svc
+    app.kubernetes.io/name: rag-svc
+    app.kubernetes.io/part-of: dr-ai
+spec:
+  type: ClusterIP
+  selector:
+    app: rag-svc
+  ports:
+    # 서비스 포트 8000 → 컨테이너 포트 8000 (FastAPI 기본 포트)
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP

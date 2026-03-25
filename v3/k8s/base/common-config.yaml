@@ -1,0 +1,24 @@
+# ── 공통 설정 ConfigMap ──────────────────────────────────────
+# 모든 서비스가 공유하는 환경변수를 한 곳에서 관리합니다.
+# 변경 시: kubectl edit configmap common-config -n dr-ai
+# 적용: Pod 재시작 시 자동 반영 (코드 수정/재빌드 불필요)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common-config
+  namespace: dr-ai
+data:
+  # ── AWS Bedrock (LLM) ──
+  BEDROCK_REGION: "ap-northeast-2"
+  BEDROCK_MODEL_ID: "global.anthropic.claude-sonnet-4-6"
+
+  # ── 공유 서비스 URL ──
+  RAG_URL: "http://rag-svc:8000"
+  REPORT_URL: "http://report-svc:8000"
+
+  # ── 데이터 저장소 ──
+  DATABASE_URL: "postgresql://postgres:postgres@postgres-svc:5432/drai"
+  REDIS_URL: "redis://redis-svc:6379/0"
+
+  # ── 공통 설정 ──
+  LOG_LEVEL: "INFO"

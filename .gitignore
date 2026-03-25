@@ -49,3 +49,8 @@ Thumbs.db
 
 # Deploy backups
 deploy/_backup/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+v3/models/
