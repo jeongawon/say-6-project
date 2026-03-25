@@ -1,0 +1,97 @@
+# ── central-orchestrator Deployment ──────────────────────────
+# 중앙 오케스트레이터 — 모든 분석 요청의 진입점
+# 클라이언트 요청을 받아 chest/ecg/blood 서비스에 병렬 분산 후
+# 결과를 취합하여 rag-svc → report-svc 순으로 전달
+# 자체 모델 없이 HTTP 라우팅만 하므로 리소스가 적음
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: central-orchestrator
+  namespace: dr-ai
+  labels:
+    app: central-orchestrator
+    app.kubernetes.io/name: central-orchestrator
+    app.kubernetes.io/part-of: dr-ai
+    # component: orchestrator — 요청 분배/취합 역할
+    app.kubernetes.io/component: orchestrator
+spec:
+  # 레플리카 1개 — 상태 없는(stateless) 서비스이므로 부하 시 스케일 가능
+  replicas: 1
+  selector:
+    matchLabels:
+      app: central-orchestrator
+  template:
+    metadata:
+      labels:
+        app: central-orchestrator
+        app.kubernetes.io/name: central-orchestrator
+        app.kubernetes.io/part-of: dr-ai
+    spec:
+      containers:
+        - name: central-orchestrator
+          # 이미지 태그는 overlay의 kustomization.yaml에서 오버라이드됨
+          image: central-orchestrator:latest
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          # ── 환경변수 주입 (2개의 ConfigMap) ──────────────
+          # common-config: Bedrock, DB, Redis, RAG/REPORT URL 등 공통 설정
+          # dr-ai-config: CHEST/ECG/BLOOD URL 등 환경별 오버라이드
+          envFrom:
+            - configMapRef:
+                name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
+            - configMapRef:
+                name: dr-ai-config         # 환경별 오버라이드 (local/eks)
+          # ── 리소스 설정 ──────────────────────────────────
+          # HTTP 라우팅만 수행하므로 최소 리소스로 운영
+          # requests 125m/256Mi, limits 250m/512Mi
+          resources:
+            requests:
+              cpu: 125m
+              memory: 256Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi
+          # ── Liveness Probe ───────────────────────────────
+          # 빠르게 시작하므로 initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # ── Readiness Probe ──────────────────────────────
+          # 서비스 준비 확인 — 의존 서비스(chest, ecg, blood) 연결 가능 여부 체크
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+# ── central-orchestrator Service ─────────────────────────────
+# ClusterIP 타입 — 클러스터 내부 전용
+# 프론트엔드 또는 Ingress에서 http://central-orchestrator:8000 으로 호출
+# 외부 노출 시 Ingress 또는 LoadBalancer를 별도 구성
+apiVersion: v1
+kind: Service
+metadata:
+  name: central-orchestrator
+  namespace: dr-ai
+  labels:
+    app: central-orchestrator
+    app.kubernetes.io/name: central-orchestrator
+    app.kubernetes.io/part-of: dr-ai
+spec:
+  type: ClusterIP
+  selector:
+    app: central-orchestrator
+  ports:
+    # 서비스 포트 8000 → 컨테이너 포트 8000 (FastAPI 기본 포트)
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP

@@ -1,0 +1,36 @@
+# ── EKS 환경 ConfigMap ───────────────────────────────────────
+# AWS EKS 프로덕션/스테이징 환경에서 사용하는 설정값
+# 로컬과 달리 AWS 매니지드 서비스(RDS, ElastiCache) 엔드포인트를 참조
+# 배포 전 반드시 실제 엔드포인트로 교체할 것
+# 값 변경 후 적용: kubectl apply -k k8s/overlays/eks/
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dr-ai-config
+  namespace: dr-ai
+  labels:
+    app.kubernetes.io/part-of: dr-ai
+    app.kubernetes.io/managed-by: kustomize
+data:
+  # ── 데이터베이스 ─────────────────────────────────────────
+  # AWS RDS PostgreSQL 엔드포인트
+  # CHANGE_ME → 실제 RDS 비밀번호로 교체 (또는 Secret 참조로 전환)
+  # xxxxxxxxxxxx → 실제 RDS 클러스터 ID로 교체
+  DATABASE_URL: "postgresql://postgres:CHANGE_ME@dr-ai-rds.cluster-xxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com:5432/drai"
+  # ── 캐시 ─────────────────────────────────────────────────
+  # AWS ElastiCache Redis 엔드포인트
+  # xxxxxxxxxxxx → 실제 ElastiCache 클러스터 ID로 교체
+  REDIS_URL: "redis://dr-ai-redis.xxxxxxxxxxxx.0001.apn2.cache.amazonaws.com:6379/0"
+  # ── 모델 디렉토리 ───────────────────────────────────────
+  # EFS에 마운트된 모델 경로 (storageclass.yaml 참조)
+  MODEL_DIR: "/models"
+  # ── 내부 서비스 URL ──────────────────────────────────────
+  # K8s 클러스터 내부 서비스명은 로컬과 동일
+  RAG_URL: "http://rag-svc:8000"
+  REPORT_URL: "http://report-svc:8000"
+  CHEST_URL: "http://chest-svc:8000"
+  ECG_URL: "http://ecg-svc:8000"
+  BLOOD_URL: "http://blood-svc:8000"
+  # ── AWS Bedrock ──────────────────────────────────────────
+  # LLM 호출에 사용할 AWS 리전 (서울 리전)
+  BEDROCK_REGION: "ap-northeast-2"
