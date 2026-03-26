@@ -111,7 +111,7 @@ chest-svc/
 | `pipeline.py` | 파이프라인 순서 변경, 단계 추가/제거 시 | 6단계 실행 순서와 데이터 흐름을 제어하는 핵심 파일 |
 | `config.py` | 환경변수 추가 시 | 새 설정값이 필요하면 `Settings` 클래스에 필드 추가 |
 | `layer3_clinical_logic/rules/*.py` | 임상 로직 수정 시 | v2에서 복사된 14개 규칙 파일. 임계값, 판정 기준 변경 가능 |
-| `layer3_clinical_logic/thresholds.py` | DenseNet threshold 조정 시 | 질환별 양성 판정 기준값 변경 |
+| `thresholds.py` (루트) | 임계값/상수 변경 시 | ★ 단일 소스 — DenseNet, YOLO, CTR, CP angle, 폐면적비 등 모든 상수 |
 | `layer3_clinical_logic/differential.py` | 감별진단 패턴 추가/수정 시 | `DIFFERENTIAL_PATTERNS` 리스트에 새 패턴 추가 |
 | `report/prompt_templates.py` | 소견서 프롬프트 커스터마이징 시 | Bedrock Claude에 전달하는 시스템/유저 프롬프트 수정 |
 | `layer1_segmentation/model.py` | UNet 모델 교체 시 | ONNX 입출력 형식이 바뀌면 추론 로직 수정 필요 |
@@ -122,8 +122,8 @@ chest-svc/
 
 ### 수정 빈도별 정리
 
-- **자주 수정**: `pipeline.py`, `rules/*.py`, `prompt_templates.py`, `thresholds.py`
-- **가끔 수정**: `config.py`, `differential.py`, `main.py`
+- **자주 수정**: `thresholds.py` (루트), `rules/*.py`, `prompt_templates.py`, `pipeline.py`
+- **가끔 수정**: `config.py`, `differential.py`, `yolo_postprocess.py`, `main.py`
 - **모델 교체 시만**: `model.py`, `densenet.py`, `yolo.py`, `preprocessing.py`
 
 ---
@@ -136,7 +136,7 @@ chest-svc/
 |------|--------|-----------|------|
 | UNet | `unet_seg.onnx` | ~85MB | 세그멘테이션 (입력: 1x1x320x320, 출력: mask + view + age + sex) |
 | DenseNet-121 | `densenet121.onnx` | ~27MB | 14-질환 분류 (입력: 1x3x224x224, 출력: logits 1x14) |
-| YOLOv8 | `yolov8_vindr.onnx` | ~22MB | 19-클래스 탐지 (입력: 1x3x1024x1024, 출력: 1x23xN) |
+| YOLOv8 | `yolov8_vindr.onnx` | ~22MB | 14-클래스 탐지 (입력: 1x3x1024x1024, 출력: 1x18xN, VinDr-CXR) |
 
 **기본 모델 디렉토리**: `/app/models` (환경변수 `MODEL_DIR`로 변경 가능)
 
@@ -303,23 +303,46 @@ Readiness probe (모델 로딩 완료 확인). 모델 미로딩 시 503 반환.
 
 ---
 
-## v2에서 마이그레이션된 파일
+## v3 QA 개선사항 (2026-03-26)
 
-아래 파일들은 v2 Lambda 기반 코드에서 v3 K8s 마이크로서비스로 마이그레이션되었습니다.
+83건 MIMIC-CXR PA 이미지 + CheXpert GT 라벨 기반 전수 검증 후 적용된 개선사항입니다.
 
-| 파일 | 마이그레이션 상태 | 비고 |
-|------|-------------------|------|
-| `layer3_clinical_logic/rules/*.py` (14개) | v2에서 복사됨 | 임상 로직 규칙은 v2와 동일. 필요 시 수정 |
-| `layer3_clinical_logic/engine.py` | v2 기반 리팩토링 | 오케스트레이터 구조 유지, import 경로 변경 |
-| `layer3_clinical_logic/models.py` | v2에서 복사됨 | 데이터클래스 구조 동일 |
-| `layer3_clinical_logic/cross_validation.py` | v2에서 복사됨 | 교차검증 로직 동일 |
-| `layer3_clinical_logic/differential.py` | v2에서 복사됨 | 감별진단 패턴 동일 |
-| `layer3_clinical_logic/thresholds.py` | v2에서 복사됨 | threshold 값 동일 |
-| `report/prompt_templates.py` | v2 기반 수정 | 프롬프트 구조 유지, RAG 섹션 추가 |
-| `report/chest_report_generator.py` | v2 기반 리팩토링 | S3 제거, 직접 Bedrock 호출로 변경 |
-| `layer1_segmentation/model.py` | v2 기반 리팩토링 | Lambda → ONNX Runtime 직접 호출로 변경 |
-| `layer2_detection/densenet.py` | v2 기반 리팩토링 | 동일 |
-| `layer2_detection/yolo.py` | v2 기반 리팩토링 | 동일 |
+### 구조 개선
+
+| 항목 | Before | After |
+|------|--------|-------|
+| 하드코딩 매직넘버 | 137건 / 18파일 산재 | **0건** — `thresholds.py` 단일소스 |
+| DenseNet 임계값 | 문헌 기반 추정값 | **Youden's J 최적값** (5,000장 PA 기반) |
+| YOLO 클래스 | 19개 (미사용 포함) | **14개** (VinDr-CXR 유효 클래스) |
+| Lateral View | 처리 없음 (마스크 붕괴) | **자동 거부 게이트** (view 분류 활용) |
+
+### 검출 품질 개선
+
+| 항목 | Before | After | 효과 |
+|------|--------|-------|------|
+| Pneumothorax FP | 22건 | 8건 | -63% (세그 보조검출 + 교차배제) |
+| Fracture FP | 8건 | 5건 | -38% (threshold 상향) |
+| Enlarged_CM FP | 12건 | 7건 | -42% (2차소견 분류) |
+| 평균 양성 소견 | ~11건/케이스 | **4.0건** | -64% |
+| Cardiomegaly FN | 17건 | **0건** | CTR 기반 보완 (supplement_cardiomegaly) |
+
+### 추가된 기능
+
+- **마스크 후처리**: connected component 분석 + 횡격막 클리핑 (L Lung 소실, Heart 하방 확장 방지)
+- **YOLO 후처리**: 세그 기반 bbox 보정, CTR 기반 Cardiomegaly 보완, 경계 FP 필터
+- **PTX 세그 보조 검출**: 폐면적 급감 + 기관 편위로 YOLO 미검출 보완 (교차배제 포함)
+- **14개 Rule 개선**: severity/confidence 체계, 2차소견 분류, 감별진단 3패턴 추가
+- **교차검증 override**: 2/3 소스 양성 시 Rule 재검토 플래그
+- **프론트엔드**: 드롭다운 테스트 UI (83건), 측정 SVG 오버레이 라벨링, Lateral 경고 배너
+
+### 남은 과제
+
+| 질환 | GT 대비 배율 | 원인 |
+|------|-------------|------|
+| Consolidation | 4.5x | DenseNet AUC 0.682 (모델 한계) |
+| Edema | 3.3x | borderline 과검출 |
+| Lung_Lesion | 6.0x | GT 2건 (통계 불안정) |
+| Pleural_Other | 8.0x | GT 1건 (통계 불안정) |
 
 ---
 
