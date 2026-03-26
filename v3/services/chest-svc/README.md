@@ -31,7 +31,7 @@ Stage 2a: DenseNet-121 (ONNX)
     │  → 14개 질환 확률 (CheXpert 표준)
     ▼
 Stage 2b: YOLOv8 (ONNX)
-    │  → 19개 클래스 병변 바운딩박스 탐지 (VinDr-CXR)
+    │  → 14개 클래스 병변 바운딩박스 탐지 (VinDr-CXR) + 세그 기반 후처리
     ▼
 Stage 3: Clinical Logic Engine
     │  → 14개 규칙 기반 판정 + 교차검증 + 감별진단 + 위험도 분류
@@ -54,18 +54,20 @@ chest-svc/
 ├── main.py                          # FastAPI 앱 진입점, ONNX 모델 lifespan 로딩, /predict 엔드포인트
 ├── config.py                        # pydantic-settings 환경변수 관리 (모델 경로, Bedrock 설정 등)
 ├── pipeline.py                      # 6-stage 파이프라인 오케스트레이터 (핵심 파일)
+├── thresholds.py                    # ★ 단일 소스 (Single Source of Truth) — 모든 임계값/상수 중앙 관리
 ├── Dockerfile                       # Docker 빌드 설정 (빌드 컨텍스트: v3/)
 ├── requirements.txt                 # Python 의존성 목록
 │
 ├── layer1_segmentation/             # Stage 1: UNet 세그멘테이션
 │   ├── __init__.py
-│   ├── model.py                     # UNet ONNX 추론 + CTR/CP angle/폐면적비 계산
+│   ├── model.py                     # UNet ONNX 추론 + CTR/CP angle/폐면적비 + 마스크 후처리
 │   └── preprocessing.py             # 이미지 전처리 (320x320 grayscale)
 │
 ├── layer2_detection/                # Stage 2: 질환 탐지
 │   ├── __init__.py
 │   ├── densenet.py                  # DenseNet-121 14-label 분류 (224x224 ImageNet 정규화)
-│   └── yolo.py                      # YOLOv8 19-class 물체 탐지 (1024x1024 letterbox)
+│   ├── yolo.py                      # YOLOv8 14-class 물체 탐지 (1024x1024 letterbox)
+│   └── yolo_postprocess.py          # YOLO 후처리 (세그 기반 보정, CTR 보완, 경계 FP 필터)
 │
 ├── layer3_clinical_logic/           # Stage 3: 임상 로직 엔진
 │   ├── __init__.py
@@ -73,8 +75,9 @@ chest-svc/
 │   ├── models.py                    # 입출력 데이터클래스 (AnatomyMeasurements, DenseNetPredictions 등)
 │   ├── cross_validation.py          # DenseNet vs YOLO vs Logic 3중 소스 교차검증
 │   ├── differential.py              # 감별진단 엔진 (동반 소견 패턴 매칭)
-│   ├── thresholds.py                # 질환별 DenseNet threshold (pos_weight 기반)
-│   └── rules/                       # [v2에서 마이그레이션] 14개 질환별 규칙 파일
+│   ├── pertinent_negatives.py       # 유의미한 음성 소견 판정
+│   ├── thresholds.py                # → 루트 thresholds.py 재수출 (하위 호환)
+│   └── rules/                       # 14개 질환별 규칙 파일
 │       ├── __init__.py
 │       ├── atelectasis.py           # 무기폐
 │       ├── cardiomegaly.py          # 심비대

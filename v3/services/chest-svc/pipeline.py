@@ -19,6 +19,11 @@ from PIL import Image
 from layer1_segmentation.model import run_segmentation      # Stage 1: UNet 세그멘테이션
 from layer2_detection.densenet import run_densenet           # Stage 2a: DenseNet 14-질환 분류
 from layer2_detection.yolo import run_yolov8                 # Stage 2b: YOLOv8 병변 탐지
+from layer2_detection.yolo_postprocess import (                          # YOLO bbox 후처리
+    postprocess_yolo_with_seg,
+    filter_edge_detections,
+    supplement_cardiomegaly,
+)
 from layer3_clinical_logic.engine import run_clinical_logic  # Stage 3: 임상 로직 엔진
 
 # ── 데이터 모델 임포트 (Layer 간 데이터 전달용) ────────────────
@@ -170,6 +175,7 @@ async def run_pipeline(
     patient_info: dict,
     context: dict,
     report_generator: ChestReportGenerator,
+    skip_stages: list[str] | None = None,
 ) -> dict:
     """
     6-stage 순차 파이프라인 실행.
@@ -180,10 +186,12 @@ async def run_pipeline(
         patient_info: dict with age, sex, chief_complaint, history, etc.
         context: dict with prior_results, etc.
         report_generator: ChestReportGenerator instance
+        skip_stages: 스킵할 단계 목록 (예: ["rag", "report"]). None이면 전체 실행.
 
     Returns:
         dict: {findings, summary, report, metadata}
     """
+    skip_stages = skip_stages or []
     t_start = time.time()
     timings = {}
 
@@ -200,6 +208,33 @@ async def run_pipeline(
     timings["segmentation"] = round(time.time() - t0, 4)
     logger.info(f"Stage 1 (seg): CTR={seg_result['measurements']['ctr']:.4f}, "
                 f"view={seg_result['view']}, {timings['segmentation']}s")
+
+    # ── Lateral View Gate: PA/AP 전용 모델 → Lateral 조기 반환 ──
+    if seg_result.get("view") == "Lateral":
+        total_time = round(time.time() - t_start, 4)
+        logger.warning("Lateral view detected — aborting pipeline (unsupported view)")
+        return {
+            "status": "unsupported_view",
+            "modal": "chest",
+            "findings": [],
+            "pertinent_negatives": [],
+            "summary": "Lateral view detected. This model only supports PA/AP views.",
+            "report": "",
+            "risk_level": "routine",
+            "suggested_next_actions": [],
+            "metadata": {
+                "lateral_rejected": True,
+                "segmentation_view": "Lateral",
+                "timings": timings,
+                "total_time": total_time,
+                "detected_count": 0,
+                "all_findings_count": 14,
+                "alert_flags": [],
+                "mask_base64": seg_result.get("mask_base64"),
+                "measurements": seg_result.get("measurements", {}),
+                "original_size": seg_result.get("original_size"),
+            },
+        }
 
     # ══════════════════════════════════════════════════════════
     # Stage 2a: DenseNet-121 14-질환 분류
@@ -224,6 +259,43 @@ async def run_pipeline(
     t0 = time.time()
     yolo_result = run_yolov8(models["yolo"], pil_image)
     timings["yolo"] = round(time.time() - t0, 4)
+    raw_count = len(yolo_result["detections"])
+
+    # ── YOLO bbox 후처리: 세그멘테이션 마스크 기반 해부학적 보정 ──
+    seg_mask_raw = seg_result.get("seg_mask_raw")
+    if seg_mask_raw is not None and yolo_result["detections"]:
+        yolo_result["detections"] = postprocess_yolo_with_seg(
+            yolo_detections=yolo_result["detections"],
+            seg_mask=seg_mask_raw,
+            image_size=yolo_result.get("image_size", [pil_image.width, pil_image.height]),
+        )
+        corrected = sum(1 for d in yolo_result["detections"] if d.get("bbox_corrected"))
+        if corrected:
+            logger.info(f"  YOLO postprocess: {corrected}/{raw_count} bbox corrected by seg mask")
+
+    # ── Phase 2 후처리: 가장자리 FP 필터링 + CTR 기반 Cardiomegaly 보충 ──
+    image_size = yolo_result.get("image_size", [pil_image.width, pil_image.height])
+
+    # 2-1) Other_lesion 가장자리 FP 제거
+    pre_filter_count = len(yolo_result["detections"])
+    yolo_result["detections"] = filter_edge_detections(
+        detections=yolo_result["detections"],
+        image_size=image_size,
+    )
+    edge_removed = pre_filter_count - len(yolo_result["detections"])
+    if edge_removed:
+        logger.info(f"  Edge filter: removed {edge_removed} edge Other_lesion detections")
+
+    # 2-2) CTR >= 0.50인데 Cardiomegaly 미탐지 시 보충
+    pre_supplement_count = len(yolo_result["detections"])
+    yolo_result["detections"] = supplement_cardiomegaly(
+        detections=yolo_result["detections"],
+        seg_result=seg_result,
+    )
+    supplemented = len(yolo_result["detections"]) - pre_supplement_count
+    if supplemented:
+        logger.info(f"  CTR supplement: added {supplemented} Cardiomegaly detection (CTR={seg_result['measurements']['ctr']:.2f})")
+
     logger.info(f"Stage 2b (yolo): {len(yolo_result['detections'])} detections, {timings['yolo']}s")
 
     # ══════════════════════════════════════════════════════════
@@ -274,52 +346,63 @@ async def run_pipeline(
     # 3) Bedrock Claude 호출 -> 전문 소견서 생성
     # TODO: [박현우] 소견서 프롬프트 수정 시 report/prompt_templates.py
     # ══════════════════════════════════════════════════════════
-    t0 = time.time()
 
-    # DenseNet 결과를 소견서 생성기용 dict로 변환
+    # DenseNet 원시 확률 dict (skip 여부와 무관하게 항상 생성 — threshold 튜닝용)
     densenet_dict = {}
-    for pred in densenet_result["predictions"]:
+    for pred in densenet_result.get("predictions", []):
         densenet_dict[pred["disease"]] = pred["probability"]
 
-    # YOLO 결과를 소견서 생성기용 dict list로 변환
-    yolo_dets_for_report = []
-    for det in yolo_result["detections"]:
-        bbox = det.get("bbox", [0, 0, 0, 0])
-        bbox_list = bbox if isinstance(bbox, list) else [bbox.get("x1",0), bbox.get("y1",0), bbox.get("x2",0), bbox.get("y2",0)]
-        yolo_dets_for_report.append({
-            "class_name": det.get("class_name", det.get("class", "")),
-            "confidence": det.get("confidence", 0),
-            "bbox": bbox_list,
-            "lobe": det.get("lobe", ""),
-        })
-
-    # 소견서 생성기에 전달할 전체 이벤트 데이터 조립
-    report_event = {
-        "patient_info": patient_info,
-        "prior_results": context.get("prior_results", []),
-        "anatomy_measurements": seg_result.get("measurements", {}),
-        "densenet_predictions": densenet_dict,
-        "yolo_detections": yolo_dets_for_report,
-        "clinical_logic": clinical_result,
-        "cross_validation_summary": cv_summary,
-        "pertinent_negatives": clinical_result.get("pertinent_negatives", []),
-        "report_language": context.get("report_language", "ko"),
-    }
-
-    # Bedrock Claude 소견서 생성 (실패 시 빈 문자열 반환)
-    try:
-        report_result = await report_generator.generate_report(report_event)
-        report_text = report_result.get("report", {}).get("narrative", "")
-        report_summary = report_result.get("report", {}).get("summary", "")
-        report_metadata = report_result.get("metadata", {})
-    except Exception as e:
-        logger.warning(f"Report generation failed: {e}")
+    # skip_stages에 'rag' 또는 'report'가 포함되면 Stage 5+6 전체를 스킵
+    if "rag" in skip_stages or "report" in skip_stages:
+        logger.info("Stage 5+6 SKIPPED (skip_stages=%s)", skip_stages)
         report_result = {}
         report_text = ""
         report_summary = ""
-        report_metadata = {"error": str(e)}
+        report_metadata = {"skipped": True}
+        timings["report"] = 0.0
+    else:
+        t0 = time.time()
+        # densenet_dict는 위에서 이미 생성됨
 
-    timings["report"] = round(time.time() - t0, 4)
+        # YOLO 결과를 소견서 생성기용 dict list로 변환
+        yolo_dets_for_report = []
+        for det in yolo_result["detections"]:
+            bbox = det.get("bbox", [0, 0, 0, 0])
+            bbox_list = bbox if isinstance(bbox, list) else [bbox.get("x1",0), bbox.get("y1",0), bbox.get("x2",0), bbox.get("y2",0)]
+            yolo_dets_for_report.append({
+                "class_name": det.get("class_name", det.get("class", "")),
+                "confidence": det.get("confidence", 0),
+                "bbox": bbox_list,
+                "lobe": det.get("lobe", ""),
+            })
+
+        # 소견서 생성기에 전달할 전체 이벤트 데이터 조립
+        report_event = {
+            "patient_info": patient_info,
+            "prior_results": context.get("prior_results", []),
+            "anatomy_measurements": seg_result.get("measurements", {}),
+            "densenet_predictions": densenet_dict,
+            "yolo_detections": yolo_dets_for_report,
+            "clinical_logic": clinical_result,
+            "cross_validation_summary": cv_summary,
+            "pertinent_negatives": clinical_result.get("pertinent_negatives", []),
+            "report_language": context.get("report_language", "ko"),
+        }
+
+        # Bedrock Claude 소견서 생성 (실패 시 빈 문자열 반환)
+        try:
+            report_result = await report_generator.generate_report(report_event)
+            report_text = report_result.get("report", {}).get("narrative", "")
+            report_summary = report_result.get("report", {}).get("summary", "")
+            report_metadata = report_result.get("metadata", {})
+        except Exception as e:
+            logger.warning(f"Report generation failed: {e}")
+            report_result = {}
+            report_text = ""
+            report_summary = ""
+            report_metadata = {"error": str(e)}
+
+        timings["report"] = round(time.time() - t0, 4)
 
     # ══════════════════════════════════════════════════════════
     # 최종 응답 구성
@@ -343,10 +426,14 @@ async def run_pipeline(
             )
             findings_list.append({
                 "name": name,
+                "finding": name,  # backward compat
                 "detected": True,
                 "confidence": _confidence_to_float(result.get("confidence", "medium")),
+                "severity": result.get("severity"),
+                "location": result.get("location"),
+                "recommendation": result.get("recommendation"),
                 "detail": "; ".join(result.get("evidence", [])),
-                "secondary": is_secondary,  # True이면 동반 소견 (독립 소견이 아님)
+                "secondary": is_secondary,
             })
 
     # pertinent negatives (임상적으로 의미 있는 음성 소견)
@@ -406,6 +493,7 @@ async def run_pipeline(
             "image_size": yolo_result.get("image_size"),            # 원본 이미지 크기
             "original_size": seg_result.get("original_size"),       # 세그멘테이션 원본 크기
             "report_metadata": report_metadata,    # Bedrock 호출 메타데이터
+            "densenet_probs": densenet_dict,          # DenseNet 14질환 원시 확률 (threshold 튜닝용)
         },
     }
 

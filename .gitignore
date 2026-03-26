@@ -49,8 +49,20 @@ Thumbs.db
 
 # Deploy backups
 deploy/_backup/
-venv/
+
+# v3 large files
+v3/tests/chest-svc/images/
+v3/tests/chest-svc/results/full_80/
+v3/services/chest-svc/static/test-images/s3_sample/
+*.onnx
+*.jpg
+*.jpeg
+*.png
 __pycache__/
 *.pyc
-.DS_Store
-v3/models/
+v3/venv/
+v3/scripts/
+
+# v3 threshold optimization large data
+v3/threshold_optimization/*.csv
+v3/threshold_optimization/download_paths*.txt

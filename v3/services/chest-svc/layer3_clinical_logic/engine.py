@@ -67,7 +67,6 @@ def run_clinical_logic(input: ClinicalLogicInput) -> dict:
     phase1_rules = [
         ("Cardiomegaly", cardiomegaly),
         ("Pleural_Effusion", pleural_effusion),
-        ("Pneumothorax", pneumothorax),
         ("Atelectasis", atelectasis),
         ("Fracture", fracture),
         ("Support_Devices", support_devices),
@@ -78,12 +77,14 @@ def run_clinical_logic(input: ClinicalLogicInput) -> dict:
 
     # ================================================================
     # Phase 2: 교차 의존 Rule (Phase 1 결과를 참조할 수 있음)
+    #   - Pneumothorax: Cardiomegaly/Atelectasis 참조 (세그 기반 FP 방지)
     #   - Enlarged_Cardiomediastinum: Cardiomegaly 결과 참조
     #   - Consolidation: 독립이지만 Phase 3에서 참조되므로 여기 배치
     #   - Edema: Atelectasis 결과 참조
     #   - Pleural_Other: 다른 흉막 소견 참조 가능
     # ================================================================
     phase2_rules = [
+        ("Pneumothorax", pneumothorax),
         ("Enlarged_Cardiomediastinum", enlarged_cm),
         ("Consolidation", consolidation),
         ("Edema", edema),

@@ -1,15 +1,16 @@
 """폐 병변/결절 (Lung Lesion) — 크기 분류 + Fleischner Society 추천"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
+from ..thresholds import (
+    get_threshold,
+    px_to_mm,
+    FLEISCHNER_NO_FOLLOWUP,
+    FLEISCHNER_CT_FOLLOWUP,
+    FLEISCHNER_MASS,
+)
 
-# Fleischner Society 가이드라인 (mm)
-FLEISCHNER_NO_FOLLOWUP = 6.0
-FLEISCHNER_CT_FOLLOWUP = 8.0
-FLEISCHNER_MASS_THRESHOLD = 30.0
-
-# 대략적인 px->mm 환산 (PA CXR 표준: ~0.14mm/px @ 3000x3000)
-PX_TO_MM_APPROX = 0.14
+# 하위 호환 별칭 — 기존 코드에서 FLEISCHNER_MASS_THRESHOLD 참조 대비
+FLEISCHNER_MASS_THRESHOLD = FLEISCHNER_MASS
 
 
 def analyze(input: ClinicalLogicInput) -> dict:
@@ -64,7 +65,7 @@ def analyze(input: ClinicalLogicInput) -> dict:
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
         long_axis_px = max(w, h)
-        size_mm = round(long_axis_px * PX_TO_MM_APPROX, 1)
+        size_mm = px_to_mm(long_axis_px)
 
         # 크기 분류
         if size_mm >= FLEISCHNER_MASS_THRESHOLD:

@@ -1,7 +1,7 @@
 """폐부종 (Edema) — 양측 대칭성 + butterfly 패턴 + CTR 교차"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
+from ..thresholds import get_threshold, EDEMA_SYMMETRY, EDEMA_BILATERAL_DENSENET
 
 
 def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
@@ -48,13 +48,13 @@ def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
     if atelectasis_present:
         # 무기폐 동반 → 폐 면적 비율 대칭성 판단 불가
         symmetry_score = None
-        if d.Edema > 0.70:
+        if d.Edema > EDEMA_BILATERAL_DENSENET:
             # 심인성 폐부종은 대부분 양측성이므로, 고확률이면 bilateral 가정
             bilateral_symmetric = True
             location = "bilateral"
             evidence.append(
                 "무기폐(Atelectasis) 동반 → 면적 기반 대칭성 판단 불가, "
-                f"DenseNet {d.Edema:.2f} > 0.70 → 양측(bilateral) 추정"
+                f"DenseNet {d.Edema:.2f} > {EDEMA_BILATERAL_DENSENET} → 양측(bilateral) 추정"
             )
         else:
             # DenseNet 확률이 낮으면 위치를 특정할 수 없음
@@ -62,13 +62,13 @@ def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
             location = "indeterminate"
             evidence.append(
                 "무기폐(Atelectasis) 동반 → 면적 기반 대칭성 판단 불가, "
-                f"DenseNet {d.Edema:.2f} ≤ 0.70 → 위치 미확정(indeterminate)"
+                f"DenseNet {d.Edema:.2f} ≤ {EDEMA_BILATERAL_DENSENET} → 위치 미확정(indeterminate)"
             )
     else:
         # 무기폐 없음 → 기존 대칭성 로직 유지
         ratio = a.lung_area_ratio
         symmetry_score = 1.0 - abs(1.0 - ratio) if ratio > 0 else 0.0
-        bilateral_symmetric = symmetry_score > 0.85
+        bilateral_symmetric = symmetry_score > EDEMA_SYMMETRY
 
         if bilateral_symmetric:
             evidence.append(f"양측 대칭 (symmetry score {symmetry_score:.2f})")
@@ -81,6 +81,16 @@ def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
     butterfly = d.Edema > 0.75
     if butterfly:
         evidence.append("Butterfly 패턴 의심 (DenseNet 고확률)")
+
+    # SpO2 교차 검증 — 폐부종이면 SpO2 저하 동반 가능
+    if input.patient_info and input.patient_info.spo2:
+        spo2 = input.patient_info.spo2
+        if spo2 < 92:
+            evidence.append(f"SpO2 {spo2}% → 저산소증 동반 (폐부종 부합)")
+            if severity == "mild":
+                severity = "moderate"
+        elif spo2 < 95:
+            evidence.append(f"SpO2 {spo2}% → 경미한 저산소증")
 
     # 동반 소견 교차
     confidence = "medium"

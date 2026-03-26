@@ -1,7 +1,7 @@
 """흉수 (Pleural Effusion) — CP angle 기반 판정"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
+from ..thresholds import get_threshold, CP_ANGLE_SMALL, CP_ANGLE_MODERATE
 
 
 def analyze(input: ClinicalLogicInput) -> dict:
@@ -38,6 +38,16 @@ def analyze(input: ClinicalLogicInput) -> dict:
         detected = True
         evidence.append(f"DenseNet Pleural_Effusion: {d.Pleural_Effusion:.2f}")
 
+    # YOLO bbox 보조 판정
+    yolo_eff = [det for det in input.yolo_detections if det.class_name == "Pleural_effusion"]
+    if yolo_eff and not detected:
+        detected = True
+        for det in yolo_eff:
+            evidence.append(f"YOLO Pleural_effusion bbox conf {det.confidence:.2f}")
+    elif yolo_eff and detected:
+        for det in yolo_eff:
+            evidence.append(f"YOLO 교차 확인: Pleural_effusion bbox conf {det.confidence:.2f}")
+
     if not detected:
         evidence.append("CP angle 정상, 흉수 소견 없음")
         return {
@@ -60,10 +70,10 @@ def analyze(input: ClinicalLogicInput) -> dict:
     ]:
         if cp_status != "blunted" or cp_angle is None:
             continue
-        if cp_angle <= 90:
+        if cp_angle <= CP_ANGLE_SMALL:
             vol = "small"
             evidence.append(f"{side} CP angle {cp_angle:.1f}deg -> small (~200-300mL)")
-        elif cp_angle <= 120:
+        elif cp_angle <= CP_ANGLE_MODERATE:
             vol = "moderate"
             evidence.append(f"{side} CP angle {cp_angle:.1f}deg -> moderate (~500mL)")
         else:
@@ -75,6 +85,11 @@ def analyze(input: ClinicalLogicInput) -> dict:
     vol_order = {"small": 1, "moderate": 2, "large": 3}
     max_vol = max(estimated_volume.values(), key=lambda v: vol_order.get(v, 0)) if estimated_volume else "small"
     severity = "mild" if max_vol == "small" else ("moderate" if max_vol == "moderate" else "severe")
+
+    # 양측 흉수는 한 단계 severity 상향
+    if location == "bilateral" and severity == "mild":
+        severity = "moderate"
+        evidence.append("양측 흉수 → severity 상향")
 
     # 동반 소견 교차: 양측 흉수 + CTR 상승 → CHF 관련
     recommendation = None

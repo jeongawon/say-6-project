@@ -1,7 +1,7 @@
 """심비대 (Cardiomegaly) — CTR 기반 판정"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
+from ..thresholds import get_threshold, CTR_NORMAL_UPPER, CTR_MODERATE, CTR_SEVERE
 
 
 def analyze(input: ClinicalLogicInput) -> dict:
@@ -14,19 +14,19 @@ def analyze(input: ClinicalLogicInput) -> dict:
     threshold = get_threshold("Cardiomegaly")
 
     ctr = a.ctr
-    detected = ctr > 0.50
+    detected = ctr > CTR_NORMAL_UPPER
     evidence = []
     severity = None
     confidence = "medium"
     alert = False
 
     if detected:
-        evidence.append(f"CTR {ctr:.4f} (정상 <0.50)")
+        evidence.append(f"CTR {ctr:.4f} (정상 <{CTR_NORMAL_UPPER})")
 
         # 중증도 분류
-        if ctr > 0.60:
+        if ctr > CTR_SEVERE:
             severity = "severe"
-        elif ctr > 0.55:
+        elif ctr > CTR_MODERATE:
             severity = "moderate"
         else:
             severity = "mild"
@@ -38,6 +38,12 @@ def analyze(input: ClinicalLogicInput) -> dict:
         elif d.Cardiomegaly < 0.3:
             confidence = "low"
             evidence.append(f"DenseNet Cardiomegaly: {d.Cardiomegaly:.2f} (불일치)")
+
+        # YOLO Cardiomegaly bbox 교차 검증
+        yolo_cardio = [det for det in input.yolo_detections if det.class_name == "Cardiomegaly"]
+        if yolo_cardio:
+            confidence = "high"
+            evidence.append(f"YOLO Cardiomegaly bbox conf {yolo_cardio[0].confidence:.2f}")
 
         # AP뷰에서는 심장이 확대되어 보이므로 confidence 하향
         if a.view == "AP":
@@ -61,6 +67,11 @@ def analyze(input: ClinicalLogicInput) -> dict:
         },
         "location": None,
         "severity": severity,
-        "recommendation": "심초음파 추적 권장" if severity == "severe" else None,
+        "recommendation": (
+            "심초음파 + BNP 검사 즉시 권장, 심부전 감별 필요" if severity == "severe"
+            else "심초음파 검사 권장" if severity == "moderate"
+            else "추적 관찰 권장 (6개월 후 재검)" if severity == "mild"
+            else None
+        ),
         "alert": alert,
     }

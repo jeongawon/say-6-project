@@ -1,11 +1,7 @@
 """종격동 확대 (Enlarged Cardiomediastinum) — 종격동 너비 판정"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
-
-
-# 종격동 너비 threshold (px 비율 기반)
-MEDIASTINUM_RATIO_THRESHOLD = 0.33
+from ..thresholds import get_threshold, MEDIASTINUM_RATIO
 
 
 def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
@@ -28,10 +24,10 @@ def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
             evidence.append(f"종격동 확대 (status: {a.mediastinum_status})")
     elif a.mediastinum_width_px is not None and a.thorax_width_px > 0:
         ratio = a.mediastinum_width_px / a.thorax_width_px
-        if ratio > MEDIASTINUM_RATIO_THRESHOLD:
+        if ratio > MEDIASTINUM_RATIO:
             detected = True
             evidence.append(
-                f"종격동/흉곽 비율 {ratio:.3f} (threshold {MEDIASTINUM_RATIO_THRESHOLD})"
+                f"종격동/흉곽 비율 {ratio:.3f} (threshold {MEDIASTINUM_RATIO})"
             )
 
     # DenseNet 보조
