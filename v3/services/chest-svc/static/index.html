@@ -1149,7 +1149,12 @@ function toggleYolo() {
 
 function drawYoloBoxes(layer2b) {
     const svg = document.getElementById('yoloSvg');
-    if (!layer2b || !layer2b.detections || layer2b.detections.length === 0) return;
+    console.log('[YOLO] drawYoloBoxes called', layer2b);
+    if (!layer2b || !layer2b.detections || layer2b.detections.length === 0) {
+        console.log('[YOLO] No detections, skipping');
+        return;
+    }
+    console.log('[YOLO] Drawing', layer2b.detections.length, 'boxes');
 
     const imgSize = layer2b.image_size || [1, 1];
     const imgW = imgSize[0], imgH = imgSize[1];
@@ -1164,9 +1169,12 @@ function drawYoloBoxes(layer2b) {
         const w = x2 - x1, h = y2 - y1;
         const color = d.color || '#ef4444';
         const label = `${d.class_name} ${(d.confidence * 100).toFixed(0)}%`;
-        html += `<rect x="${x1}" y="${y1}" width="${w}" height="${h}" fill="none" stroke="${color}" stroke-width="4"/>`;
-        html += `<rect x="${x1}" y="${y1 - 40}" width="${label.length * 16 + 12}" height="40" fill="${color}" rx="4"/>`;
-        html += `<text x="${x1 + 6}" y="${y1 - 12}" fill="white" font-size="26" font-weight="bold">${label}</text>`;
+        const sw = Math.max(4, Math.round(imgW / 200));  // viewBox 크기에 비례한 선 굵기
+        const fs = Math.max(26, Math.round(imgW / 60));  // 글자 크기도 비례
+        const lh = Math.round(fs * 1.5);
+        html += `<rect x="${x1}" y="${y1}" width="${w}" height="${h}" fill="none" stroke="${color}" stroke-width="${sw}"/>`;
+        html += `<rect x="${x1}" y="${y1 - lh}" width="${label.length * fs * 0.65 + 12}" height="${lh}" fill="${color}" rx="4"/>`;
+        html += `<text x="${x1 + 6}" y="${y1 - lh * 0.3}" fill="white" font-size="${fs}" font-weight="bold">${label}</text>`;
     });
     svg.innerHTML = html;
 }
@@ -1272,42 +1280,54 @@ function drawMeasurements(layer1) {
 
     const m = layer1.measurements;
     let s = '';
-    const sw = Math.max(3, Math.round(w / 700));
+    const sw = Math.max(4, Math.round(w / 200));  // YOLO와 동일 비율
 
-    // 공통 라벨 스타일
-    const fs = sw * 6;  // 라벨 폰트 크기
-    const bgPad = sw * 2;  // 배경 패딩
+    // 공통 라벨 스타일 — YOLO 텍스트와 비슷한 크기
+    const fs = Math.max(26, Math.round(w / 60));  // YOLO와 동일
+    const bgPad = Math.round(fs * 0.3);  // 배경 패딩
 
     // Mediastinum (종격동 폭)
     const med = m.mediastinum;
     if (med && med.width_px > 0) {
         const y = med.measurement_y_level;
         s += '<line x1="'+med.x_left+'" y1="'+y+'" x2="'+med.x_right+'" y2="'+y+'" stroke="#fbbf24" stroke-width="'+sw+'" stroke-dasharray="'+(sw*4)+','+(sw*2)+'" />';
-        s += '<circle cx="'+med.x_left+'" cy="'+y+'" r="'+(sw*2)+'" fill="#fbbf24" />';
-        s += '<circle cx="'+med.x_right+'" cy="'+y+'" r="'+(sw*2)+'" fill="#fbbf24" />';
+        s += '<circle cx="'+med.x_left+'" cy="'+y+'" r="'+(Math.round(sw*1.5))+'" fill="#fbbf24" />';
+        s += '<circle cx="'+med.x_right+'" cy="'+y+'" r="'+(Math.round(sw*1.5))+'" fill="#fbbf24" />';
         const tx = (med.x_left + med.x_right) / 2;
         // 라벨: 종격동 폭 + 수치
         s += '<rect x="'+(tx - fs*5)+'" y="'+(y - fs - bgPad*2)+'" width="'+(fs*10)+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
         s += '<text x="'+tx+'" y="'+(y - bgPad*1.5)+'" fill="#fbbf24" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">종격동 폭 '+med.width_px+'px</text>';
     }
 
-    // Trachea (기관 중심선)
+    // Trachea (기관 중심선) — 모든 좌표는 백엔드에서 계산된 값 사용
     const tra = m.trachea;
     if (tra && tra.thorax_center_x > 0) {
-        // 흉곽 중심선 (흰색 점선)
-        s += '<line x1="'+tra.thorax_center_x+'" y1="'+Math.round(h*0.05)+'" x2="'+tra.thorax_center_x+'" y2="'+Math.round(h*0.95)+'" stroke="rgba(255,255,255,0.25)" stroke-width="'+sw+'" stroke-dasharray="'+(sw*3)+','+(sw*3)+'" />';
-        // 흉곽 중심선 라벨
-        s += '<rect x="'+(tra.thorax_center_x - fs*4)+'" y="'+Math.round(h*0.02)+'" width="'+(fs*8)+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
-        s += '<text x="'+tra.thorax_center_x+'" y="'+(Math.round(h*0.02) + fs + bgPad*0.5)+'" fill="rgba(255,255,255,0.6)" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">흉곽 중심선</text>';
-        // 종격동 중심선 (노란색/빨간색)
+        // 기관 y 범위 (백엔드 제공: 쇄골~carina)
+        const tyStart = tra.trachea_y_start || Math.round(h * 0.10);
+        const tyEnd = tra.trachea_y_end || Math.round(h * 0.33);
+
+        // 1) 흉곽 중심선 (참조선, 흰 점선) — 폐 영역 전체
+        s += '<line x1="'+tra.thorax_center_x+'" y1="'+tyStart+'" x2="'+tra.thorax_center_x+'" y2="'+Math.round(h*0.70)+'" stroke="rgba(255,255,255,0.12)" stroke-width="'+Math.round(sw*0.4)+'" stroke-dasharray="'+(sw*3)+','+(sw*4)+'" />';
+
+        // 2) 기관 중심선 (쇄골~carina 구간만, 짧은 실선)
         const mColor = tra.alert ? '#f87171' : '#fbbf24';
-        const mSw = tra.alert ? sw*2 : sw;
-        s += '<line x1="'+tra.mediastinum_center_x+'" y1="'+Math.round(h*0.08)+'" x2="'+tra.mediastinum_center_x+'" y2="'+Math.round(h*0.40)+'" stroke="'+mColor+'" stroke-width="'+mSw+'" />';
-        // 종격동 중심선 라벨
+        const mSw = tra.alert ? Math.round(sw*1.5) : sw;
+        s += '<line x1="'+tra.mediastinum_center_x+'" y1="'+tyStart+'" x2="'+tra.mediastinum_center_x+'" y2="'+tyEnd+'" stroke="'+mColor+'" stroke-width="'+mSw+'" />';
+        // carina 마커 (기관 끝점)
+        s += '<circle cx="'+tra.mediastinum_center_x+'" cy="'+tyEnd+'" r="'+Math.round(sw*1.2)+'" fill="'+mColor+'" />';
+
+        // 3) 편위 화살표 (기관 중간 높이에서 흉곽중심→기관중심)
+        if (!tra.midline) {
+            const arrowY = Math.round((tyStart + tyEnd) / 2);
+            s += '<line x1="'+tra.thorax_center_x+'" y1="'+arrowY+'" x2="'+tra.mediastinum_center_x+'" y2="'+arrowY+'" stroke="'+mColor+'" stroke-width="'+Math.round(sw*0.8)+'" stroke-dasharray="'+(sw*2)+','+(sw)+'" />';
+        }
+
+        // 4) 라벨 (기관 위쪽에 배치)
         const traLabel = tra.midline ? '기관 정중앙' : '⚠ 기관 편위 ('+( tra.deviation_direction || '?')+')';
-        const traLabelW = traLabel.length * fs * 0.6;
-        s += '<rect x="'+(tra.mediastinum_center_x - traLabelW/2)+'" y="'+Math.round(h*0.08 - fs - bgPad)+'" width="'+traLabelW+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
-        s += '<text x="'+tra.mediastinum_center_x+'" y="'+(Math.round(h*0.08) - bgPad*0.5)+'" fill="'+mColor+'" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">'+traLabel+'</text>';
+        const traLabelW = traLabel.length * fs * 0.55;
+        const labelY = tyStart - fs - bgPad * 2;
+        s += '<rect x="'+(tra.mediastinum_center_x - traLabelW/2)+'" y="'+labelY+'" width="'+traLabelW+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
+        s += '<text x="'+tra.mediastinum_center_x+'" y="'+(labelY + fs + bgPad*0.3)+'" fill="'+mColor+'" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">'+traLabel+'</text>';
     }
 
     // CP Angles (늑골횡격막각)
@@ -1318,7 +1338,7 @@ function drawMeasurements(layer1) {
                 const color = cp.status === 'blunted' ? '#f87171' : '#4ade80';
                 const statusText = cp.status === 'blunted' ? '둔화' : '정상';
                 const sideKo = side === 'right' ? '우' : '좌';
-                const r1 = sw * 4, r2 = sw * 7;
+                const r1 = Math.round(sw * 2.5), r2 = Math.round(sw * 4);
                 s += '<circle cx="'+cp.point[0]+'" cy="'+cp.point[1]+'" r="'+r1+'" fill="'+color+'" opacity="0.8" />';
                 s += '<circle cx="'+cp.point[0]+'" cy="'+cp.point[1]+'" r="'+r2+'" fill="none" stroke="'+color+'" stroke-width="'+sw+'" />';
                 // 라벨: CP Angle + 각도 + 상태
@@ -1335,7 +1355,7 @@ function drawMeasurements(layer1) {
     const dia = m.diaphragm;
     if (dia && dia.status !== 'unmeasurable') {
         const rp = dia.right_dome_point, lp = dia.left_dome_point;
-        const ts = sw * 5;
+        const ts = Math.round(sw * 3);
         if (rp && rp[0] > 0) {
             s += '<polygon points="'+rp[0]+','+(rp[1]-ts)+' '+(rp[0]-ts*0.7)+','+(rp[1]+ts*0.4)+' '+(rp[0]+ts*0.7)+','+(rp[1]+ts*0.4)+'" fill="#818cf8" />';
             // 라벨
@@ -1362,8 +1382,8 @@ function drawMeasurements(layer1) {
         if (hl > 0 && hr > 0 && hRow > 0) {
             // 심장 폭 (빨간 실선)
             s += '<line x1="'+hl+'" y1="'+hRow+'" x2="'+hr+'" y2="'+hRow+'" stroke="#ef4444" stroke-width="'+(sw*1.5)+'" />';
-            s += '<circle cx="'+hl+'" cy="'+hRow+'" r="'+(sw*2)+'" fill="#ef4444" />';
-            s += '<circle cx="'+hr+'" cy="'+hRow+'" r="'+(sw*2)+'" fill="#ef4444" />';
+            s += '<circle cx="'+hl+'" cy="'+hRow+'" r="'+(Math.round(sw*1.5))+'" fill="#ef4444" />';
+            s += '<circle cx="'+hr+'" cy="'+hRow+'" r="'+(Math.round(sw*1.5))+'" fill="#ef4444" />';
             const hMid = (hl + hr) / 2;
             const hLabel = '심장 폭 ' + m.heart_width_px + 'px';
             const hLW = hLabel.length * fs * 0.55;
@@ -1374,8 +1394,8 @@ function drawMeasurements(layer1) {
         if (tl > 0 && tr2 > 0 && tRow > 0) {
             // 흉곽 폭 (파란 점선)
             s += '<line x1="'+tl+'" y1="'+tRow+'" x2="'+tr2+'" y2="'+tRow+'" stroke="#60a5fa" stroke-width="'+sw+'" stroke-dasharray="'+(sw*4)+','+(sw*2)+'" />';
-            s += '<circle cx="'+tl+'" cy="'+tRow+'" r="'+(sw*2)+'" fill="#60a5fa" />';
-            s += '<circle cx="'+tr2+'" cy="'+tRow+'" r="'+(sw*2)+'" fill="#60a5fa" />';
+            s += '<circle cx="'+tl+'" cy="'+tRow+'" r="'+(Math.round(sw*1.5))+'" fill="#60a5fa" />';
+            s += '<circle cx="'+tr2+'" cy="'+tRow+'" r="'+(Math.round(sw*1.5))+'" fill="#60a5fa" />';
             const tMid = (tl + tr2) / 2;
             const tLabel = '흉곽 폭 ' + m.thorax_width_px + 'px';
             const tLW = tLabel.length * fs * 0.55;

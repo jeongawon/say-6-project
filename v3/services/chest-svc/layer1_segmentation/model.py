@@ -380,29 +380,47 @@ def _compute_mediastinum(mask: np.ndarray) -> dict:
             "status": "normal" if best_w < 80 else "widened",  # 320 기준 ~25% 폭
         }
 
-    # fallback: 심장 상부 1/3으로 추정
-    heart_mask = (mask == 3)
-    if not heart_mask.any():
+    # fallback: 두 폐 사이 간격 (상부 20~35% 영역)으로 종격동 추정
+    # 심장 상부를 사용하면 심비대 시 왜곡됨 — 폐 간 공간이 더 정확
+    lung_mask = (mask == 1) | (mask == 2)
+    if not lung_mask.any():
         return {"x_left": 0, "x_right": 0, "measurement_y_level": 0, "width_px": 0, "status": "unmeasurable"}
 
-    heart_rows = np.where(heart_mask.any(axis=1))[0]
-    top_third_end = heart_rows[0] + max(1, (heart_rows[-1] - heart_rows[0]) // 3)
-    upper_rows = heart_rows[heart_rows <= top_third_end]
+    h, w = mask.shape
+    # 상부 흉곽 (15~45% 높이) — 대혈관/기관/기관지 높이
+    upper_start = int(h * 0.15)
+    upper_end = int(h * 0.45)
 
-    best_w = 0
+    best_gap = 0
     x_left, x_right, y_level = 0, 0, 0
-    for r in upper_rows:
-        cols = np.where(heart_mask[r])[0]
-        w = cols[-1] - cols[0]
-        if w > best_w:
-            best_w = w
-            x_left = int(cols[0])
-            x_right = int(cols[-1])
-            y_level = int(r)
+    for r in range(upper_start, upper_end):
+        row = lung_mask[r]
+        if not row.any():
+            continue
+        lung_cols = np.where(row)[0]
+        # 폐 영역 사이의 gap (종격동) 찾기
+        # CXR은 방사선학적 반전: 이미지 왼쪽=환자 오른쪽
+        # Class 1(L Lung)=이미지 왼쪽, Class 2(R Lung)=이미지 오른쪽
+        l_lung_row = (mask[r] == 1)  # L Lung (이미지 왼쪽)
+        r_lung_row = (mask[r] == 2)  # R Lung (이미지 오른쪽)
+        if l_lung_row.any() and r_lung_row.any():
+            l_cols = np.where(l_lung_row)[0]
+            r_cols = np.where(r_lung_row)[0]
+            gap_left = int(l_cols[-1])   # L Lung 우측 경계 (이미지 기준)
+            gap_right = int(r_cols[0])   # R Lung 좌측 경계 (이미지 기준)
+            gap = gap_right - gap_left
+            if gap > best_gap and gap > 5:
+                best_gap = gap
+                x_left = gap_left
+                x_right = gap_right
+                y_level = r
+
+    if best_gap == 0:
+        return {"x_left": 0, "x_right": 0, "measurement_y_level": 0, "width_px": 0, "status": "unmeasurable"}
 
     return {
         "x_left": x_left, "x_right": x_right,
-        "measurement_y_level": y_level, "width_px": best_w,
+        "measurement_y_level": y_level, "width_px": best_gap,
         "status": "estimated",
     }
 
@@ -424,39 +442,50 @@ def _compute_trachea(mask: np.ndarray) -> dict:
     lung_cols = np.where(lung_mask.any(axis=0))[0]
     thorax_center_x = int((lung_cols[0] + lung_cols[-1]) / 2)
 
-    # 종격동 중심: class 4 우선, 없으면 심장 상부
+    # 종격동 중심: class 4 우선, 없으면 상부 폐 간격의 중심
     med_mask = (mask == 4)
     if med_mask.any():
         med_cols = np.where(med_mask.any(axis=0))[0]
         mediastinum_center_x = int((med_cols[0] + med_cols[-1]) / 2)
     else:
-        heart_mask = (mask == 3)
-        if heart_mask.any():
-            heart_rows = np.where(heart_mask.any(axis=1))[0]
-            top_third_end = heart_rows[0] + max(1, (heart_rows[-1] - heart_rows[0]) // 3)
-            upper_heart = heart_mask.copy()
-            upper_heart[top_third_end:, :] = False
-            if upper_heart.any():
-                hcols = np.where(upper_heart.any(axis=0))[0]
-                mediastinum_center_x = int((hcols[0] + hcols[-1]) / 2)
-            else:
-                mediastinum_center_x = thorax_center_x
+        # 상부 흉곽(20~35%)에서 R Lung/L Lung 사이 중심 = 종격동/기관 중심
+        h_mask = mask.shape[0]
+        upper_start = int(h_mask * 0.15)
+        upper_end = int(h_mask * 0.45)
+        gap_centers = []
+        for r in range(upper_start, upper_end):
+            l_lung_row = (mask[r] == 1)  # L Lung (이미지 왼쪽)
+            r_lung_row = (mask[r] == 2)  # R Lung (이미지 오른쪽)
+            if l_lung_row.any() and r_lung_row.any():
+                gap_left = np.where(l_lung_row)[0][-1]   # L Lung 우측 경계
+                gap_right = np.where(r_lung_row)[0][0]    # R Lung 좌측 경계
+                if gap_right > gap_left:
+                    gap_centers.append((gap_left + gap_right) / 2)
+        if gap_centers:
+            mediastinum_center_x = int(np.mean(gap_centers))
         else:
             mediastinum_center_x = thorax_center_x
 
     deviation_px = abs(mediastinum_center_x - thorax_center_x)
-    # 320px 기준에서 10px 이상 편위 → 유의미
-    midline = deviation_px < 10
+    # 320px 기준에서 5% (16px) 이내면 정중선 — 폐 비대칭에 의한 오차 허용
+    midline = deviation_px < 16
     deviation_direction = None
     if not midline:
         deviation_direction = "left" if mediastinum_center_x < thorax_center_x else "right"
+
+    # 기관 y 범위 (mask 좌표): 쇄골(10%)~carina(33%)
+    h_mask = mask.shape[0]
+    trachea_y_start = int(h_mask * 0.10)
+    trachea_y_end = int(h_mask * 0.33)
 
     return {
         "thorax_center_x": thorax_center_x,
         "mediastinum_center_x": mediastinum_center_x,
         "midline": midline,
         "deviation_direction": deviation_direction,
-        "alert": deviation_px >= 15,  # 강한 편위
+        "alert": deviation_px >= 24,  # 강한 편위 (7.5% 이상)
+        "trachea_y_start": trachea_y_start,  # 쇄골 레벨 (mask 좌표)
+        "trachea_y_end": trachea_y_end,      # carina 레벨 (mask 좌표)
     }
 
 
@@ -535,13 +564,15 @@ def _build_structured_measurements(
         "status": med_info["status"],
     }
 
-    # trachea 구조체
+    # trachea 구조체 — y 좌표도 스케일링
     trachea = {
         "thorax_center_x": scale_x(tra_info["thorax_center_x"]),
         "mediastinum_center_x": scale_x(tra_info["mediastinum_center_x"]),
         "midline": tra_info["midline"],
         "deviation_direction": tra_info["deviation_direction"],
         "alert": tra_info["alert"],
+        "trachea_y_start": scale_y(tra_info.get("trachea_y_start", 0)),
+        "trachea_y_end": scale_y(tra_info.get("trachea_y_end", 0)),
     }
 
     # cp_angle 구조체
