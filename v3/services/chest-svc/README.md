@@ -1,237 +1,200 @@
 # chest-svc — 흉부 X-Ray AI 분석 마이크로서비스
 
-> **담당: 박현우**
-> 6-Layer CXR 파이프라인을 FastAPI 마이크로서비스로 구현한 모듈입니다.
-> ONNX 모델 3개(UNet, DenseNet-121, YOLOv8)를 로드하여 흉부 X선 영상을 분석하고,
-> 14개 질환 판정 + 임상 로직 + Bedrock Claude 소견서 생성까지 수행합니다.
+> **담당: 박현우 | 프로젝트 6팀**
+>
+> 흉부 X선 영상을 입력받아 14개 질환을 자동 판정하고, 임상 소견서를 생성하는 AI 마이크로서비스입니다.
+> ONNX 모델 3개(세그멘테이션 + 분류 + 탐지)의 결과를 규칙 기반 임상 로직으로 교차검증한 뒤,
+> AWS Bedrock Claude가 전문의 수준의 한글 소견서를 작성합니다.
 
 ---
 
-## 서비스 개요
+## 1. 한눈에 보기
 
 | 항목 | 내용 |
 |------|------|
-| 프레임워크 | FastAPI + uvicorn |
+| 프레임워크 | FastAPI + uvicorn (ASGI) |
+| AI 모델 | UNet (세그멘테이션) + DenseNet-121 (분류) + YOLOv8 (탐지) |
 | 모델 런타임 | ONNX Runtime (CPU) |
-| 소견서 생성 | AWS Bedrock Claude |
-| 유사 케이스 검색 | rag-svc (HTTP) |
+| 소견서 생성 | AWS Bedrock Claude Sonnet |
+| 유사 케이스 | rag-svc 연동 (선택) |
+| 코드 규모 | **6,729줄 / 39개 Python 파일** |
+| 판정 질환 | 14개 (CheXpert 표준) |
 | 포트 | 8000 |
-| 헬스체크 | `/healthz` (liveness), `/readyz` (readiness) |
 
-### 6-Layer 파이프라인 흐름
+---
+
+## 2. 14개 판정 질환
+
+| # | 영문명 | 한글명 | 설명 |
+|---|--------|--------|------|
+| 1 | Atelectasis | 무기폐 | 폐의 일부가 허탈(collapse)된 상태 |
+| 2 | Cardiomegaly | 심비대 | 심장 크기 확대 (CTR > 0.50) |
+| 3 | Consolidation | 경화 | 폐포가 액체/세포로 채워진 상태 |
+| 4 | Edema | 폐부종 | 폐에 체액이 고인 상태 |
+| 5 | Enlarged Cardiomediastinum | 심종격동 비대 | 종격동(가슴 중앙) 확장 |
+| 6 | Fracture | 골절 | 늑골 등의 골절 |
+| 7 | Lung Lesion | 폐 병변 | 결절/종괴 등 국소 병변 |
+| 8 | Lung Opacity | 폐 음영 | 비특이적 음영 증가 |
+| 9 | No Finding | 정상 | 이상 소견 없음 |
+| 10 | Pleural Effusion | 흉수 | 흉막강에 체액 저류 |
+| 11 | Pleural Other | 기타 흉막 질환 | 흉막 비후/석회화 등 |
+| 12 | Pneumonia | 폐렴 | 감염성 폐 경화 |
+| 13 | Pneumothorax | 기흉 | 흉막강에 공기 유입 |
+| 14 | Support Devices | 삽입 기구 | ETT, 중심정맥관, 흉관 등 |
+
+---
+
+## 3. 파이프라인 구조
 
 ```
-[이미지 입력]
-    │
-    ▼
-Stage 1: Segmentation (UNet ONNX)
-    │  → 심장/폐/종격동 세그멘테이션 + CTR, CP angle, 폐면적비 측정
-    ▼
-Stage 2a: DenseNet-121 (ONNX)
-    │  → 14개 질환 확률 (CheXpert 표준)
-    ▼
-Stage 2b: YOLOv8 (ONNX)
-    │  → 14개 클래스 병변 바운딩박스 탐지 (VinDr-CXR) + 세그 기반 후처리
-    ▼
-Stage 3: Clinical Logic Engine
-    │  → 14개 규칙 기반 판정 + 교차검증 + 감별진단 + 위험도 분류
-    ▼
-Stage 4: Cross-Validation Summary
-    │  → DenseNet vs YOLO vs Clinical Logic 3중 소스 일치도 요약
-    ▼
-Stage 5+6: RAG + Report Generation
-    │  → rag-svc 유사 케이스 검색 + Bedrock Claude 소견서 생성
-    ▼
-[최종 응답: findings + summary + report + metadata]
+┌─────────────────────────────────────────────────────────────────┐
+│                    POST /predict (이미지 입력)                    │
+└─────────────┬───────────────────────────────────────────────────┘
+              ▼
+┌─────────────────────────────┐
+│ ★ Lateral View Gate         │  view == "Lateral" → 즉시 거부
+│   (PA/AP만 분석 가능)        │  "측면 촬영은 분석 불가" 반환
+└─────────────┬───────────────┘
+              ▼
+┌─────────────────────────────┐
+│ Stage 1: Segmentation       │  UNet ONNX (320x320)
+│   - 폐/심장/종격동 마스크    │  → 마스크 후처리 (connected component)
+│   - CTR, CP angle 측정      │  → 횡격막 클리핑
+│   - 폐면적비, 종격동 폭     │  → view 분류 (AP/PA/Lateral)
+└─────────────┬───────────────┘
+              ▼
+┌──────────────────┐  ┌──────────────────┐
+│ Stage 2a:        │  │ Stage 2b:        │
+│ DenseNet-121     │  │ YOLOv8           │   ← 병렬 실행
+│ 14-질환 확률     │  │ 14-클래스 bbox   │
+│ (CheXpert)       │  │ (VinDr-CXR)      │
+└────────┬─────────┘  └────────┬─────────┘
+         │                     │
+         │  ┌──────────────────┘
+         ▼  ▼
+┌─────────────────────────────┐
+│ YOLO 후처리                  │  세그 기반 bbox 보정
+│   - CTR 기반 Cardiomegaly   │  CTR≥0.53 & YOLO 미검출 → 보완
+│   - 경계 FP 필터 (10%)      │  이미지 가장자리 Other_lesion 제거
+│   - per-class threshold     │  PTX 0.15 / Effusion 0.20 / 기타 0.25
+└─────────────┬───────────────┘
+              ▼
+┌─────────────────────────────┐
+│ Stage 3: Clinical Logic     │  14개 질환별 Rule 순차 실행
+│   Phase 1: 독립 판정 (10개) │  DenseNet + YOLO + 해부학 지표
+│   Phase 2: 교차 의존 (3개)  │  Consolidation → Lung Opacity → Pneumonia
+│   Phase 3: 최종 판정 (1개)  │  No Finding (전체 결과 확인 후)
+│   + 교차검증 + 감별진단     │  3중 소스 일치도 + 패턴 매칭
+└─────────────┬───────────────┘
+              ▼
+┌─────────────────────────────┐
+│ Stage 5+6: RAG + Report     │  (선택적 — skip_stages로 비활성화 가능)
+│   - rag-svc 유사 케이스     │  cosine similarity 기반 검색
+│   - Bedrock Claude 소견서   │  한글/영문 전문의 소견서 생성
+└─────────────┬───────────────┘
+              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 응답: findings(14개) + summary + report + metadata              │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 디렉토리 구조 및 파일별 역할
+## 4. 디렉토리 구조
 
 ```
-chest-svc/
-├── main.py                          # FastAPI 앱 진입점, ONNX 모델 lifespan 로딩, /predict 엔드포인트
-├── config.py                        # pydantic-settings 환경변수 관리 (모델 경로, Bedrock 설정 등)
-├── pipeline.py                      # 6-stage 파이프라인 오케스트레이터 (핵심 파일)
-├── thresholds.py                    # ★ 단일 소스 (Single Source of Truth) — 모든 임계값/상수 중앙 관리
-├── Dockerfile                       # Docker 빌드 설정 (빌드 컨텍스트: v3/)
-├── requirements.txt                 # Python 의존성 목록
+chest-svc/                              # 6,729줄 / 39파일
+├── main.py                    (241줄)  # FastAPI 진입점, ONNX lifespan, /predict
+├── config.py                   (41줄)  # pydantic-settings 환경변수
+├── pipeline.py                (514줄)  # 6-stage 오케스트레이터 (핵심)
+├── thresholds.py              (312줄)  # ★ Single Source of Truth — 모든 임계값
+├── Dockerfile                  (44줄)  # Docker 빌드 (빌드 컨텍스트: v3/)
+├── requirements.txt            (11줄)  # 의존성 (fastapi, onnxruntime, scipy 등)
 │
-├── layer1_segmentation/             # Stage 1: UNet 세그멘테이션
-│   ├── __init__.py
-│   ├── model.py                     # UNet ONNX 추론 + CTR/CP angle/폐면적비 + 마스크 후처리
-│   └── preprocessing.py             # 이미지 전처리 (320x320 grayscale)
+├── layer1_segmentation/       (743줄)  # Stage 1
+│   ├── model.py               (706줄)  # UNet 추론 + CTR/CP/폐면적 + 마스크 후처리
+│   └── preprocessing.py        (36줄)  # 320x320 grayscale 전처리
 │
-├── layer2_detection/                # Stage 2: 질환 탐지
-│   ├── __init__.py
-│   ├── densenet.py                  # DenseNet-121 14-label 분류 (224x224 ImageNet 정규화)
-│   ├── yolo.py                      # YOLOv8 14-class 물체 탐지 (1024x1024 letterbox)
-│   └── yolo_postprocess.py          # YOLO 후처리 (세그 기반 보정, CTR 보완, 경계 FP 필터)
+├── layer2_detection/          (751줄)  # Stage 2
+│   ├── densenet.py            (135줄)  # DenseNet-121 14-label (224x224)
+│   ├── yolo.py                (275줄)  # YOLOv8 14-class (1024x1024)
+│   └── yolo_postprocess.py    (340줄)  # 세그 보정 + CTR 보완 + 경계 필터
 │
-├── layer3_clinical_logic/           # Stage 3: 임상 로직 엔진
-│   ├── __init__.py
-│   ├── engine.py                    # 14개 규칙 순차 실행 + 교차검증 + 감별진단 오케스트레이터
-│   ├── models.py                    # 입출력 데이터클래스 (AnatomyMeasurements, DenseNetPredictions 등)
-│   ├── cross_validation.py          # DenseNet vs YOLO vs Logic 3중 소스 교차검증
-│   ├── differential.py              # 감별진단 엔진 (동반 소견 패턴 매칭)
-│   ├── pertinent_negatives.py       # 유의미한 음성 소견 판정
-│   ├── thresholds.py                # → 루트 thresholds.py 재수출 (하위 호환)
-│   └── rules/                       # 14개 질환별 규칙 파일
-│       ├── __init__.py
-│       ├── atelectasis.py           # 무기폐
-│       ├── cardiomegaly.py          # 심비대
-│       ├── consolidation.py         # 경화
-│       ├── edema.py                 # 폐부종
-│       ├── enlarged_cm.py           # 심종격동 비대
-│       ├── fracture.py              # 골절
-│       ├── lung_lesion.py           # 폐 병변
-│       ├── lung_opacity.py          # 폐 음영 (다른 결과에 의존)
-│       ├── no_finding.py            # 정상 소견 (전체 결과 확인 후 판정)
-│       ├── pleural_effusion.py      # 흉수
-│       ├── pleural_other.py         # 기타 흉막 질환
-│       ├── pneumonia.py             # 폐렴 (임상정보 + 다른 결과에 의존)
-│       ├── pneumothorax.py          # 기흉
-│       └── support_devices.py       # 삽입 기구
+├── layer3_clinical_logic/    (3,070줄)  # Stage 3
+│   ├── engine.py              (169줄)  # 14-Rule 오케스트레이터
+│   ├── models.py              (112줄)  # 데이터클래스 (입출력 스키마)
+│   ├── cross_validation.py     (64줄)  # DenseNet vs YOLO vs Logic 교차검증
+│   ├── differential.py        (213줄)  # 감별진단 패턴 매칭
+│   ├── pertinent_negatives.py (118줄)  # 유의미한 음성 소견
+│   ├── thresholds.py            (6줄)  # → 루트 thresholds.py 재수출
+│   └── rules/                (1,543줄)  # 14개 질환별 규칙
+│       ├── atelectasis.py     (112줄)  # 무기폐
+│       ├── cardiomegaly.py     (77줄)  # 심비대 (CTR + DenseNet + YOLO)
+│       ├── consolidation.py   (199줄)  # 경화 (DenseNet 게이트 포함)
+│       ├── edema.py           (135줄)  # 폐부종 (SpO2 연동)
+│       ├── enlarged_cm.py     (103줄)  # 심종격동 비대
+│       ├── fracture.py         (96줄)  # 골절
+│       ├── lung_lesion.py     (135줄)  # 폐 병변 (Fleischner 기준)
+│       ├── lung_opacity.py    (132줄)  # 폐 음영 (2차소견 감별)
+│       ├── no_finding.py      (103줄)  # 정상 (전체 확인 후 판정)
+│       ├── pleural_effusion.py(120줄)  # 흉수 (CP angle + YOLO)
+│       ├── pleural_other.py    (88줄)  # 기타 흉막
+│       ├── pneumonia.py       (156줄)  # 폐렴 (5단계 감별)
+│       ├── pneumothorax.py    (150줄)  # 기흉 (세그 보조 검출)
+│       └── support_devices.py (105줄)  # 삽입 기구
 │
-└── report/                          # Stage 5+6: 소견서 생성
-    ├── __init__.py
-    ├── chest_report_generator.py    # Bedrock Claude 호출 + 응답 파싱
-    └── prompt_templates.py          # 시스템/유저 프롬프트 템플릿 (한/영)
+├── report/                    (591줄)  # Stage 5+6
+│   ├── chest_report_generator.py (440줄) # Bedrock Claude 호출 + 파싱
+│   └── prompt_templates.py    (150줄)  # 시스템/유저 프롬프트 (한/영)
+│
+└── static/
+    └── index.html           (1,425줄)  # 테스트 UI (드롭다운 83건)
 ```
 
 ---
 
-## 팀원이 수정해야 할 파일 목록
+## 5. API 문서
 
-### 박현우 주요 수정 포인트
+### 5.1 POST /predict — 흉부 X선 분석
 
-| 파일 | 수정 상황 | 설명 |
-|------|-----------|------|
-| `pipeline.py` | 파이프라인 순서 변경, 단계 추가/제거 시 | 6단계 실행 순서와 데이터 흐름을 제어하는 핵심 파일 |
-| `config.py` | 환경변수 추가 시 | 새 설정값이 필요하면 `Settings` 클래스에 필드 추가 |
-| `layer3_clinical_logic/rules/*.py` | 임상 로직 수정 시 | v2에서 복사된 14개 규칙 파일. 임계값, 판정 기준 변경 가능 |
-| `thresholds.py` (루트) | 임계값/상수 변경 시 | ★ 단일 소스 — DenseNet, YOLO, CTR, CP angle, 폐면적비 등 모든 상수 |
-| `layer3_clinical_logic/differential.py` | 감별진단 패턴 추가/수정 시 | `DIFFERENTIAL_PATTERNS` 리스트에 새 패턴 추가 |
-| `report/prompt_templates.py` | 소견서 프롬프트 커스터마이징 시 | Bedrock Claude에 전달하는 시스템/유저 프롬프트 수정 |
-| `layer1_segmentation/model.py` | UNet 모델 교체 시 | ONNX 입출력 형식이 바뀌면 추론 로직 수정 필요 |
-| `layer1_segmentation/preprocessing.py` | UNet 전처리 변경 시 | 입력 크기(320x320), 정규화 방식 변경 시 |
-| `layer2_detection/densenet.py` | DenseNet 모델 교체 시 | 입력 크기(224x224), 라벨 순서, 정규화 방식 수정 |
-| `layer2_detection/yolo.py` | YOLOv8 모델 교체 시 | 입력 크기(1024x1024), 클래스 목록, NMS 파라미터 수정 |
-| `main.py` | 새 엔드포인트 추가, 모델 추가 시 | lifespan에서 모델 로딩, 새 라우트 추가 |
-
-### 수정 빈도별 정리
-
-- **자주 수정**: `thresholds.py` (루트), `rules/*.py`, `prompt_templates.py`, `pipeline.py`
-- **가끔 수정**: `config.py`, `differential.py`, `yolo_postprocess.py`, `main.py`
-- **모델 교체 시만**: `model.py`, `densenet.py`, `yolo.py`, `preprocessing.py`
-
----
-
-## ONNX 모델 파일 위치
-
-모델 파일은 K8s PVC로 런타임에 마운트됩니다. 로컬 테스트 시 직접 경로를 지정하세요.
-
-| 모델 | 파일명 | 크기 (약) | 설명 |
-|------|--------|-----------|------|
-| UNet | `unet_seg.onnx` | ~85MB | 세그멘테이션 (입력: 1x1x320x320, 출력: mask + view + age + sex) |
-| DenseNet-121 | `densenet121.onnx` | ~27MB | 14-질환 분류 (입력: 1x3x224x224, 출력: logits 1x14) |
-| YOLOv8 | `yolov8_vindr.onnx` | ~22MB | 14-클래스 탐지 (입력: 1x3x1024x1024, 출력: 1x18xN, VinDr-CXR) |
-
-**기본 모델 디렉토리**: `/app/models` (환경변수 `MODEL_DIR`로 변경 가능)
-
-로컬에서 모델 파일을 준비하려면:
-```bash
-# 예: 로컬 models 디렉토리에 ONNX 파일 배치
-mkdir -p ./models
-# unet_seg.onnx, densenet121.onnx, yolov8_vindr.onnx 를 models/ 에 복사
-export MODEL_DIR=./models
-```
-
----
-
-## 로컬 실행 방법
-
-### 1. uvicorn 직접 실행
-
-```bash
-cd v3/services/chest-svc
-
-# 가상환경 생성 및 활성화
-python -m venv .venv
-source .venv/bin/activate
-
-# 의존성 설치
-pip install -r requirements.txt
-
-# shared 스키마 경로 설정 (Docker 밖에서 실행 시)
-export PYTHONPATH="/path/to/v3/shared:$PYTHONPATH"
-
-# 환경변수 설정
-export MODEL_DIR=./models          # ONNX 모델 디렉토리
-export LOG_LEVEL=DEBUG             # 디버그 로그
-export RAG_URL=http://localhost:8001  # rag-svc 주소 (미연결 시 자동 skip)
-
-# 서버 실행
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-### 2. Docker 실행
-
-```bash
-# 빌드 컨텍스트는 v3/ 디렉토리
-cd v3
-
-# 빌드
-docker build -f services/chest-svc/Dockerfile -t chest-svc:latest .
-
-# 실행 (모델 디렉토리를 볼륨 마운트)
-docker run -p 8000:8000 \
-  -v /path/to/models:/app/models \
-  -e LOG_LEVEL=DEBUG \
-  -e BEDROCK_REGION=ap-northeast-2 \
-  -e AWS_ACCESS_KEY_ID=... \
-  -e AWS_SECRET_ACCESS_KEY=... \
-  chest-svc:latest
-```
-
----
-
-## API 스펙
-
-### POST /predict
-
-흉부 X선 이미지를 분석하여 소견서를 생성합니다.
-
-#### 요청 (Request)
+#### 요청
 
 ```json
 {
-  "patient_id": "P001",
+  "patient_id": "P-2024-001",
   "modal": "chest",
   "patient_info": {
-    "age": 65,
+    "age": 72,
     "sex": "M",
-    "chief_complaint": "흉통, 호흡곤란",
-    "history": "고혈압, 당뇨"
+    "chief_complaint": "호흡곤란, 하지 부종",
+    "history": ["고혈압", "당뇨"]
   },
   "data": {
-    "image_base64": "<base64 인코딩된 흉부 X선 이미지>"
+    "image_base64": "<base64 인코딩된 흉부 X선 JPEG/PNG>"
   },
   "context": {
+    "skip_stages": ["rag", "report"],
+    "report_language": "ko",
     "prior_results": [
-      {
-        "modal": "ecg",
-        "summary": "정상 동성리듬",
-        "findings": {}
-      }
-    ],
-    "report_language": "ko"
+      { "modal": "ecg", "summary": "정상 동성리듬" }
+    ]
   }
 }
 ```
 
-#### 응답 (Response)
+| 필드 | 필수 | 설명 |
+|------|------|------|
+| `patient_id` | O | 환자 식별자 |
+| `modal` | O | `"chest"` 고정 |
+| `patient_info.age` | O | 나이 |
+| `patient_info.sex` | O | `"M"` / `"F"` |
+| `patient_info.chief_complaint` | - | 주소 (한글 가능) |
+| `patient_info.history` | - | 과거력 리스트 |
+| `data.image_base64` | O | Base64 인코딩 이미지 |
+| `context.skip_stages` | - | `["rag", "report"]` → RAG/소견서 스킵 (빠른 테스트용) |
+| `context.report_language` | - | `"ko"` (기본) / `"en"` |
+
+#### 응답
 
 ```json
 {
@@ -241,121 +204,254 @@ docker run -p 8000:8000 \
     {
       "name": "Cardiomegaly",
       "detected": true,
-      "confidence": 0.9,
-      "detail": "CTR 0.58 (>0.50); DenseNet 확률 0.82; YOLO bbox 탐지"
+      "confidence": 0.7,
+      "detail": "CTR 0.5204 (>0.50); DenseNet 0.60; YOLO bbox conf 0.42",
+      "secondary": false,
+      "severity": "mild",
+      "location": null,
+      "recommendation": "추적 관찰 권장 (6개월 후 재검)"
     },
     {
-      "name": "Pleural_Effusion",
-      "detected": false,
-      "confidence": 0.1,
-      "detail": ""
+      "name": "Lung_Opacity",
+      "detected": true,
+      "confidence": 0.4,
+      "detail": "DenseNet Lung_Opacity: 0.70; Edema에 의한 음영 (2차)",
+      "secondary": true,
+      "severity": "mild",
+      "location": null,
+      "recommendation": null
     }
   ],
-  "summary": "Detected: Cardiomegaly | Risk: routine",
-  "report": "...(Bedrock Claude가 생성한 전문 소견서)...",
+  "summary": "Detected: Cardiomegaly, Pleural_Effusion, Edema ... | Risk: critical",
+  "report": "...(Bedrock Claude 한글 소견서)...",
+  "risk_level": "critical",
+  "pertinent_negatives": ["기흉 없음"],
+  "suggested_next_actions": [],
   "metadata": {
     "timings": {
-      "segmentation": 0.312,
-      "densenet": 0.089,
-      "yolo": 0.245,
-      "clinical_logic": 0.005,
-      "report": 2.134
+      "segmentation": 0.31,
+      "densenet": 0.09,
+      "yolo": 0.25,
+      "clinical_logic": 0.01,
+      "report": 0.0
     },
-    "total_time": 2.801,
-    "risk_level": "routine",
-    "alert_flags": [],
-    "detected_count": 1,
-    "differential_diagnosis": [],
+    "total_time": 0.70,
+    "detected_count": 8,
+    "segmentation_view": "AP",
+    "measurements": {
+      "ctr": 0.5204,
+      "ctr_status": "cardiomegaly",
+      "cp_angle_left": 74.05,
+      "cp_angle_right": 87.14,
+      "lung_area_ratio": 1.331,
+      "heart_width_px": 1098,
+      "thorax_width_px": 2111
+    },
+    "yolo_detections": [
+      { "class_name": "Cardiomegaly", "confidence": 0.42, "bbox": [1242, 1280, 2349, 2170] }
+    ],
+    "mask_base64": "<base64 RGBA PNG — 마스크 오버레이>",
+    "image_size": [3056, 2544],
     "cross_validation_summary": {
       "high_agreement": ["Cardiomegaly"],
-      "medium_agreement": [],
-      "low_agreement": [],
+      "medium_agreement": ["Pleural_Effusion"],
       "flags": []
     },
-    "segmentation_view": "PA",
-    "report_metadata": {
-      "model_used": "global.anthropic.claude-sonnet-4-6",
-      "input_tokens": 2500,
-      "output_tokens": 1200,
-      "latency_ms": 2100,
-      "rag_used": false,
-      "report_language": "ko"
-    }
+    "differential_diagnosis": ["심인성 폐부종", "울혈성 심부전"]
   }
 }
 ```
 
-### GET /healthz
+#### Finding 필드 설명
 
-Liveness probe (프로세스 생존 확인).
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `name` | string | 질환명 (14개 중 하나) |
+| `detected` | boolean | 양성 판정 여부 |
+| `confidence` | float | 신뢰도 (0.0~1.0) |
+| `detail` | string | 판정 근거 (DenseNet 확률, CTR 값, YOLO bbox 등) |
+| `secondary` | boolean | `true` = 다른 질환에 의한 2차 소견 |
+| `severity` | string? | `mild` / `moderate` / `severe` / `critical` / `null` |
+| `location` | string? | `bilateral` / `left` / `right` / 폐엽명 / `null` |
+| `recommendation` | string? | 추천 후속 검사/조치 |
+
+#### Lateral View 거부 응답
+
+Lateral(측면) X선은 PA/AP 전용 모델로 분석할 수 없어 자동 거부됩니다.
+
+```json
+{
+  "status": "unsupported_view",
+  "modal": "chest",
+  "findings": [],
+  "metadata": { "lateral_rejected": true, "segmentation_view": "Lateral" }
+}
+```
+
+### 5.2 GET /healthz — Liveness Probe
 
 ```json
 {"status": "ok"}
 ```
 
-### GET /readyz
-
-Readiness probe (모델 로딩 완료 확인). 모델 미로딩 시 503 반환.
+### 5.3 GET /readyz — Readiness Probe
 
 ```json
 {"status": "ready", "models": ["unet", "densenet", "yolo"]}
 ```
 
----
-
-## v3 QA 개선사항 (2026-03-26)
-
-83건 MIMIC-CXR PA 이미지 + CheXpert GT 라벨 기반 전수 검증 후 적용된 개선사항입니다.
-
-### 구조 개선
-
-| 항목 | Before | After |
-|------|--------|-------|
-| 하드코딩 매직넘버 | 137건 / 18파일 산재 | **0건** — `thresholds.py` 단일소스 |
-| DenseNet 임계값 | 문헌 기반 추정값 | **Youden's J 최적값** (5,000장 PA 기반) |
-| YOLO 클래스 | 19개 (미사용 포함) | **14개** (VinDr-CXR 유효 클래스) |
-| Lateral View | 처리 없음 (마스크 붕괴) | **자동 거부 게이트** (view 분류 활용) |
-
-### 검출 품질 개선
-
-| 항목 | Before | After | 효과 |
-|------|--------|-------|------|
-| Pneumothorax FP | 22건 | 8건 | -63% (세그 보조검출 + 교차배제) |
-| Fracture FP | 8건 | 5건 | -38% (threshold 상향) |
-| Enlarged_CM FP | 12건 | 7건 | -42% (2차소견 분류) |
-| 평균 양성 소견 | ~11건/케이스 | **4.0건** | -64% |
-| Cardiomegaly FN | 17건 | **0건** | CTR 기반 보완 (supplement_cardiomegaly) |
-
-### 추가된 기능
-
-- **마스크 후처리**: connected component 분석 + 횡격막 클리핑 (L Lung 소실, Heart 하방 확장 방지)
-- **YOLO 후처리**: 세그 기반 bbox 보정, CTR 기반 Cardiomegaly 보완, 경계 FP 필터
-- **PTX 세그 보조 검출**: 폐면적 급감 + 기관 편위로 YOLO 미검출 보완 (교차배제 포함)
-- **14개 Rule 개선**: severity/confidence 체계, 2차소견 분류, 감별진단 3패턴 추가
-- **교차검증 override**: 2/3 소스 양성 시 Rule 재검토 플래그
-- **프론트엔드**: 드롭다운 테스트 UI (83건), 측정 SVG 오버레이 라벨링, Lateral 경고 배너
-
-### 남은 과제
-
-| 질환 | GT 대비 배율 | 원인 |
-|------|-------------|------|
-| Consolidation | 4.5x | DenseNet AUC 0.682 (모델 한계) |
-| Edema | 3.3x | borderline 과검출 |
-| Lung_Lesion | 6.0x | GT 2건 (통계 불안정) |
-| Pleural_Other | 8.0x | GT 1건 (통계 불안정) |
+모델 미로딩 시 HTTP 503 반환.
 
 ---
 
-## 환경변수 목록
+## 6. ONNX 모델 스펙
+
+### 6.1 모델 파일
+
+| 모델 | 파일명 | 크기 | 입력 | 출력 |
+|------|--------|------|------|------|
+| UNet | `unet_seg.onnx` | ~85MB | `(1,1,320,320)` float32 | mask `(1,4,320,320)` + view `(1,3)` + age `(1,1)` + sex `(1,1)` |
+| DenseNet-121 | `densenet121.onnx` | ~27MB | `(1,3,224,224)` float32 | logits `(1,14)` |
+| YOLOv8 | `yolov8_vindr.onnx` | ~22MB | `(1,3,1024,1024)` float32 | `(1,18,N)` boxes+classes |
+
+기본 경로: `/app/models` (환경변수 `MODEL_DIR`로 변경)
+
+### 6.2 DenseNet 임계값 (Youden's J 최적화)
+
+5,000장 MIMIC-CXR PA 이미지 기반 ROC 분석으로 산출된 최적 임계값입니다.
+
+| 질환 | 임계값 | AUC | 비고 |
+|------|--------|-----|------|
+| Pleural_Effusion | 0.51 | 0.928 | 최고 AUC |
+| Pneumothorax | 0.75 | 0.895 | 세그 보조 검출이 FN 커버 |
+| Edema | 0.67 | 0.847 | |
+| Consolidation | 0.55 | 0.837 | AUC 높으나 Rule에서 추가 필터링 |
+| Cardiomegaly | 0.55 | 0.819 | CTR 보완이 FN 커버 |
+| Enlarged_CM | 0.64 | 0.800 | |
+| Pneumonia | 0.52 | 0.786 | |
+| Lung_Opacity | 0.45 | 0.634 | AUC 낮음 — Rule 감별에 의존 |
+| Atelectasis | 0.50 | - | GT 불충분 → 기본값 |
+| Fracture | 0.70 | 0.857 | FP 방지 위해 보수적 |
+| Support_Devices | 0.68 | 0.605 | |
+| Lung_Lesion | 0.70 | - | GT 불충분 → 보수적 |
+| Pleural_Other | 0.70 | - | GT 불충분 → 보수적 |
+| No_Finding | 0.70 | - | |
+
+모든 임계값은 `thresholds.py` 1개 파일에서 관리됩니다.
+
+### 6.3 UNet 세그멘테이션 클래스
+
+| Class ID | 영역 | 마스크 색상 |
+|----------|------|------------|
+| 0 | Background | 투명 |
+| 1 | Left Lung | 파랑 (rgba 0,100,255,100) |
+| 2 | Right Lung | 초록 (rgba 0,200,100,100) |
+| 3 | Heart | 빨강 (rgba 255,50,50,120) |
+| 4+ | Mediastinum | 노랑 (rgba 255,255,0,80) |
+
+---
+
+## 7. QA 검증 결과
+
+### 83건 MIMIC-CXR GT 대비 (2026-03-26)
+
+| 질환 | GT | 검출 | 배율 | 판정 |
+|------|-----|------|------|------|
+| Pleural_Effusion | 20 | 30 | 1.5x | ✅ 양호 |
+| Support_Devices | 18 | 21 | 1.2x | ✅ 양호 |
+| Fracture | 5 | 5 | 1.0x | ✅ 양호 |
+| Enlarged_CM | 8 | 7 | 0.9x | ✅ 양호 |
+| Pneumothorax | 4 | 8 | 2.0x | ⚠️ 과검출 |
+| Lung_Opacity | 22 | 45 | 2.0x | ⚠️ 과검출 |
+| Pneumonia | 8 | 20 | 2.5x | ⚠️ 과검출 |
+| Atelectasis | 20 | 45 | 2.2x | ⚠️ 과검출 |
+| Cardiomegaly | 14 | 38 | 2.7x | ❌ CTR 보완 영향 |
+| Consolidation | 6 | 27 | 4.5x | ❌ DenseNet AUC 0.682 |
+| Edema | 7 | 23 | 3.3x | ❌ borderline 과검출 |
+
+### 주요 개선 성과
+
+| 항목 | Before → After | 효과 |
+|------|---------------|------|
+| Pneumothorax FP | 22 → 8건 | -63% |
+| Cardiomegaly FN | 17 → 0건 | CTR 기반 보완 |
+| 평균 양성 소견 | ~11건 → 4.0건 | -64% |
+| Lateral View | 미처리 → 자동 거부 | 11건 F등급 해소 |
+| 하드코딩 | 137건 → 0건 | thresholds.py 단일소스 |
+
+---
+
+## 8. 배포/운영
+
+### 로컬 실행
+
+```bash
+cd v3/services/chest-svc
+
+# 가상환경
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# 환경변수
+export MODEL_DIR=./models
+export LOG_LEVEL=DEBUG
+export PYTHONPATH="../../shared:$PYTHONPATH"
+
+# 실행
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Docker 실행
+
+```bash
+cd v3
+docker build -f services/chest-svc/Dockerfile -t chest-svc:latest .
+docker run -p 8000:8000 \
+  -v /path/to/models:/app/models \
+  -e LOG_LEVEL=DEBUG \
+  -e BEDROCK_REGION=ap-northeast-2 \
+  chest-svc:latest
+```
+
+### K8s 배포
+
+K8s 매니페스트: `v3/k8s/base/chest-svc.yaml`
+- Deployment: 1 replica, CPU 1core / Memory 2Gi
+- Service: ClusterIP
+- Health: `/healthz` (liveness), `/readyz` (readiness)
+- Config: `common-config` + `dr-ai-config` ConfigMap
+- Storage: PVC `/models` (ReadOnlyMany)
+
+### 환경변수
 
 | 변수명 | 기본값 | 설명 |
 |--------|--------|------|
-| `MODEL_DIR` | `/app/models` | ONNX 모델 파일 디렉토리 경로 |
-| `RAG_URL` | `http://rag-svc:8000` | rag-svc 서비스 URL |
+| `MODEL_DIR` | `/app/models` | ONNX 모델 디렉토리 |
+| `RAG_URL` | `http://rag-svc:8000` | RAG 서비스 URL |
 | `BEDROCK_REGION` | `ap-northeast-2` | AWS Bedrock 리전 |
-| `BEDROCK_MODEL_ID` | `global.anthropic.claude-sonnet-4-6` | Bedrock 모델 ID |
-| `BEDROCK_MAX_TOKENS` | `4096` | Bedrock 최대 토큰 수 |
-| `BEDROCK_TEMPERATURE` | `0.2` | Bedrock 온도 (첫 시도) |
-| `BEDROCK_RETRY_TEMPERATURE` | `0.0` | Bedrock 온도 (재시도) |
-| `LOG_LEVEL` | `INFO` | 로그 레벨 (DEBUG/INFO/WARNING/ERROR) |
-| `PORT` | `8000` | 서비스 포트 |
+| `BEDROCK_MODEL_ID` | `global.anthropic.claude-sonnet-4-6` | Bedrock 모델 |
+| `BEDROCK_MAX_TOKENS` | `4096` | 소견서 최대 토큰 |
+| `BEDROCK_TEMPERATURE` | `0.2` | 생성 온도 |
+| `LOG_LEVEL` | `INFO` | 로그 레벨 |
+
+---
+
+## 9. 알려진 제한사항 + 향후 과제
+
+### 제한사항
+
+| 항목 | 설명 |
+|------|------|
+| **Lateral View** | PA/AP만 지원. 측면 촬영은 자동 거부됨 |
+| **Consolidation 과검출** | DenseNet AUC 0.682 — 모델 판별력 자체의 한계 |
+| **AP 뷰 CTR** | AP 촬영 시 심장 확대 → CTR 과대추정 (0.55 보정 적용) |
+| **GT 부족 질환** | Lung_Lesion, Pleural_Other — 83건 중 GT 각 2건, 1건 |
+| **단일 이미지** | 시리즈 비교(이전 영상 대비 변화) 미지원 |
+
+### 향후 개선 방향
+
+1. **5,000장 전체 Youden's J 재계산** — Consolidation, Atelectasis 임계값 최적화
+2. **DenseNet 파인튜닝** — MIMIC-CXR 데이터로 추가 학습 (Consolidation AUC 개선)
+3. **YOLO 모델 업그레이드** — VinDr-CXR v2 또는 자체 학습
+4. **시리즈 비교** — 이전 영상과의 변화 감지 (follow-up 판정)
+5. **분산 추적** — OpenTelemetry 연동 (k8s 환경)
