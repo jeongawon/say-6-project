@@ -55,6 +55,31 @@ DIFFERENTIAL_PATTERNS = [
         "probability": "critical",
         "alert": True,
     },
+    {
+        "name": "ARDS (급성호흡곤란증후군)",
+        "required": ["Edema"],
+        "flags": ["bilateral_symmetric"],
+        "exclude_flags": ["ctr_elevated"],  # CTR 정상이면 비심인성
+        "diagnosis": "ARDS (급성호흡곤란증후군) — 비심인성 양측 폐부종",
+        "probability": "high",
+        "alert": True,
+    },
+    {
+        "name": "대량 흉수",
+        "required": ["Pleural_Effusion"],
+        "flags": ["lung_area_decreased"],
+        "diagnosis": "대량 흉수 — 배액 고려",
+        "probability": "high",
+        "alert": False,
+    },
+    {
+        "name": "종격동 종양",
+        "required": ["Enlarged_Cardiomediastinum"],
+        "exclude_flags": ["ctr_elevated"],  # 심비대 없이 종격동만 커짐
+        "diagnosis": "종격동 종양 의심 — CT 확인 필요",
+        "probability": "medium",
+        "alert": False,
+    },
 ]
 
 
@@ -89,6 +114,13 @@ def analyze(results: dict, input: ClinicalLogicInput) -> list:
         if flags_req:
             flags_met = sum(1 for f in flags_req if clinical_flags.get(f))
             if flags_met < len(flags_req) * 0.5:
+                continue
+
+        # exclude_flags: 이 플래그가 있으면 이 패턴은 매칭 불가
+        exclude_flags = pattern.get("exclude_flags", [])
+        if exclude_flags:
+            excluded = any(clinical_flags.get(ef) for ef in exclude_flags)
+            if excluded:
                 continue
 
         matched.append({

@@ -1,0 +1,102 @@
+{
+  "Cardiomegaly": {
+    "current": 0.35,
+    "optimal": 0.5461,
+    "auc": 0.8185,
+    "sensitivity": 0.7746,
+    "specificity": 0.7714,
+    "ppv": 0.873,
+    "n_positive": 71,
+    "n_negative": 35
+  },
+  "Consolidation": {
+    "current": 0.55,
+    "optimal": 0.2763,
+    "auc": 0.837,
+    "sensitivity": 0.963,
+    "specificity": 0.65,
+    "ppv": 0.7879,
+    "n_positive": 27,
+    "n_negative": 20
+  },
+  "Edema": {
+    "current": 0.55,
+    "optimal": 0.6711,
+    "auc": 0.8468,
+    "sensitivity": 0.76,
+    "specificity": 0.8462,
+    "ppv": 0.6552,
+    "n_positive": 25,
+    "n_negative": 65
+  },
+  "Enlarged Cardiomediastinum": {
+    "current": 0.4,
+    "optimal": 0.6416,
+    "auc": 0.8,
+    "sensitivity": 0.6316,
+    "specificity": 0.9,
+    "ppv": 0.8571,
+    "n_positive": 19,
+    "n_negative": 20
+  },
+  "Fracture": {
+    "current": 0.35,
+    "optimal": 0.3945,
+    "auc": 0.8571,
+    "sensitivity": 1.0,
+    "specificity": 0.6667,
+    "ppv": 0.875,
+    "n_positive": 14,
+    "n_negative": 6
+  },
+  "Lung Opacity": {
+    "current": 0.4,
+    "optimal": 0.6111,
+    "auc": 0.6337,
+    "sensitivity": 0.6517,
+    "specificity": 0.8,
+    "ppv": 0.9831,
+    "n_positive": 89,
+    "n_negative": 5
+  },
+  "Pleural Effusion": {
+    "current": 0.4,
+    "optimal": 0.5142,
+    "auc": 0.9284,
+    "sensitivity": 0.878,
+    "specificity": 0.8592,
+    "ppv": 0.878,
+    "n_positive": 82,
+    "n_negative": 71
+  },
+  "Pneumonia": {
+    "current": 0.35,
+    "optimal": 0.5166,
+    "auc": 0.7861,
+    "sensitivity": 0.7632,
+    "specificity": 0.7143,
+    "ppv": 0.725,
+    "n_positive": 76,
+    "n_negative": 77
+  },
+  "Pneumothorax": {
+    "current": 0.35,
+    "optimal": 0.7455,
+    "auc": 0.8947,
+    "sensitivity": 0.8571,
+    "specificity": 0.7895,
+    "ppv": 0.5,
+    "n_positive": 14,
+    "n_negative": 57
+  },
+  "Support Devices": {
+    "current": 0.5,
+    "optimal": 0.681,
+    "auc": 0.6048,
+    "sensitivity": 0.6429,
+    "specificity": 0.8,
+    "ppv": 0.9643,
+    "n_positive": 42,
+    "n_negative": 5
+  }
+}

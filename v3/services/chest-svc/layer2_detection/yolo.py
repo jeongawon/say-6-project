@@ -5,37 +5,44 @@ VinDr-CXR 19-class 물체 탐지.
 Letterbox 전처리, confidence 필터링, NMS 적용.
 """
 
+import os
+import sys
 import time
 
 import numpy as np
 from PIL import Image
 
-# ── VinDr-CXR 19 클래스 ──────────────────────────────────
+# thresholds.py (chest-svc 루트) 임포트를 위한 경로 추가
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from thresholds import YOLO_CONF_THRESHOLDS, YOLO_DEFAULT_CONF  # noqa: E402
+
+# ── VinDr-CXR 14 클래스 (ONNX 모델 학습 시 사용된 실제 클래스) ──
+# 주의: 모델은 14클래스로 학습됨 (19클래스 아님)
+# ONNX metadata.names에서 추출한 정확한 매핑
 VINDR_CLASSES = [
-    "Aortic_enlargement",
-    "Atelectasis",
-    "Calcification",
-    "Cardiomegaly",
-    "Clavicle_fracture",
-    "Consolidation",
-    "Edema",
-    "Emphysema",
-    "Enlarged_PA",
-    "ILD",
-    "Infiltration",
-    "Lung_Opacity",
-    "Nodule/Mass",
-    "Other_lesion",
-    "Pleural_effusion",
-    "Pleural_thickening",
-    "Pneumothorax",
-    "Pulmonary_fibrosis",
-    "Rib_fracture",
+    "Aortic_enlargement",   # 0
+    "Atelectasis",          # 1
+    "Calcification",        # 2
+    "Cardiomegaly",         # 3
+    "Consolidation",        # 4
+    "ILD",                  # 5
+    "Infiltration",         # 6
+    "Lung_Opacity",         # 7
+    "Nodule_Mass",          # 8
+    "Other_lesion",         # 9
+    "Pleural_effusion",     # 10
+    "Pleural_thickening",   # 11
+    "Pneumothorax",         # 12
+    "Pulmonary_fibrosis",   # 13
 ]
 
 INPUT_SIZE = 1024  # YOLOv8 정사각 입력
-CONF_THRESHOLD = 0.25
+CONF_THRESHOLD = 0.25  # 기본 임계값 (하위 호환용)
 IOU_THRESHOLD = 0.45
+
+# ── 클래스별 confidence 임계값 (thresholds.py에서 가져옴) ──────
+CLASS_CONF_THRESHOLDS = YOLO_CONF_THRESHOLDS
+_DEFAULT_CONF_THRESHOLD = YOLO_DEFAULT_CONF
 
 
 # ── Letterbox 전처리 ────────────────────────────────────────
@@ -137,7 +144,13 @@ def _parse_yolov8_output(
     class_ids = np.argmax(class_scores, axis=1)
     max_scores = np.max(class_scores, axis=1)
 
-    mask = max_scores > conf_threshold
+    # 최소 임계값으로 1차 필터링 (per-class 임계값 중 가장 낮은 값)
+    # 이후 클래스별 임계값을 적용하여 2차 필터링
+    min_threshold = min(
+        _DEFAULT_CONF_THRESHOLD,
+        *CLASS_CONF_THRESHOLDS.values(),
+    ) if CLASS_CONF_THRESHOLDS else conf_threshold
+    mask = max_scores > min_threshold
     if not mask.any():
         return []
 
@@ -168,23 +181,35 @@ def _parse_yolov8_output(
     boxes[:, 2] = np.clip(boxes[:, 2], 0, orig_w)
     boxes[:, 3] = np.clip(boxes[:, 3], 0, orig_h)
 
-    # 클래스별 NMS
+    # 클래스별 NMS + per-class confidence 임계값 적용
     final_detections = []
     unique_classes = np.unique(class_ids)
 
     for cls_id in unique_classes:
+        if cls_id < len(VINDR_CLASSES):
+            class_name = VINDR_CLASSES[cls_id]
+        else:
+            class_name = f"unknown_{cls_id}"
+
+        # 클래스별 confidence 임계값 결정
+        cls_conf_threshold = CLASS_CONF_THRESHOLDS.get(
+            class_name, _DEFAULT_CONF_THRESHOLD
+        )
+
         cls_mask = class_ids == cls_id
         cls_boxes = boxes[cls_mask]
         cls_scores = max_scores[cls_mask]
 
+        # per-class 임계값으로 2차 필터링
+        score_mask = cls_scores > cls_conf_threshold
+        if not score_mask.any():
+            continue
+        cls_boxes = cls_boxes[score_mask]
+        cls_scores = cls_scores[score_mask]
+
         keep = _nms(cls_boxes, cls_scores, iou_threshold)
 
         for k in keep:
-            if cls_id < len(VINDR_CLASSES):
-                class_name = VINDR_CLASSES[cls_id]
-            else:
-                class_name = f"unknown_{cls_id}"
-
             final_detections.append({
                 "class_name": class_name,
                 "confidence": float(round(cls_scores[k], 4)),

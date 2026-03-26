@@ -1,7 +1,12 @@
 """경화 (Consolidation) — Silhouette sign + 폐엽 매핑"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
+from ..thresholds import (
+    get_threshold,
+    CONSOLIDATION_HIGH_CONF,
+    LUNG_RATIO_CONSOLIDATION_LOW,
+    LUNG_RATIO_CONSOLIDATION_HIGH,
+)
 
 
 def analyze(input: ClinicalLogicInput) -> dict:
@@ -48,6 +53,57 @@ def analyze(input: ClinicalLogicInput) -> dict:
             "recommendation": None,
             "alert": False,
         }
+
+    # ── DenseNet 단독 양성 게이트 (AUC 0.682 보완) ──────────────
+    # YOLO bbox 없이 DenseNet만 양성인 경우 추가 근거 최소 1개 요구
+    if not yolo_consol and detected:
+        supporting = []
+
+        # (a) 임상 정보: 발열 >38.0°C 또는 기침
+        if input.patient_info:
+            pi = input.patient_info
+            cc = (pi.chief_complaint or "").lower()
+            has_fever = pi.temperature is not None and pi.temperature > 38.0
+            has_cough = "기침" in cc or "cough" in cc
+            if has_fever:
+                supporting.append("발열 >38.0°C")
+            if has_cough:
+                supporting.append("기침 호소")
+
+        # (b) DenseNet 고확률 (>CONSOLIDATION_HIGH_CONF) — AUC 0.682이므로 엄격한 기준
+        if d.Consolidation > CONSOLIDATION_HIGH_CONF:
+            supporting.append(f"DenseNet 고확률 {d.Consolidation:.2f}")
+
+        # (c) 폐면적 비대칭 — 심비대/무기폐 비대칭(~1.3) 제외, 경화급 비대칭만
+        ratio = a.lung_area_ratio
+        if ratio < LUNG_RATIO_CONSOLIDATION_LOW or ratio > LUNG_RATIO_CONSOLIDATION_HIGH:
+            supporting.append(f"폐면적 비대칭 ratio={ratio:.3f}")
+
+        if not supporting:
+            # 근거 없음 → 양성 철회
+            detected = False
+            evidence.append(
+                f"DenseNet Consolidation {d.Consolidation:.2f} 양성이나 "
+                f"추가 근거 없음 (AUC 0.682)"
+            )
+            return {
+                "finding": "Consolidation",
+                "detected": False,
+                "confidence": "low",
+                "evidence": evidence,
+                "quantitative": {
+                    "densenet_prob": round(d.Consolidation, 4),
+                },
+                "location": None,
+                "severity": None,
+                "recommendation": None,
+                "alert": False,
+            }
+        else:
+            # 근거 있음 → 양성 유지하되 confidence 제한
+            evidence.append(
+                f"DenseNet 단독 양성 — 추가 근거: {', '.join(supporting)}"
+            )
 
     # YOLO bbox가 있으면 폐엽 매핑으로 위치 결정
     if lobe:
@@ -109,7 +165,20 @@ def analyze(input: ClinicalLogicInput) -> dict:
         else:
             severity = "mild"
     else:
-        severity = "moderate" if d.Consolidation > 0.7 else "mild"
+        severity = "moderate" if d.Consolidation > CONSOLIDATION_HIGH_CONF else "mild"
+
+    # 임상정보 교차 — 발열+기침 동반 시 감염성 가능성
+    recommendation = None
+    if input.patient_info:
+        pi = input.patient_info
+        cc = (pi.chief_complaint or "").lower()
+        has_fever = pi.temperature and pi.temperature > 38.0
+        has_cough = "기침" in cc or "cough" in cc or "가래" in cc
+        if has_fever and has_cough:
+            evidence.append("발열+기침 동반 → 감염성 경화(폐렴) 가능성 높음")
+            recommendation = "객담 배양 + 항생제 치료 고려"
+        elif has_fever:
+            evidence.append("발열 동반 → 감염 가능성")
 
     confidence = "high" if d.Consolidation > threshold and yolo_consol else "medium"
 
@@ -125,6 +194,6 @@ def analyze(input: ClinicalLogicInput) -> dict:
         },
         "location": location,
         "severity": severity,
-        "recommendation": None,
+        "recommendation": recommendation,
         "alert": alert,
     }

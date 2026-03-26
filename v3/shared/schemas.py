@@ -24,6 +24,9 @@ class Finding(BaseModel):
     confidence: float
     detail: str = ""
     secondary: bool = False           # True = 동반 소견 (독립 소견 아님)
+    severity: str | None = None       # mild / moderate / severe / critical
+    location: str | None = None       # bilateral / left / right / 폐엽명
+    recommendation: str | None = None # 권장 조치
 
 
 class PredictRequest(BaseModel):

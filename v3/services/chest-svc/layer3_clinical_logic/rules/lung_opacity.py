@@ -45,27 +45,59 @@ def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
             "alert": False,
         }
 
-    # 다른 질환 결과를 확인하여 원인 감별
+    # ── 다른 질환 결과를 확인하여 원인 감별 ──
+    # 2차 소견 분류: 원인 소견의 DenseNet 확률이 Lung_Opacity보다 높을 때만 적용.
+    # 이렇게 하면 원인이 불확실한(과검출 의심) 소견이 Opacity를 억제하지 않는다.
+    independent = True
     if other_results:
         consol = other_results.get("Consolidation", {})
         edema_r = other_results.get("Edema", {})
         atel = other_results.get("Atelectasis", {})
         lesion = other_results.get("Lung_Lesion", {})
 
-        if consol.get("detected"):
+        if consol.get("detected") and d.Consolidation > d.Lung_Opacity:
+            # Consolidation DenseNet 확률이 Lung_Opacity보다 높을 때만 귀속
             primary_cause = "Consolidation"
-            evidence.append("감별: Consolidation -> 경화에 의한 음영")
+            independent = False
+            evidence.append(
+                f"감별: Consolidation({d.Consolidation:.2f}) > "
+                f"Lung_Opacity({d.Lung_Opacity:.2f}) — 경화에 의한 음영 (2차)"
+            )
             location = consol.get("location", location)
-        elif edema_r.get("detected") and edema_r.get("quantitative", {}).get("bilateral_symmetric"):
-            primary_cause = "Pulmonary Edema"
-            evidence.append("감별: 양측 대칭 폐부종에 의한 음영")
-        elif atel.get("detected"):
+        elif consol.get("detected"):
+            primary_cause = "Nonspecific"
+            evidence.append(
+                f"Consolidation 검출되나 DenseNet 확률({d.Consolidation:.2f})"
+                f" ≤ Opacity({d.Lung_Opacity:.2f}) — 독립 음영 유지"
+            )
+        elif edema_r.get("detected"):
+            bilateral = edema_r.get("quantitative", {}).get("bilateral_symmetric")
+            edema_conf = edema_r.get("confidence", "low")
+            if bilateral and edema_conf in ("high", "medium"):
+                primary_cause = "Pulmonary Edema"
+                independent = False
+                evidence.append("감별: 고신뢰 Pulmonary Edema에 의한 음영 (2차)")
+            else:
+                primary_cause = "Nonspecific"
+                if edema_r.get("detected") and not bilateral:
+                    evidence.append("부종 있으나 비대칭 — 독립 음영 가능")
+                else:
+                    evidence.append("비특이적 음영, 추가 평가 필요")
+        elif atel.get("detected") and d.Atelectasis > d.Lung_Opacity:
             primary_cause = "Atelectasis"
-            evidence.append("감별: 무기폐에 의한 음영")
+            independent = False
+            evidence.append(
+                f"감별: Atelectasis({d.Atelectasis:.2f}) > "
+                f"Lung_Opacity({d.Lung_Opacity:.2f}) — 무기폐에 의한 음영 (2차)"
+            )
             location = atel.get("location", location)
+        elif atel.get("detected"):
+            primary_cause = "Nonspecific"
+            evidence.append("비특이적 음영, 추가 평가 필요")
         elif lesion.get("detected"):
             primary_cause = "Lung Lesion/Mass"
-            evidence.append("감별: 폐 병변/종괴에 의한 음영")
+            independent = False
+            evidence.append("감별: 고신뢰 Lung Lesion/Mass에 의한 음영 (2차)")
             location = lesion.get("location", location)
         else:
             primary_cause = "Nonspecific"
@@ -75,19 +107,12 @@ def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
         evidence.append("다른 Rule 결과 없음 — 비특이적 음영")
 
     severity = "moderate" if d.Lung_Opacity > 0.7 else "mild"
-    confidence = "high" if primary_cause != "Nonspecific" else "low"
 
-    # ── 원인 귀속 시 독립 소견 억제 ──
-    # primary_cause가 Nonspecific이 아니면
-    # 해당 Opacity는 다른 질환의 동반 증상이므로 독립 소견이 아님.
-    # confidence를 낮추고 independent=False로 표시하여 중복 보고를 방지한다.
-    independent = True
-    if primary_cause and primary_cause != "Nonspecific":
-        independent = False
+    # ── confidence 할당 ──
+    if independent:
+        confidence = "medium" if d.Lung_Opacity > 0.60 else "low"
+    else:
         confidence = "low"
-        evidence.append(
-            f"원인 귀속: {primary_cause} → 독립 소견이 아닌 동반 증상"
-        )
 
     return {
         "finding": "Lung_Opacity",

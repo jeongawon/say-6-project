@@ -24,6 +24,8 @@ from fastapi.staticfiles import StaticFiles
 # PredictResponse: 오케스트레이터에 반환하는 응답 형식
 # Finding: 개별 질환 탐지 결과 스키마
 sys.path.insert(0, "/app/shared")
+# 로컬 개발 환경 — shared 폴더 경로 추가
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "shared"))
 from schemas import PredictRequest, PredictResponse, Finding
 
 # ── 내부 모듈 임포트 ──────────────────────────────────────────
@@ -174,6 +176,9 @@ async def predict(req: PredictRequest):
         "history": req.patient_info.history,
     }
 
+    # ── skip_stages 추출 (context에서) ─────────────────────────
+    skip_stages = req.context.get("skip_stages", [])
+
     # ── 6-stage 파이프라인 실행 ───────────────────────────────
     # pipeline.py의 run_pipeline()이 전체 분석 수행
     try:
@@ -183,10 +188,26 @@ async def predict(req: PredictRequest):
             patient_info=patient_info,
             context=req.context,
             report_generator=state["report_generator"],
+            skip_stages=skip_stages,
         )
     except Exception as e:
         logger.error(f"Pipeline error for patient {req.patient_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
+
+    # ── Lateral View 조기 반환 처리 ──────────────────────────
+    if result.get("metadata", {}).get("lateral_rejected"):
+        logger.warning(f"Lateral view rejected for patient {req.patient_id}")
+        return PredictResponse(
+            status="unsupported_view",
+            modal="chest",
+            findings=[],
+            summary=result["summary"],
+            report="",
+            risk_level="routine",
+            pertinent_negatives=[],
+            suggested_next_actions=[],
+            metadata=result.get("metadata", {}),
+        )
 
     # ── 응답 변환 (내부 dict -> PredictResponse 스키마) ────────
     findings = [
@@ -196,6 +217,9 @@ async def predict(req: PredictRequest):
             confidence=f["confidence"],
             detail=f.get("detail", ""),
             secondary=f.get("secondary", False),
+            severity=f.get("severity"),
+            location=f.get("location"),
+            recommendation=f.get("recommendation"),
         )
         for f in result["findings"]
     ]
@@ -214,4 +238,4 @@ async def predict(req: PredictRequest):
 
 
 # ── 정적 파일 서빙 (반드시 라우트 정의 후 마지막에) ──────────
-app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
+app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static"), follow_symlink=True), name="static")

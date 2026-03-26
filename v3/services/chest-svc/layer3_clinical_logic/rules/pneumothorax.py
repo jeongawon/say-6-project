@@ -1,10 +1,10 @@
 """기흉 (Pneumothorax) — 폐 경계~흉벽 거리 + Tension 판정"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
+from ..thresholds import get_threshold, PTX_LARGE, PTX_MODERATE
 
 
-def analyze(input: ClinicalLogicInput) -> dict:
+def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
     # ── confidence 판정 기준 (14개 Rule 공통) ──────────────────
     # "high"   — 2개 이상 독립 소스 일치 (CTR+DenseNet+YOLO 등)
     # "medium" — 1개 소스 양성 + 합리적 근거
@@ -34,6 +34,34 @@ def analyze(input: ClinicalLogicInput) -> dict:
         for det in yolo_ptx:
             evidence.append(f"YOLO Pneumothorax bbox conf {det.confidence:.2f}")
 
+    # 세그멘테이션 정량 지표 기반 보조 검출
+    # 폐면적 급감(ratio < 0.60 or > 1.67) + 종격동 편위 = PTX 의심
+    # 단, 심비대나 무기폐가 이미 양성이면 비대칭의 다른 원인이 있으므로 스킵
+    if not detected:
+        # 교차 배제: 심비대/무기폐에 의한 폐면적 비대칭은 기흉 근거에서 제외
+        has_other_cause = False
+        if other_results:
+            cardio_detected = other_results.get("Cardiomegaly", {}).get("detected", False)
+            atel_detected = other_results.get("Atelectasis", {}).get("detected", False)
+            if cardio_detected or atel_detected:
+                has_other_cause = True
+                cause = []
+                if cardio_detected: cause.append("심비대")
+                if atel_detected: cause.append("무기폐")
+                evidence.append(f"폐면적 비대칭 있으나 {'+'.join(cause)} 동반 → 기흉 근거에서 제외")
+
+        if not has_other_cause:
+            ratio = a.lung_area_ratio
+            severe_asymmetry = (ratio < 0.60 or ratio > 1.67)
+            trachea_shifted = (a.trachea_midline is not None and not a.trachea_midline)
+
+            if severe_asymmetry and trachea_shifted:
+                detected = True
+                evidence.append(f"폐면적 비대칭 (좌/우 {ratio:.3f}) + 기관 편위 → 기흉 의심 (세그 기반)")
+            elif severe_asymmetry and d.Pneumothorax > 0.20:
+                detected = True
+                evidence.append(f"폐면적 비대칭 (좌/우 {ratio:.3f}) + DenseNet {d.Pneumothorax:.2f} → 기흉 의심")
+
     if not detected:
         evidence.append("기흉 소견 없음")
         return {
@@ -60,10 +88,10 @@ def analyze(input: ClinicalLogicInput) -> dict:
         location = "indeterminate"
 
     # 크기 판정
-    if d.Pneumothorax > 0.80:
+    if d.Pneumothorax > PTX_LARGE:
         size = "large"
         severity = "severe"
-    elif d.Pneumothorax > 0.60:
+    elif d.Pneumothorax > PTX_MODERATE:
         size = "moderate"
         severity = "moderate"
     else:

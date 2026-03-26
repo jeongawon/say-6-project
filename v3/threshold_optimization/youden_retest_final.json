@@ -1,0 +1,800 @@
+{
+  "disease_counts": {
+    "Cardiomegaly": 38,
+    "Pleural Effusion": 25,
+    "Atelectasis": 31,
+    "Fracture": 11,
+    "Edema": 31,
+    "Pleural Other": 10,
+    "Pneumonia": 21,
+    "No Finding": 4,
+    "Support Devices": 41,
+    "Consolidation": 28,
+    "Pneumothorax": 8,
+    "Lung Lesion": 19,
+    "Enlarged Cardiomediastinum": 5,
+    "Lung Opacity": 1
+  },
+  "total": 74,
+  "lateral": 11,
+  "per_case": [
+    {
+      "image": "096052b7.jpg",
+      "n_primary": 7,
+      "n_secondary": 2,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Fracture",
+        "Edema",
+        "Pleural_Other",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "2a2277a9.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "No_Finding"
+      ]
+    },
+    {
+      "image": "68b5c4b1.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "Support_Devices"
+      ]
+    },
+    {
+      "image": "01275cbe-a2f95d71-0374e495-68b16452-ebdcb789.jpg",
+      "n_primary": 5,
+      "n_secondary": 2,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Support_Devices",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "014049a7-1fc7cc5b-d9fba786-7ecc26a0-060c147a.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "0721e3ed-97ad959e-bf1211b0-e924ea48-678458c1.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly"
+      ]
+    },
+    {
+      "image": "07538782-4768fa87-dd4f2100-6935d000-7b6c3b8f.jpg",
+      "n_primary": 4,
+      "n_secondary": 0,
+      "primary": [
+        "Atelectasis",
+        "Fracture",
+        "Support_Devices",
+        "Pneumothorax"
+      ]
+    },
+    {
+      "image": "0c759487-e5ff61e5-a92e73d3-08506c5b-8ff2b085.jpg",
+      "n_primary": 9,
+      "n_secondary": 2,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Fracture",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Consolidation",
+        "Edema",
+        "Pleural_Other"
+      ]
+    },
+    {
+      "image": "0e95cc69-b47dfaf0-96b54022-1878fa11-5f058ecd.jpg",
+      "n_primary": 7,
+      "n_secondary": 1,
+      "primary": [
+        "Pleural_Effusion",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Consolidation",
+        "Edema",
+        "Pleural_Other",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "0f1acbee-a9046131-a4ed2bb1-e72d4c8c-b06fb50e.jpg",
+      "n_primary": 2,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "17e20942-b55bbe1b-c798d9e6-d16cc82b-e2a6b1b0.jpg",
+      "n_primary": 6,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Edema",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "18b3b77c-82a2c934-c987f058-1642af81-cb7f5374.jpg",
+      "n_primary": 10,
+      "n_secondary": 2,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Fracture",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Pneumothorax",
+        "Consolidation",
+        "Edema",
+        "Pleural_Other"
+      ]
+    },
+    {
+      "image": "18fffbd9-a6ba704e-8c82171e-c3c0b0e1-34f9d053.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "23098650-9d2a2dcd-1074de1d-d9d95c8a-75521204.jpg",
+      "n_primary": 3,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Atelectasis",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "24e4f359-8ef7a104-d0d5e929-6776ce60-b7e6c2da.jpg",
+      "n_primary": 2,
+      "n_secondary": 0,
+      "primary": [
+        "Support_Devices",
+        "Pneumothorax"
+      ]
+    },
+    {
+      "image": "2a12f753-8ecd46fa-c7ca8e64-7196ed00-8d0ea894.jpg",
+      "n_primary": 3,
+      "n_secondary": 0,
+      "primary": [
+        "Support_Devices",
+        "Edema",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "2f29f743-c4c4bbc8-9ca6d4a9-d5ff7972-0d4bbcc6.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "Fracture"
+      ]
+    },
+    {
+      "image": "3332cf8c-edba75ae-55b3f8c6-3c649171-e82d4154.jpg",
+      "n_primary": 6,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "34bf54ba-73cc6263-d2eba44f-ededac28-bde43bc1.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "No_Finding"
+      ]
+    },
+    {
+      "image": "3685363a-599b1efd-71dc6691-7ee0c304-eed6419b.jpg",
+      "n_primary": 6,
+      "n_secondary": 1,
+      "primary": [
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Consolidation",
+        "Edema",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "380fda55-d2283afd-511dcad7-803d3b6a-ed8c6b64.jpg",
+      "n_primary": 9,
+      "n_secondary": 1,
+      "primary": [
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Pneumothorax",
+        "Enlarged_Cardiomediastinum",
+        "Consolidation",
+        "Pleural_Other",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "3d798667-d7079b61-7249960d-06f5da6e-1f51a268.jpg",
+      "n_primary": 8,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Pneumothorax",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "3fcea49d-024622c5-401a6d21-bca6e95f-58608da7.jpg",
+      "n_primary": 7,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "4591f316-2489e2ed-7e91fcac-93b3e3f3-933fa947.jpg",
+      "n_primary": 6,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Edema",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "47f67214-fd100a4e-25cad8ec-9cabbc9e-8ad27a95.jpg",
+      "n_primary": 4,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Support_Devices",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "4aae66f7-d0127598-afc8231c-bea3cadc-2f85469b.jpg",
+      "n_primary": 4,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Atelectasis",
+        "Lung_Lesion",
+        "Consolidation"
+      ]
+    },
+    {
+      "image": "4f2d3004-4b58562a-f904aa59-480e84a1-fd3c5133.jpg",
+      "n_primary": 8,
+      "n_secondary": 1,
+      "primary": [
+        "Pleural_Effusion",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Enlarged_Cardiomediastinum",
+        "Consolidation",
+        "Edema",
+        "Pleural_Other",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "4f2f3a1a-effcfb47-c32d3dc5-8df764fa-5cb5773b.jpg",
+      "n_primary": 10,
+      "n_secondary": 2,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Fracture",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Pneumothorax",
+        "Consolidation",
+        "Edema",
+        "Pleural_Other"
+      ]
+    },
+    {
+      "image": "54201716-229e2658-1685e23d-65df6d4c-e5ecd2bc.jpg",
+      "n_primary": 5,
+      "n_secondary": 1,
+      "primary": [
+        "Atelectasis",
+        "Support_Devices",
+        "Consolidation",
+        "Edema",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "5b6889de-1d3cbfd4-a54eb36d-2056dbb5-bcfd6b51.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "5cec810f-f22d7ccf-352a8949-fcb1963a-f2ea0598.jpg",
+      "n_primary": 8,
+      "n_secondary": 2,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Consolidation",
+        "Edema",
+        "Pleural_Other"
+      ]
+    },
+    {
+      "image": "6eccd432-4e097045-4c0ef38e-e73f49f6-8799da2c.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "7d9ce65c-67986f11-9fee45dd-6afbbedf-a66ee372.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "86f79923-f7cb3b44-666c7d7d-047dcd37-fff2fb04.jpg",
+      "n_primary": 5,
+      "n_secondary": 1,
+      "primary": [
+        "Support_Devices",
+        "Lung_Lesion",
+        "Enlarged_Cardiomediastinum",
+        "Consolidation",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "87c1098e-9c3bb6e3-a61f96b2-ee3edd92-93ac1cdf.jpg",
+      "n_primary": 5,
+      "n_secondary": 0,
+      "primary": [
+        "Atelectasis",
+        "Fracture",
+        "Support_Devices",
+        "Pneumothorax",
+        "Enlarged_Cardiomediastinum"
+      ]
+    },
+    {
+      "image": "8ac339b6-ee33ab44-a3fee9f0-c009fb5d-9bc6023c.jpg",
+      "n_primary": 2,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Edema"
+      ]
+    },
+    {
+      "image": "8b1d0dd1-0b89368f-7c335f32-6fd8499d-5aeab3ea.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "90ab0fe4-45b62318-c06a83cc-b86e19c3-1d2fb057.jpg",
+      "n_primary": 7,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "9a1d1aad-081d4460-77bc5fac-8b28e0be-912c4998.jpg",
+      "n_primary": 4,
+      "n_secondary": 1,
+      "primary": [
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Consolidation",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "9b0b1654-d61cf032-47f34c65-756b4cc9-fa46ae29.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly"
+      ]
+    },
+    {
+      "image": "9b1a8a51-2b8e4a04-1719059d-aa6bc888-7ace612b.jpg",
+      "n_primary": 6,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "9b379118-83aa2c46-8c881f58-2b85c0d8-3213e16c.jpg",
+      "n_primary": 7,
+      "n_secondary": 2,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Fracture",
+        "Support_Devices",
+        "Pleural_Other",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "9b89f79f-9be40ca7-112ce4fd-768c6454-8041aaae.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "9e9f4b1a-1ff28f4f-b886cef1-02ad1caf-58dc62d9.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "9ff48609-785ad7ee-fbcaf94c-3df58890-cb4d48e7.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly"
+      ]
+    },
+    {
+      "image": "a1877853-72688a50-746fb0bf-3018617e-1fee158f.jpg",
+      "n_primary": 5,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Atelectasis",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Consolidation"
+      ]
+    },
+    {
+      "image": "a35790a5-35706ebc-6a848c2d-f13b279e-708cdef7.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "No_Finding"
+      ]
+    },
+    {
+      "image": "a9250859-9d4e15c5-ded03be8-2ed007b9-b5f98bed.jpg",
+      "n_primary": 3,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Atelectasis",
+        "Fracture"
+      ]
+    },
+    {
+      "image": "ac4deb55-ad246e57-296a8913-199ddddd-d2bd36e5.jpg",
+      "n_primary": 2,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "acb45927-e0c19317-cd3e2be3-1cfeb201-d0bd3ea4.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "Support_Devices"
+      ]
+    },
+    {
+      "image": "af6eb9fe-b9376cf4-60df0855-9a91927d-561d0f06.jpg",
+      "n_primary": 5,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Atelectasis",
+        "Support_Devices",
+        "Edema",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "b04cec19-c348f0ca-b80088b3-68c2d95c-fc3c60a6.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly"
+      ]
+    },
+    {
+      "image": "b1ad7312-8331afb8-5fc05c84-72c93ea0-5a579be8.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "b2093612-0ee94341-26838e2f-d6912ecd-14c5aa64.jpg",
+      "n_primary": 4,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Support_Devices",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "b3bbc97d-790b738b-9210ac5d-366320fe-c5deaf0e.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "b48f4647-76137743-eef39d2c-bd4532f0-ec4b8964.jpg",
+      "n_primary": 5,
+      "n_secondary": 1,
+      "primary": [
+        "Support_Devices",
+        "Lung_Lesion",
+        "Consolidation",
+        "Edema",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "b58fc178-4ab7aba9-e502d79b-a7f2f69c-ccbf0bde.jpg",
+      "n_primary": 3,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Support_Devices",
+        "Edema"
+      ]
+    },
+    {
+      "image": "b6f1e5de-a6a76833-bb8963d0-90e0fc36-29645cf1.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "b914f3ca-a71b6ec3-521f4afb-4a923094-31eda098.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "bcb5e90b-c7d3f928-7bd202ee-4e772a8f-e2240e90.jpg",
+      "n_primary": 6,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "c52a3ba5-b4e3cee3-f2644da6-6b43246f-654f21a0.jpg",
+      "n_primary": 7,
+      "n_secondary": 2,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "c584b5c4-b5b1dad6-a6f30167-c0411948-46379f73.jpg",
+      "n_primary": 3,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Support_Devices",
+        "Edema"
+      ]
+    },
+    {
+      "image": "cb1c7c96-6d932e23-d291b3b1-d3178893-95e73c0b.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "cc984e8b-e916ce5c-6f2e6d32-b9a40eb1-ef4e07cb.jpg",
+      "n_primary": 6,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Edema",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "cf6471f1-db592bdb-83fc003a-4ec4bfaf-617b3015.jpg",
+      "n_primary": 7,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Consolidation",
+        "Edema"
+      ]
+    },
+    {
+      "image": "d3033027-b60beadd-dec6d225-27717511-c75d4c04.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "Cardiomegaly"
+      ]
+    },
+    {
+      "image": "d5ab23e9-31a17975-996185a8-e36bf225-1e8eeb24.jpg",
+      "n_primary": 0,
+      "n_secondary": 0,
+      "primary": []
+    },
+    {
+      "image": "d80a4e2b-fd801f39-edbf2040-3b8dc43e-1cdca434.jpg",
+      "n_primary": 5,
+      "n_secondary": 0,
+      "primary": [
+        "Support_Devices",
+        "Lung_Lesion",
+        "Enlarged_Cardiomediastinum",
+        "Consolidation",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "da6190a9-b304e4b9-4a4cab1e-9ad9b290-fec42be9.jpg",
+      "n_primary": 1,
+      "n_secondary": 0,
+      "primary": [
+        "No_Finding"
+      ]
+    },
+    {
+      "image": "e68dca32-5544edfe-d28f740f-9686d21a-e1844494.jpg",
+      "n_primary": 2,
+      "n_secondary": 0,
+      "primary": [
+        "Fracture",
+        "Support_Devices"
+      ]
+    },
+    {
+      "image": "ec5b73fd-646f1749-74747f76-ea5b5dc9-1fcc393a.jpg",
+      "n_primary": 7,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Fracture",
+        "Lung_Lesion",
+        "Consolidation",
+        "Pleural_Other"
+      ]
+    },
+    {
+      "image": "ed8dfd0e-86741458-99af0d74-c19e3a9f-dff40026.jpg",
+      "n_primary": 5,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Atelectasis",
+        "Support_Devices",
+        "Lung_Lesion",
+        "Pneumothorax"
+      ]
+    },
+    {
+      "image": "eec95604-a331cb3e-a2b4951b-7166b34d-854379db.jpg",
+      "n_primary": 4,
+      "n_secondary": 0,
+      "primary": [
+        "Support_Devices",
+        "Edema",
+        "Lung_Opacity",
+        "Pneumonia"
+      ]
+    },
+    {
+      "image": "f29cb136-14141b8b-eaeee338-00b93ca8-c7b61578.jpg",
+      "n_primary": 6,
+      "n_secondary": 1,
+      "primary": [
+        "Cardiomegaly",
+        "Pleural_Effusion",
+        "Atelectasis",
+        "Support_Devices",
+        "Consolidation",
+        "Edema"
+      ]
+    }
+  ]
+}

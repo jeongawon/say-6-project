@@ -48,6 +48,13 @@ def cross_validate(
     else:
         confidence = "none"
 
+    # 임상적으로 중요한 질환에서 2/3 양성이면 override 제안
+    CRITICAL_FINDINGS = {"Pneumothorax", "Cardiomegaly", "Pleural_Effusion"}
+    if finding in CRITICAL_FINDINGS and agreement_count == 2 and not logic_detected:
+        flag = f"⚠️ 2/3 양성 (clinical_logic만 음성) — Rule 재검토 권장"
+    elif finding in CRITICAL_FINDINGS and agreement_count == 2 and logic_detected:
+        flag = None  # 2/3 including logic = OK
+
     return {
         "finding": finding,
         "sources": sources,

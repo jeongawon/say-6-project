@@ -1,0 +1,95 @@
+[
+  {
+    "case_id": "096052b7",
+    "label": "심부전(CHF)",
+    "image_size": "3056x2544",
+    "yolo_count": 1,
+    "yolo_classes": [
+      "Cardiomegaly"
+    ],
+    "yolo_confs": [
+      0.42
+    ],
+    "densenet_count": 9,
+    "densenet_top3": [
+      "?(0.40)",
+      "?(0.70)",
+      "?(0.70)"
+    ],
+    "ctr": 0.5204,
+    "ctr_status": "cardiomegaly",
+    "time_s": 0.8,
+    "mask_present": true
+  },
+  {
+    "case_id": "174413ec",
+    "label": "폐렴(Pneumonia)",
+    "image_size": "2544x3056",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "yolo_confs": [],
+    "densenet_count": 2,
+    "densenet_top3": [
+      "?(0.70)",
+      "?(0.70)"
+    ],
+    "ctr": 0.798,
+    "ctr_status": "cardiomegaly",
+    "time_s": 0.6,
+    "mask_present": true
+  },
+  {
+    "case_id": "2a2277a9",
+    "label": "긴장성기흉(Tension PTX)",
+    "image_size": "2544x3056",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "yolo_confs": [],
+    "densenet_count": 1,
+    "densenet_top3": [
+      "?(0.90)"
+    ],
+    "ctr": 0.415,
+    "ctr_status": "normal",
+    "time_s": 0.6,
+    "mask_present": true
+  },
+  {
+    "case_id": "68b5c4b1",
+    "label": "정상(Normal)",
+    "image_size": "2539x2705",
+    "yolo_count": 1,
+    "yolo_classes": [
+      "Other_lesion"
+    ],
+    "yolo_confs": [
+      0.34
+    ],
+    "densenet_count": 3,
+    "densenet_top3": [
+      "?(0.70)",
+      "?(0.70)",
+      "?(0.70)"
+    ],
+    "ctr": 0.4194,
+    "ctr_status": "normal",
+    "time_s": 0.6,
+    "mask_present": true
+  },
+  {
+    "case_id": "e084de3b",
+    "label": "다중소견(Multi)",
+    "image_size": "2544x3056",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "yolo_confs": [],
+    "densenet_count": 1,
+    "densenet_top3": [
+      "?(0.70)"
+    ],
+    "ctr": 0.7171,
+    "ctr_status": "cardiomegaly",
+    "time_s": 0.7,
+    "mask_present": true
+  }
+]

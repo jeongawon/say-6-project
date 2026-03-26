@@ -1,0 +1,179 @@
+[
+  {
+    "id": "096052b7",
+    "label": "심부전(CHF)",
+    "size": "3056x2544",
+    "ctr": 0.5204,
+    "ctr_status": "cardiomegaly",
+    "yolo_count": 1,
+    "yolo_classes": [
+      "Cardiomegaly(42%)"
+    ],
+    "time_s": 0.7,
+    "mask": true,
+    "hw": 1098,
+    "tw": 2111
+  },
+  {
+    "id": "2a2277a9",
+    "label": "긴장성기흉(PTX)",
+    "size": "2544x3056",
+    "ctr": 0.415,
+    "ctr_status": "normal",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 835,
+    "tw": 2011
+  },
+  {
+    "id": "68b5c4b1",
+    "label": "정상(Normal)",
+    "size": "2539x2705",
+    "ctr": 0.4194,
+    "ctr_status": "normal",
+    "yolo_count": 1,
+    "yolo_classes": [
+      "Other_lesion(34%)"
+    ],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 825,
+    "tw": 1968
+  },
+  {
+    "id": "s3_001",
+    "label": "S3샘플-001",
+    "size": "3056x2544",
+    "ctr": 0.5231,
+    "ctr_status": "cardiomegaly",
+    "yolo_count": 1,
+    "yolo_classes": [
+      "Cardiomegaly(46%)"
+    ],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 1079,
+    "tw": 2063
+  },
+  {
+    "id": "s3_002",
+    "label": "S3샘플-002",
+    "size": "2539x3035",
+    "ctr": 0.391,
+    "ctr_status": "normal",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 825,
+    "tw": 2111
+  },
+  {
+    "id": "s3_003",
+    "label": "S3샘플-003",
+    "size": "2544x3056",
+    "ctr": 0.3143,
+    "ctr_status": "normal",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 787,
+    "tw": 2504
+  },
+  {
+    "id": "s3_004",
+    "label": "S3샘플-004",
+    "size": "2544x3056",
+    "ctr": 0.5092,
+    "ctr_status": "cardiomegaly",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 1097,
+    "tw": 2154
+  },
+  {
+    "id": "s3_005",
+    "label": "S3샘플-005",
+    "size": "3050x2539",
+    "ctr": 0.4934,
+    "ctr_status": "normal",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 1068,
+    "tw": 2164
+  },
+  {
+    "id": "s3_006",
+    "label": "S3샘플-006",
+    "size": "2544x3056",
+    "ctr": 1.0038,
+    "ctr_status": "cardiomegaly",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 2099,
+    "tw": 2091
+  },
+  {
+    "id": "s3_007",
+    "label": "S3샘플-007",
+    "size": "2539x3050",
+    "ctr": 0.6168,
+    "ctr_status": "cardiomegaly",
+    "yolo_count": 1,
+    "yolo_classes": [
+      "Cardiomegaly(40%)"
+    ],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 1047,
+    "tw": 1698
+  },
+  {
+    "id": "s3_008",
+    "label": "S3샘플-008",
+    "size": "2544x3056",
+    "ctr": 0.3973,
+    "ctr_status": "normal",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 692,
+    "tw": 1741
+  },
+  {
+    "id": "s3_009",
+    "label": "S3샘플-009",
+    "size": "2520x3056",
+    "ctr": 0.5138,
+    "ctr_status": "cardiomegaly",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 1024,
+    "tw": 1992
+  },
+  {
+    "id": "s3_010",
+    "label": "S3샘플-010",
+    "size": "2544x3056",
+    "ctr": 0.9812,
+    "ctr_status": "cardiomegaly",
+    "yolo_count": 0,
+    "yolo_classes": [],
+    "time_s": 0.6,
+    "mask": true,
+    "hw": 2488,
+    "tw": 2536
+  }
+]
