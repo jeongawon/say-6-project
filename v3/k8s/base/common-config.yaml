@@ -14,7 +14,7 @@ data:
 
   # ── 공유 서비스 URL ──
   RAG_URL: "http://rag-svc:8000"
-  REPORT_URL: "http://report-svc:8000"
+  REPORT_URL: "http://report-svc:8000/generate"
 
   # ── 데이터 저장소 ──
   DATABASE_URL: "postgresql://postgres:postgres@postgres-svc:5432/drai"

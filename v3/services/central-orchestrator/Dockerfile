@@ -2,7 +2,7 @@
 # 중앙 오케스트레이터 서비스 (API Gateway + 서비스 조율)
 # 클라이언트 요청을 받아 chest/ecg/blood 서비스에 분배하고 결과를 종합
 # asyncpg로 PostgreSQL 비동기 접속
-# 빌드: docker build -t central-orchestrator .
+# 빌드: docker build -f services/central-orchestrator/Dockerfile -t central-orchestrator .
 # ──────────────────────────────────────────────────────────────
 
 # 베이스 이미지 — Python 3.11 경량 이미지
@@ -19,16 +19,16 @@ WORKDIR /app
 # ── Docker 캐시 최적화 전략 ──────────────────────────────────
 # requirements.txt를 먼저 복사하여 의존성 레이어를 캐시
 # 소스코드만 변경 시 pip install 단계를 재실행하지 않아 빌드 속도 향상
-COPY requirements.txt .
+COPY services/central-orchestrator/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 공유 스키마 복사 — 서비스 간 공통 데이터 모델 (Pydantic 스키마 등)
-COPY ../shared /app/shared
+COPY shared/ /app/shared/
 # PYTHONPATH 설정 — shared 모듈을 import 할 수 있도록 경로 추가
 ENV PYTHONPATH="/app:/app/shared"
 
 # 서비스 소스코드 복사
-COPY . .
+COPY services/central-orchestrator/ /app/
 
 # 서비스 포트 — 오케스트레이터의 메인 진입점 (호스트 8000번으로 매핑)
 EXPOSE 8000

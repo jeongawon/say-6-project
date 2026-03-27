@@ -37,21 +37,26 @@ spec:
           # ── 환경변수 주입 (2개의 ConfigMap) ──────────────
           # common-config: Bedrock, DB, Redis 등 공통 설정
           # dr-ai-config: 환경별(local/eks) 오버라이드 설정
+          env:
+            - name: MODEL_DIR
+              value: "/models/rag"
           envFrom:
             - configMapRef:
                 name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
             - configMapRef:
                 name: dr-ai-config         # 환경별 오버라이드 (local/eks)
+            - secretRef:
+                name: aws-credentials
           # ── 리소스 설정 ──────────────────────────────────
           # 임베딩 모델 로딩 + 벡터 검색에 메모리 필요
           # requests 250m/512Mi, limits 500m/1Gi
           resources:
             requests:
               cpu: 250m
-              memory: 512Mi
-            limits:
-              cpu: 500m
               memory: 1Gi
+            limits:
+              cpu: "1"
+              memory: 2Gi
           # ── 모델 볼륨 마운트 ─────────────────────────────
           # /models에 임베딩 모델 파일이 마운트됨 (읽기 전용)
           volumeMounts:

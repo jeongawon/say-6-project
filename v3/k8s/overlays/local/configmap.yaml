@@ -18,6 +18,6 @@ data:
   # ── 모달 서비스 URL ──────────────────────────────────────
   # 각 마이크로서비스의 ClusterIP 서비스명:포트
   # 서비스명이나 포트 변경 시 여기도 함께 수정
-  CHEST_URL: "http://chest-svc:8000"
-  ECG_URL: "http://ecg-svc:8000"
-  BLOOD_URL: "http://blood-svc:8000"
+  CHEST_URL: "http://chest-svc:8000/predict"
+  ECG_URL: "http://ecg-svc:8000/predict"
+  BLOOD_URL: "http://blood-svc:8000/predict"

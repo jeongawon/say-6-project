@@ -16,6 +16,36 @@ resources:
   - postgres.yaml       # 로컬 PostgreSQL StatefulSet + Service
   - redis.yaml          # 로컬 Redis Deployment + Service
   - pv-models.yaml      # 로컬 모델 PV + PVC (hostPath)
+  - aws-secret.yaml     # AWS Bedrock 인증 Secret (로컬 전용)
+
+# ── imagePullPolicy: Never — 로컬 빌드 이미지에만 적용 ──────
+# Docker Desktop에서 로컬 빌드한 이미지를 레지스트리 없이 사용
+# redis, postgres는 외부 이미지이므로 제외 (labelSelector로 필터링)
+patches:
+  - target:
+      kind: Deployment
+      namespace: dr-ai
+      labelSelector: app.kubernetes.io/component=modal-service
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
+  - target:
+      kind: Deployment
+      namespace: dr-ai
+      labelSelector: app.kubernetes.io/component=orchestrator
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
+  - target:
+      kind: Deployment
+      namespace: dr-ai
+      labelSelector: app.kubernetes.io/component=shared-service
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
 
 # ── 이미지 오버라이드 ────────────────────────────────────────
 # base의 image 필드를 로컬 이미지명:태그로 교체

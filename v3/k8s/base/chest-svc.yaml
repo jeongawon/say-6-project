@@ -42,6 +42,8 @@ spec:
                 name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
             - configMapRef:
                 name: dr-ai-config         # 환경별 오버라이드 (local/eks)
+            - secretRef:
+                name: aws-credentials
           # ── 리소스 설정 ──────────────────────────────────
           # ONNX 모델 3개(classification, detection, segmentation) 로딩에
           # 최소 2Gi 메모리 필요 — 부족하면 OOMKilled 발생
