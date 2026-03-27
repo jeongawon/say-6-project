@@ -1,7 +1,7 @@
 # ── ecg-svc Docker 이미지 ────────────────────────────────────
 # 심전도(ECG) 분석 서비스
 # 12-lead ECG 데이터를 분석하여 부정맥 등 이상 소견 탐지
-# 빌드: docker build -t ecg-svc .
+# 빌드: docker build -f services/ecg-svc/Dockerfile -t ecg-svc .
 # ──────────────────────────────────────────────────────────────
 
 # 베이스 이미지 — Python 3.11 경량 이미지
@@ -12,14 +12,14 @@ WORKDIR /app
 # ── Docker 캐시 최적화 전략 ──────────────────────────────────
 # requirements.txt를 먼저 복사하여 의존성 레이어를 캐시
 # 소스코드만 변경 시 pip install 단계를 재실행하지 않아 빌드 속도 향상
-COPY requirements.txt .
+COPY services/ecg-svc/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 공유 스키마 복사 — 서비스 간 공통 데이터 모델
-COPY ../shared /app/shared
+COPY shared/ /app/shared/
 
 # 서비스 소스코드 복사
-COPY . .
+COPY services/ecg-svc/ /app/
 
 # 서비스 포트 — 모든 마이크로서비스가 내부적으로 8000번 포트 사용
 EXPOSE 8000

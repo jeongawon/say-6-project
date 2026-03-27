@@ -11,12 +11,15 @@ K8s 12-Factor:
 """
 
 import logging
+import os
 import sys
 from contextlib import asynccontextmanager
 from typing import Any, Optional
 
 import redis.asyncio as aioredis
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from config import settings          # 환경 변수 설정 (pydantic-settings)
@@ -105,6 +108,21 @@ app = FastAPI(
     version="3.0.0",
     lifespan=lifespan,
 )
+
+
+# ── 테스트 UI (시스템 통합 테스트 페이지) ────────────────────────────
+@app.get("/", response_class=HTMLResponse)
+def test_ui():
+    """GET / → System Integration Test 페이지"""
+    html_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
+    with open(html_path) as f:
+        return f.read()
+
+
+# ── 테스트 데이터 static 서빙 ──────────────────────────────────────
+_testdata_dir = os.path.join(os.path.dirname(__file__), "static", "testdata")
+if os.path.isdir(_testdata_dir):
+    app.mount("/testdata", StaticFiles(directory=_testdata_dir), name="testdata")
 
 
 # ── 요청/응답 모델 ───────────────────────────────────────────────────

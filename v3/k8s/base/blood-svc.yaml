@@ -42,6 +42,8 @@ spec:
                 name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
             - configMapRef:
                 name: dr-ai-config         # 환경별 오버라이드 (local/eks)
+            - secretRef:
+                name: aws-credentials
           # ── 리소스 설정 ──────────────────────────────────
           # 규칙 기반 서비스이므로 최소 리소스로 운영 가능
           # requests 125m/256Mi, limits 250m/512Mi

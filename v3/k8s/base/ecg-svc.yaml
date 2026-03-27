@@ -41,6 +41,8 @@ spec:
                 name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
             - configMapRef:
                 name: dr-ai-config         # 환경별 오버라이드 (local/eks)
+            - secretRef:
+                name: aws-credentials
           # ── 리소스 설정 ──────────────────────────────────
           # ECG 모델은 chest보다 작으므로 requests 250m/512Mi로 설정
           # limits는 burst 허용을 위해 500m/1Gi
