@@ -1,7 +1,7 @@
 """종격동 확대 (Enlarged Cardiomediastinum) — 종격동 너비 판정"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold, MEDIASTINUM_RATIO
+from thresholds import get_threshold, MEDIASTINUM_RATIO
 
 
 def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:

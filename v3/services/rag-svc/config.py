@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # ── 서비스 고유 설정 (기본값 있음) ──
     # FAISS 인덱스 + 메타데이터 디렉토리
     # K8s 배포 시 PVC 마운트 포인트, 로컬에서는 ./data 등으로 변경
-    model_dir: str = "/data/rag"
+    model_dir: str = "/models/chest"
 
     # FAISS 인덱스 바이너리 파일명 (model_dir 아래에 위치)
     index_filename: str = "faiss_index.bin"
@@ -32,9 +32,9 @@ class Settings(BaseSettings):
     metadata_filename: str = "metadata.jsonl"
 
     # ── Embedding 모델 설정 ──
-    # SentenceTransformer 모델명 (HuggingFace 모델 ID)
-    # bge-small-en-v1.5: 영어 특화, 384차원, 가벼운 모델
-    embedder_model: str = "BAAI/bge-small-en-v1.5"
+    # SentenceTransformer 모델 경로 (로컬 경로 또는 HuggingFace 모델 ID)
+    # Docker/K8s: PVC 마운트 경로, 로컬: EMBEDDER_MODEL 환경변수로 오버라이드
+    embedder_model: str = "/models/embedding-model/bge-small-en-v1.5"
 
     # 임베딩 벡터 차원 수 (embedder_model에 맞춰야 함)
     embedding_dimension: int = 384

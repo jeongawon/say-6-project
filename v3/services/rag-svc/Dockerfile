@@ -27,8 +27,8 @@ COPY shared/ /app/shared/
 # 서비스 소스코드 복사
 COPY services/rag-svc/ /app/
 
-# 데이터 디렉토리 생성 — K8s PVC 마운트 포인트 (FAISS 인덱스/문서 저장)
-RUN mkdir -p /data/rag
+# 모델 디렉토리 생성 — K8s PVC 마운트 포인트 (FAISS 인덱스/임베딩 모델)
+RUN mkdir -p /models
 
 # 서비스 포트 — 모든 마이크로서비스가 내부적으로 8000번 포트 사용
 EXPOSE 8000

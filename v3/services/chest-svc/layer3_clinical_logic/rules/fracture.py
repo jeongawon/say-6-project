@@ -1,7 +1,7 @@
 """골절 (Fracture) — 동반 손상 교차"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
+from thresholds import get_threshold
 
 
 def analyze(input: ClinicalLogicInput) -> dict:

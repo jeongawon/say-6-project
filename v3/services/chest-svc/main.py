@@ -125,12 +125,20 @@ app = FastAPI(
 )
 
 # ── 테스트 UI (v1 스타일 시각화 페이지) ────────────────────────
+# static/ 폴더는 tests/v3/chest-svc/static/ 에서 관리
+# docker-compose 볼륨 마운트로 /app/static에 연결됨
+# K8s 배포 시에는 static 없음 → API 상태 페이지만 표시
+_static_dir = os.path.join(os.path.dirname(__file__), "static")
+
+
 @app.get("/", response_class=HTMLResponse)
 def test_ui():
-    """GET / → v1 스타일 시각화 테스트 페이지"""
-    html_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
-    with open(html_path) as f:
-        return f.read()
+    """GET / → 테스트 UI (static/ 있으면) 또는 API 상태 페이지"""
+    html_path = os.path.join(_static_dir, "index.html")
+    if os.path.exists(html_path):
+        with open(html_path) as f:
+            return f.read()
+    return "<h1>chest-svc</h1><p>API running. Test UI available via docker-compose.</p>"
 
 
 # ── 헬스체크 엔드포인트 (K8s probe 용) ────────────────────────
@@ -238,4 +246,6 @@ async def predict(req: PredictRequest):
 
 
 # ── 정적 파일 서빙 (반드시 라우트 정의 후 마지막에) ──────────
-app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static"), follow_symlink=True), name="static")
+# docker-compose에서 tests/v3/chest-svc/static/ → /app/static 볼륨 마운트 시 활성화
+if os.path.isdir(_static_dir):
+    app.mount("/static", StaticFiles(directory=_static_dir, follow_symlink=True), name="static")

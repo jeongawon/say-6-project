@@ -1,7 +1,7 @@
 """기타 흉막 이상 (Pleural Other) — 비후 두께 + 석면 교차"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
+from thresholds import get_threshold
 
 
 def analyze(input: ClinicalLogicInput, other_results=None) -> dict:

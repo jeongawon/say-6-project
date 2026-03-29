@@ -1,7 +1,7 @@
 """의료 기구 (Support Devices) — 팁~carina 거리 판정"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold, px_to_cm
+from thresholds import get_threshold, px_to_cm
 
 
 def analyze(input: ClinicalLogicInput) -> dict:

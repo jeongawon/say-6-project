@@ -1,37 +1,9 @@
-# 대용량 데이터 (git 제외)
-layer5_rag/build_output/
-data/p10_pa/
-data/mimic-cxr-csv/
-data/train.csv
-*.npy
-*.bin
-*.tar.gz
-*.zip
-
-# 모델 가중치
-*.pth
-*.pt
-*.onnx
-*.safetensors
-
-# 1회성 프롬프트 아카이브
-docs/archive/
-
-# bkit / PDCA 상태
-.bkit/
-.bkit-memory.json
-
 # Python
 __pycache__/
 *.pyc
 .pytest_cache/
 *.egg-info/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# AWS
-.aws/
+venv/
 
 # OS
 .DS_Store
@@ -41,28 +13,10 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Claude Code
+# Tools
 .claude/
-
-# Playwright MCP logs
+.bkit/
 .playwright-mcp/
 
-# Deploy backups
-deploy/_backup/
-
-# v3 large files
-v3/tests/chest-svc/images/
-v3/tests/chest-svc/results/full_80/
-v3/services/chest-svc/static/test-images/s3_sample/
-*.onnx
-*.jpg
-*.jpeg
-*.png
-__pycache__/
-*.pyc
-v3/venv/
-v3/scripts/
-
-# v3 threshold optimization large data
-v3/threshold_optimization/*.csv
-v3/threshold_optimization/download_paths*.txt
+# Jupyter
+.ipynb_checkpoints/

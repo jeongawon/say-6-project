@@ -61,6 +61,7 @@ spec:
           volumeMounts:
             - name: models
               mountPath: /models
+              subPath: chest-svc
               readOnly: true
           # ── Liveness Probe ───────────────────────────────
           # 모델 로딩에 약 30초 걸리므로 initialDelaySeconds: 30

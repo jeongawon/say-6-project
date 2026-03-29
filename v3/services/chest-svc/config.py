@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # ── 서비스 고유 설정 (기본값 있음) ──
     # ONNX 모델 경로 — K8s PVC 마운트 경로. 로컬 테스트 시 MODEL_DIR 환경변수로 변경
-    # 디렉토리 안에 unet_seg.onnx, densenet121.onnx, yolov8_vindr.onnx 필요
+    # 디렉토리 안에 unet.onnx, densenet.onnx, yolov8.onnx 필요
     model_dir: str = "/app/models"
 
     # Bedrock 소견서 생성 파라미터 (chest-svc 고유)

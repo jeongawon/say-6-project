@@ -4,7 +4,7 @@
 """
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
+from thresholds import get_threshold
 
 
 def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:

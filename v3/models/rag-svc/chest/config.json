@@ -1,0 +1,11 @@
+{
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "dimension": 384,
+  "index_type": "IVFFlat",
+  "nlist": 352,
+  "total_vectors": 123974,
+  "filter": "acute + 2 diseases (from 880K)",
+  "source_bucket": "say1-pre-project-7",
+  "source_key": "mimic-iv-note/2.2/note/radiology.csv",
+  "built_date": "2026-03-23"
+}

@@ -3,7 +3,7 @@
 DenseNet vs YOLO vs Clinical Logic 3중 소스 일치 확인.
 """
 
-from .thresholds import get_threshold
+from thresholds import get_threshold
 
 
 def cross_validate(

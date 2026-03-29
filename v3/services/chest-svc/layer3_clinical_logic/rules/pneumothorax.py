@@ -1,7 +1,7 @@
 """기흉 (Pneumothorax) — 폐 경계~흉벽 거리 + Tension 판정"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold, PTX_LARGE, PTX_MODERATE
+from thresholds import get_threshold, PTX_LARGE, PTX_MODERATE
 
 
 def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:

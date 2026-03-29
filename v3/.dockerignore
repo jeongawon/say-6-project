@@ -1,0 +1,24 @@
+# v3/.dockerignore — 컨테이너 이미지에서 제외할 파일
+# Dockerfile의 COPY 시 이 파일들은 빌드 컨텍스트에서 제외됨
+
+# Python 캐시
+**/__pycache__
+**/.pytest_cache
+**/*.pyc
+
+# 로컬 개발 설정
+**/.env
+**/.env.*
+
+# 문서 (서비스 폴더에 유지하되 이미지에는 불포함)
+**/README.md
+
+# 모델 파일 (ONNX, FAISS 인덱스 등 — 볼륨 마운트로 주입)
+models/
+
+# K8s 매니페스트 (빌드 컨텍스트에 포함되지만 COPY 대상 아님)
+k8s/
+
+# Git
+.git
+.gitignore

@@ -18,7 +18,7 @@ x-common-env: &common-env
   DATABASE_URL: postgresql://postgres:postgres@postgres:5432/drai
   # Redis 연결 — 캐싱/세션용 (AWS ElastiCache 대체)
   REDIS_URL: redis://redis:6379/0
-  # ONNX 모델 디렉토리 경로
+  # ONNX 모델 디렉토리 — 서비스별 환경변수로 오버라이드
   MODEL_DIR: /models
   # 내부 서비스 간 통신 URL
   RAG_URL: http://rag-svc:8000
@@ -77,8 +77,10 @@ services:
     ports:
       - "8001:8000"
     # 로컬 models 폴더를 읽기 전용(:ro)으로 마운트 — ONNX 모델 파일 제공
+    # 테스트 UI는 tests/v3/에서 볼륨 마운트 (v3/에는 static 폴더 없음)
     volumes:
-      - ./models:/models:ro
+      - ./models/chest-svc:/models:ro
+      - ../tests/v3/chest-svc/static:/app/static:ro
     environment:
       # 공통 환경변수 병합 (DB, Redis, 모델 경로 등)
       <<: *common-env
@@ -166,11 +168,13 @@ services:
     # 호스트 8004 → 컨테이너 8000
     ports:
       - "8004:8000"
-    # 모델/임베딩 파일을 읽기 전용으로 마운트
+    # 모델/임베딩 파일을 읽기 전용으로 마운트 (서비스별 디렉토리)
     volumes:
-      - ./models:/models:ro
+      - ./models/rag-svc:/models:ro
     environment:
       <<: *common-env
+      # rag-svc는 MODEL_DIR 안에 chest/, ecg/, blood/ 서브디렉토리 사용
+      MODEL_DIR: /models/chest
     # 의존성 — DB, Redis만 필요 (다른 분석 서비스에 의존하지 않음)
     depends_on:
       postgres:
@@ -219,6 +223,9 @@ services:
     # 호스트 8000 → 컨테이너 8000 (메인 진입점)
     ports:
       - "8000:8000"
+    # 테스트 UI는 tests/v3/에서 볼륨 마운트
+    volumes:
+      - ../tests/v3/central-orchestrator/static:/app/static:ro
     environment:
       <<: *common-env
       # 각 분석 서비스의 내부 Docker 네트워크 URL

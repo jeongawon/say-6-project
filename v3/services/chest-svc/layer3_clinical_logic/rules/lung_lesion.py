@@ -1,7 +1,7 @@
 """폐 병변/결절 (Lung Lesion) — 크기 분류 + Fleischner Society 추천"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import (
+from thresholds import (
     get_threshold,
     px_to_mm,
     FLEISCHNER_NO_FOLLOWUP,

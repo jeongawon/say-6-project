@@ -1,7 +1,7 @@
 """폐부종 (Edema) — 양측 대칭성 + butterfly 패턴 + CTR 교차"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold, EDEMA_SYMMETRY, EDEMA_BILATERAL_DENSENET
+from thresholds import get_threshold, EDEMA_SYMMETRY, EDEMA_BILATERAL_DENSENET
 
 
 def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:

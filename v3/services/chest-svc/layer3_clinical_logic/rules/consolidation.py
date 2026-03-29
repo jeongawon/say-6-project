@@ -1,7 +1,7 @@
 """경화 (Consolidation) — Silhouette sign + 폐엽 매핑"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import (
+from thresholds import (
     get_threshold,
     CONSOLIDATION_HIGH_CONF,
     LUNG_RATIO_CONSOLIDATION_LOW,

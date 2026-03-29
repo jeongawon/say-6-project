@@ -3,7 +3,7 @@
 """
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold, LUNG_RATIO_NORMAL_MIN, LUNG_RATIO_NORMAL_MAX
+from thresholds import get_threshold, LUNG_RATIO_NORMAL_MIN, LUNG_RATIO_NORMAL_MAX
 
 
 def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:

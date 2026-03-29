@@ -1,7 +1,7 @@
 """무기폐 (Atelectasis) — 폐 면적비 + 종격동 이동 방향"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold, LUNG_RATIO_ATELECTASIS_LOW, LUNG_RATIO_ATELECTASIS_HIGH
+from thresholds import get_threshold, LUNG_RATIO_ATELECTASIS_LOW, LUNG_RATIO_ATELECTASIS_HIGH
 
 
 def analyze(input: ClinicalLogicInput) -> dict:

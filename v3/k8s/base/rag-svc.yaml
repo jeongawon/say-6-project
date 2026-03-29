@@ -39,7 +39,7 @@ spec:
           # dr-ai-config: 환경별(local/eks) 오버라이드 설정
           env:
             - name: MODEL_DIR
-              value: "/models/rag"
+              value: "/models/chest"
           envFrom:
             - configMapRef:
                 name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
@@ -62,6 +62,7 @@ spec:
           volumeMounts:
             - name: models
               mountPath: /models
+              subPath: rag-svc
               readOnly: true
           # ── Liveness Probe ───────────────────────────────
           # 임베딩 모델 로딩에 약 15초 소요 — initialDelaySeconds: 15

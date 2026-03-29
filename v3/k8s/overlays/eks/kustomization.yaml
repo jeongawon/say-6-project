@@ -13,9 +13,9 @@ kind: Kustomization
 # 주의: 로컬과 달리 postgres.yaml, redis.yaml이 없음 (AWS RDS/ElastiCache 사용)
 resources:
   - ../../base          # 공통 base 매니페스트 참조
-  - configmap.yaml      # EKS 환경변수 (RDS/ElastiCache 엔드포인트)
-  - storageclass.yaml   # EFS StorageClass + 모델 PVC
-  - secret.yaml         # AWS 자격 증명 및 DB 비밀번호
+  - config.yaml         # EKS 환경변수 (RDS/ElastiCache 엔드포인트)
+  - secrets.yaml        # AWS 자격 증명 및 DB 비밀번호
+  - storage.yaml        # EFS StorageClass + 모델 PVC
 
 # ── 이미지 오버라이드 ────────────────────────────────────────
 # base의 image 필드를 AWS ECR 레포지토리 URI로 교체

@@ -1,7 +1,7 @@
 """흉수 (Pleural Effusion) — CP angle 기반 판정"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold, CP_ANGLE_SMALL, CP_ANGLE_MODERATE
+from thresholds import get_threshold, CP_ANGLE_SMALL, CP_ANGLE_MODERATE
 
 
 def analyze(input: ClinicalLogicInput) -> dict:

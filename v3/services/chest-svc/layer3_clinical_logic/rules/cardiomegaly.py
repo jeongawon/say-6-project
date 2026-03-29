@@ -1,7 +1,7 @@
 """심비대 (Cardiomegaly) — CTR 기반 판정"""
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold, CTR_NORMAL_UPPER, CTR_MODERATE, CTR_SEVERE
+from thresholds import get_threshold, CTR_NORMAL_UPPER, CTR_MODERATE, CTR_SEVERE
 
 
 def analyze(input: ClinicalLogicInput) -> dict:

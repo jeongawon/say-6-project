@@ -8,7 +8,7 @@ kind: Kustomization
 
 resources:
   - namespace.yaml            # 네임스페이스 정의 (dr-ai)
-  - common-config.yaml        # 공통 환경변수 ConfigMap (Bedrock, DB, Redis 등)
+  - config.yaml               # 공통 환경변수 ConfigMap (Bedrock, DB, Redis 등)
   - chest-svc.yaml            # 흉부 X-Ray 분석 서비스
   - ecg-svc.yaml              # 심전도(ECG) 분석 서비스
   - blood-svc.yaml            # 혈액 검사 분석 서비스

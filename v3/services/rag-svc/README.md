@@ -43,8 +43,8 @@
 - `build_query_from_findings()`: v2 호환 findings dict → 검색 쿼리 변환
 
 ### 3. `config.py` — 환경변수
-- `model_dir`: FAISS 인덱스 디렉토리 경로 (기본값: `/data/rag`)
-- `embedder_model`: 임베딩 모델명 (기본값: `BAAI/bge-small-en-v1.5`)
+- `model_dir`: FAISS 인덱스 디렉토리 경로 (기본값: `/models/chest`)
+- `embedder_model`: 임베딩 모델 경로 (기본값: `/models/embedding-model/bge-small-en-v1.5`)
 - `embedding_dimension`: 임베딩 차원 (기본값: `384`)
 
 ---
@@ -56,7 +56,7 @@
 | FAISS 인덱스 | `{MODEL_DIR}/faiss_index.bin` | FAISS IndexFlatIP 바이너리 파일 |
 | 메타데이터 | `{MODEL_DIR}/metadata.jsonl` | 벡터별 메타데이터 (JSONL 형식) |
 
-- `MODEL_DIR` 환경변수로 경로 지정 (기본값: `/data/rag`)
+- `MODEL_DIR` 환경변수로 경로 지정 (기본값: `/models/chest`)
 - K8s 배포 시 PVC 또는 initContainer를 통해 마운트
 - 인덱스 파일이 없으면 빈 인덱스로 시작 (에러 없이 동작)
 

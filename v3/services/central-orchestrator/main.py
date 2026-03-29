@@ -111,18 +111,31 @@ app = FastAPI(
 
 
 # ── 테스트 UI (시스템 통합 테스트 페이지) ────────────────────────────
+# static/ 폴더는 tests/v3/central-orchestrator/static/ 에서 관리
+# docker-compose 볼륨 마운트로 /app/static에 연결됨
+_static_dir = os.path.join(os.path.dirname(__file__), "static")
+
+
 @app.get("/", response_class=HTMLResponse)
 def test_ui():
-    """GET / → System Integration Test 페이지"""
-    html_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
-    with open(html_path) as f:
-        return f.read()
+    """GET / → 테스트 UI (static/ 있으면) 또는 API 상태 페이지"""
+    html_path = os.path.join(_static_dir, "index.html")
+    if os.path.exists(html_path):
+        with open(html_path) as f:
+            return f.read()
+    return "<h1>central-orchestrator</h1><p>API running. Test UI available via docker-compose.</p>"
 
 
 # ── 테스트 데이터 static 서빙 ──────────────────────────────────────
-_testdata_dir = os.path.join(os.path.dirname(__file__), "static", "testdata")
+_testdata_dir = os.path.join(_static_dir, "testdata")
 if os.path.isdir(_testdata_dir):
     app.mount("/testdata", StaticFiles(directory=_testdata_dir), name="testdata")
+
+
+# ── 정적 파일 서빙 (반드시 라우트 정의 후 마지막에) ──────────────────
+# docker-compose에서 tests/v3/central-orchestrator/static/ → /app/static 볼륨 마운트 시 활성화
+if os.path.isdir(_static_dir):
+    app.mount("/static", StaticFiles(directory=_static_dir, follow_symlink=True), name="static")
 
 
 # ── 요청/응답 모델 ───────────────────────────────────────────────────

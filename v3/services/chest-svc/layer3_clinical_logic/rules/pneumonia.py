@@ -4,7 +4,7 @@ Consolidation + 다른 Rule 결과에 의존 → 가장 마지막에 실행.
 """
 
 from ..models import ClinicalLogicInput
-from ..thresholds import get_threshold
+from thresholds import get_threshold
 
 
 def analyze(input: ClinicalLogicInput, other_results: dict = None) -> dict:
