@@ -2,15 +2,32 @@ import os
 import boto3
 import numpy as np
 import tempfile
+import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from mangum import Mangum
 
-from app.schemas import PredictRequest, PredictResponse
+from app.schemas import PredictRequest, PredictResponse, PatientInfo, ECGData
 from app.model_loader import get_session
 from app.inference import run_inference
+
+# ── MIMIC S3 설정 ──────────────────────────────────────────
+MIMIC_BUCKET = os.environ.get("MIMIC_BUCKET", "say2-6team")
+MIMIC_PREFIX = os.environ.get("MIMIC_PREFIX", "mimic-iv")   # 버킷 내 폴더
+SIGNAL_PREFIX = "mimic/ecg/signals"                          # {study_id}.npy 저장 위치
+
+_mimic_cache: dict[str, pd.DataFrame] = {}
+
+
+def _read_csv_from_s3(key: str) -> pd.DataFrame:
+    """S3에서 CSV 읽기 (Lambda 수명 내 캐시)"""
+    if key not in _mimic_cache:
+        s3  = boto3.client("s3")
+        obj = s3.get_object(Bucket=MIMIC_BUCKET, Key=key)
+        _mimic_cache[key] = pd.read_csv(obj["Body"])
+    return _mimic_cache[key]
 
 app = FastAPI(title="ecg-svc", version="1.0.0")
 
@@ -71,6 +88,75 @@ handler = Mangum(app)  # Lambda 핸들러
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "ecg-svc"}
+
+
+@app.post("/simulate", response_model=PredictResponse)
+def simulate(subject_id: int, chief_complaint: str = ""):
+    """
+    subject_id → MIMIC 조회 → ECG 추론
+
+    흐름:
+      1. patients.csv     → age, sex
+      2. vitalsign.csv    → HR, BP, SpO2, RR, Temp
+      3. record_list.csv  → study_id (최신 ECG)
+      4. signals/{study_id}.npy → (12, 5000) 파형
+      5. run_inference()  → PredictResponse
+    """
+    # 1. patient_info
+    patients = _read_csv_from_s3(f"{MIMIC_PREFIX}/hosp/patients.csv")
+    pt = patients[patients["subject_id"] == subject_id]
+    if pt.empty:
+        raise HTTPException(status_code=404, detail=f"subject_id {subject_id} 없음")
+    pt = pt.iloc[0]
+    age = int(pt["anchor_age"])
+    sex = str(pt["gender"])
+
+    # 2. vitals (없으면 빈값)
+    vitals: dict = {}
+    try:
+        vs_df = _read_csv_from_s3(f"{MIMIC_PREFIX}/ed/vitalsign.csv")
+        vs_rows = vs_df[vs_df["subject_id"] == subject_id].dropna(how="all")
+        if not vs_rows.empty:
+            v = vs_rows.iloc[-1]
+            if pd.notna(v.get("temperature")):
+                vitals["temperature"] = float(v["temperature"])
+            if pd.notna(v.get("sbp")) and pd.notna(v.get("dbp")):
+                vitals["blood_pressure"] = f"{int(v['sbp'])}/{int(v['dbp'])}"
+            if pd.notna(v.get("spo2")):
+                vitals["spo2"] = float(v["spo2"])
+            if pd.notna(v.get("resprate")):
+                vitals["respiratory_rate"] = int(v["resprate"])
+    except Exception:
+        pass  # vitalsign 없으면 스킵
+
+    # 3. ECG record → study_id
+    rec = _read_csv_from_s3(f"{MIMIC_PREFIX}/mimic_iv_ecg/record_list.csv")
+    ecg_rows = rec[rec["subject_id"] == subject_id]
+    if ecg_rows.empty:
+        raise HTTPException(status_code=404, detail=f"subject_id {subject_id}의 ECG 없음")
+    if "ecg_time" in ecg_rows.columns:
+        ecg_rows = ecg_rows.sort_values("ecg_time")
+    study_id = str(ecg_rows.iloc[-1]["study_id"])
+
+    # 4. 파형 로드
+    signal_s3_path = f"s3://{MIMIC_BUCKET}/{SIGNAL_PREFIX}/{study_id}.npy"
+    try:
+        signal = _load_signal_from_s3(signal_s3_path)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"파형 로드 실패 ({study_id}.npy): {e}")
+
+    # 5. 추론
+    predict_req = PredictRequest(
+        patient_id   = str(subject_id),
+        patient_info = PatientInfo(
+            age=age, sex=sex,
+            chief_complaint=chief_complaint,
+            **vitals,
+        ),
+        data    = ECGData(signal_path=signal_s3_path, leads=12),
+        context = {},
+    )
+    return run_inference(signal, predict_req, get_session())
 
 
 @app.post("/predict", response_model=PredictResponse)
