@@ -55,6 +55,16 @@ ECG_CONFIRMED_LABELS = {"stemi", "vfib_vtach", "avblock_3rd", "afib", "lbbb", "a
 # ECG 비특이적 — 다른 모달(혈액/흉부CT/영상) 추가 확인 필요
 NEEDS_CONFIRMATION_LABELS = {"pe", "nstemi", "heart_failure", "sepsis", "hyperkalemia", "hypokalemia"}
 
+# 감지 레이블 → 추천 다음 모달 매핑
+NEXT_MODAL_MAP: dict[str, dict] = {
+    "nstemi":        {"modal": "blood", "action": "트로포닌 I/T 검사", "description": "NSTEMI 의심 — 심근 바이오마커 확인 필요"},
+    "heart_failure": {"modal": "blood", "action": "BNP/NT-proBNP 검사", "description": "심부전 의심 — 심장 바이오마커 확인 필요"},
+    "sepsis":        {"modal": "blood", "action": "혈액배양 + 젖산 검사", "description": "패혈증 의심 — 감염 바이오마커 확인 필요"},
+    "hyperkalemia":  {"modal": "blood", "action": "혈중 K+ 즉시 확인", "description": "고칼륨혈증 의심 — 전해질 검사 긴급 시행"},
+    "hypokalemia":   {"modal": "blood", "action": "혈중 K+ 확인", "description": "저칼륨혈증 의심 — 전해질 검사 시행"},
+    "pe":            {"modal": "chest", "action": "CT 폐혈관조영술(CTPA)", "description": "폐색전증 의심 — 흉부 영상 확인 필요"},
+}
+
 LABEL_SEVERITY = {
     "stemi":         "critical",
     "vfib_vtach":    "critical",
@@ -194,6 +204,17 @@ def run_inference(signal_array: np.ndarray, request: PredictRequest,
         elif risk_level == "urgent":
             report += " 신속한 추가 검사가 필요합니다."
 
+        # suggested_next_actions
+        suggested_next_actions = []
+        seen_modals: set[str] = set()
+        for name in LABEL_NAMES:
+            if not findings[LABEL_NAMES.index(name)].detected:
+                continue
+            action_info = NEXT_MODAL_MAP.get(name)
+            if action_info and action_info["modal"] not in seen_modals:
+                suggested_next_actions.append(action_info)
+                seen_modals.add(action_info["modal"])
+
         # pertinent_negatives (주소증 관련 음성 소견)
         complaint = ""
         if request.patient_info:
@@ -224,14 +245,15 @@ def run_inference(signal_array: np.ndarray, request: PredictRequest,
         }
 
         return PredictResponse(
-            status              = "success",
-            modal               = "ecg",
-            findings            = findings,
-            summary             = summary,
-            report              = report,
-            risk_level          = risk_level,
-            pertinent_negatives = pertinent_negatives,
-            metadata            = metadata,
+            status                  = "success",
+            modal                   = "ecg",
+            findings                = findings,
+            summary                 = summary,
+            report                  = report,
+            risk_level              = risk_level,
+            pertinent_negatives     = pertinent_negatives,
+            suggested_next_actions  = suggested_next_actions,
+            metadata                = metadata,
         )
 
     except Exception as e:

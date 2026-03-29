@@ -48,6 +48,7 @@ class PredictResponse(BaseModel):
     summary: str = ""
     report: str = ""                     # ECG 소견서 (impression)
     risk_level: str = "routine"          # routine / urgent / critical
-    pertinent_negatives: List[str] = []  # 주소증 관련 음성 소견
+    pertinent_negatives: List[str] = []       # 주소증 관련 음성 소견
+    suggested_next_actions: List[dict] = []   # 다음 모달 호출 추천
     metadata: dict = {}
     error: Optional[str] = None
