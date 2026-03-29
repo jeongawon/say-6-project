@@ -16,6 +16,11 @@ class PatientInfo(BaseModel):
     sex: str                          # "M" | "F"
     chief_complaint: str
     history: list[str] = []
+    # 활력징후 — Optional (EMR 연동 시 오케스트레이터가 전달)
+    temperature: Optional[float] = None       # ℃
+    blood_pressure: Optional[str] = None      # "150/90" (수축기/이완기)
+    spo2: Optional[float] = None              # %
+    respiratory_rate: Optional[int] = None    # /min
 
 
 class Finding(BaseModel):
