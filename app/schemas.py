@@ -35,6 +35,12 @@ class Finding(BaseModel):
     recommendation: Optional[str] = None
 
 
+class SimulateRequest(BaseModel):
+    subject_id: int
+    chief_complaint: str = ""
+    context: dict = {}
+
+
 class PredictResponse(BaseModel):
     status: str
     modal: str = "ecg"

@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from mangum import Mangum
 
-from app.schemas import PredictRequest, PredictResponse, PatientInfo, ECGData
+from app.schemas import PredictRequest, PredictResponse, PatientInfo, ECGData, SimulateRequest
 from app.model_loader import get_session
 from app.inference import run_inference
 
@@ -91,7 +91,9 @@ def health():
 
 
 @app.post("/simulate", response_model=PredictResponse)
-def simulate(subject_id: int, chief_complaint: str = ""):
+def simulate(req: SimulateRequest):
+    subject_id = req.subject_id
+    chief_complaint = req.chief_complaint
     """
     subject_id → MIMIC 조회 → ECG 추론
 
@@ -154,7 +156,7 @@ def simulate(subject_id: int, chief_complaint: str = ""):
             **vitals,
         ),
         data    = ECGData(signal_path=signal_s3_path, leads=12),
-        context = {},
+        context = req.context,
     )
     return run_inference(signal, predict_req, get_session())
 
