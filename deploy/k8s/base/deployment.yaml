@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecg-svc
+  namespace: dr-ai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ecg-svc
+  template:
+    metadata:
+      labels:
+        app: ecg-svc
+    spec:
+      containers:
+        - name: ecg-svc
+          image: ecg-svc:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: MODEL_PATH
+              value: /mnt/efs/models/ecg_resnet.onnx
+          volumeMounts:
+            - name: efs-models
+              mountPath: /mnt/efs/models
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      volumes:
+        - name: efs-models
+          persistentVolumeClaim:
+            claimName: efs-models-pvc
