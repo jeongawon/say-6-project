@@ -3,10 +3,15 @@ from typing import List, Optional
 
 
 class PatientInfo(BaseModel):
-    age: Optional[int] = None
-    sex: Optional[str] = None
-    chief_complaint: Optional[str] = None
-    history: Optional[List[str]] = []
+    age: int
+    sex: str
+    chief_complaint: str
+    history: List[str] = []
+    # 활력징후 — Optional (오케스트레이터가 있을 때만 전달)
+    temperature: Optional[float] = None
+    blood_pressure: Optional[str] = None
+    spo2: Optional[float] = None
+    respiratory_rate: Optional[int] = None
 
 
 class ECGData(BaseModel):

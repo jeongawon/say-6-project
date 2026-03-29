@@ -3,6 +3,8 @@ import boto3
 import numpy as np
 import tempfile
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from mangum import Mangum
 
@@ -11,6 +13,14 @@ from app.model_loader import get_session
 from app.inference import run_inference
 
 app = FastAPI(title="ecg-svc", version="1.0.0")
+
+_STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+if os.path.isdir(_STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
+
+@app.get("/", include_in_schema=False)
+def ui():
+    return FileResponse(os.path.join(_STATIC_DIR, "index.html"))
 
 
 @asynccontextmanager
