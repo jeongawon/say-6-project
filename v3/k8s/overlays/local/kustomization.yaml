@@ -1,0 +1,72 @@
+# ── Kustomize Local Overlay ───────────────────────────────────
+# 로컬(Docker Desktop / Minikube) 개발 환경용 Kustomize 설정
+# base(공통 서비스 정의) + 로컬 전용 리소스(DB, Redis, PV)를 합쳐서 배포
+# 적용 명령: kubectl apply -k k8s/overlays/local/
+# 빌드 확인: kustomize build k8s/overlays/local/
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# ── 리소스 목록 ──────────────────────────────────────────────
+# base: 공통 서비스(chest, ecg, blood, orchestrator, rag, report)
+# 나머지: 로컬 전용 인프라 리소스
+# 새 리소스 추가 시 여기에 파일명 추가
+resources:
+  - ../../base          # 공통 base 매니페스트 참조
+  - config.yaml         # 로컬 환경변수 (DB/Redis 내부 주소)
+  - secrets.yaml        # AWS Bedrock 인증 Secret (로컬 전용)
+  - storage.yaml        # 로컬 모델 PV + PVC (hostPath)
+  - postgres.yaml       # 로컬 PostgreSQL StatefulSet + Service
+  - redis.yaml          # 로컬 Redis Deployment + Service
+
+# ── imagePullPolicy: Never — 로컬 빌드 이미지에만 적용 ──────
+# Docker Desktop에서 로컬 빌드한 이미지를 레지스트리 없이 사용
+# redis, postgres는 외부 이미지이므로 제외 (labelSelector로 필터링)
+patches:
+  - target:
+      kind: Deployment
+      namespace: dr-ai
+      labelSelector: app.kubernetes.io/component=modal-service
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
+  - target:
+      kind: Deployment
+      namespace: dr-ai
+      labelSelector: app.kubernetes.io/component=orchestrator
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
+  - target:
+      kind: Deployment
+      namespace: dr-ai
+      labelSelector: app.kubernetes.io/component=shared-service
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
+
+# ── 이미지 오버라이드 ────────────────────────────────────────
+# base의 image 필드를 로컬 이미지명:태그로 교체
+# 로컬에서는 docker build로 빌드한 이미지를 직접 사용
+# 태그 변경 시 newTag 값을 수정 (예: v1.0.0)
+images:
+  - name: chest-svc
+    newName: chest-svc
+    newTag: latest
+  - name: ecg-svc
+    newName: ecg-svc
+    newTag: latest
+  - name: blood-svc
+    newName: blood-svc
+    newTag: latest
+  - name: central-orchestrator
+    newName: central-orchestrator
+    newTag: latest
+  - name: rag-svc
+    newName: rag-svc
+    newTag: latest
+  - name: report-svc
+    newName: report-svc
+    newTag: latest

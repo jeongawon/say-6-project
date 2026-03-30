@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dr. AI Radiologist v3 — Chest X-Ray Pipeline</title>
+<style>
+:root {
+    --bg-primary: #0f1117;
+    --bg-secondary: #1a1d27;
+    --bg-tertiary: #242833;
+    --text-primary: #e4e4e7;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --accent-subtle: rgba(59, 130, 246, 0.1);
+    --positive: #22c55e;
+    --negative: #6b7280;
+    --warning: #f59e0b;
+    --critical: #ef4444;
+    --border: #2a2d37;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+.header {
+    background: var(--bg-secondary);
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+}
+.header h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.header p { font-size: 13px; color: var(--text-secondary); }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+
+/* Test Cases */
+.test-cases { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+.case-select {
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+    min-width: 360px;
+    max-width: 500px;
+    transition: all 0.15s;
+    appearance: auto;
+}
+.case-select:hover, .case-select:focus { border-color: var(--accent); outline: none; }
+.case-select option { background: var(--bg-tertiary); color: var(--text-primary); padding: 4px 8px; }
+.case-select optgroup { color: var(--accent); font-weight: 600; font-size: 12px; }
+.test-btn {
+    padding: 8px 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.test-btn:hover { border-color: var(--accent); color: var(--text-primary); }
+.test-btn.active { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent); }
+.test-btn.upload-btn { border-style: dashed; }
+/* Skip RAG+Bedrock toggle */
+.skip-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); margin-left: auto; }
+.skip-toggle input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+.skip-toggle label { cursor: pointer; user-select: none; }
+
+/* Main Grid */
+.main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+@media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* Image Preview */
+.image-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    min-height: 300px;
+}
+.image-panel .placeholder { color: var(--text-muted); font-size: 13px; text-align: center; padding-top: 120px; }
+.image-container {
+    position: relative;
+    background: #000;
+    border-radius: 4px;
+    overflow: hidden;
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.image-container img { max-width: 512px; max-height: 512px; display: block; }
+.image-container .overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+}
+.image-container .overlay img { width: 100%; height: 100%; object-fit: contain; }
+.img-btn-group { display: flex; gap: 8px; margin-top: 8px; align-items: center; flex-wrap: wrap; }
+.img-btn {
+    padding: 6px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.15s;
+}
+.img-btn:hover { background: var(--border); }
+.img-btn.active-btn { background: var(--accent); border-color: var(--accent); color: #fff; }
+.legend { display: flex; gap: 12px; margin-top: 10px; justify-content: center; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
+.legend-color { width: 10px; height: 10px; border-radius: 2px; }
+
+/* Anatomy Measurements */
+.measurements-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    margin-top: 16px;
+}
+.measurements-panel h3 { font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.ctr-display { text-align: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.ctr-value { font-size: 32px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.ctr-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
+.ctr-status { font-size: 12px; font-weight: 600; margin-top: 4px; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+.ctr-normal { background: rgba(34,197,94,0.15); color: #22c55e; }
+.ctr-warning { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.ctr-danger { background: rgba(239,68,68,0.15); color: #ef4444; }
+.meas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.meas-item { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid var(--border); }
+.meas-item:last-child { border-bottom: none; }
+.meas-label { color: var(--text-secondary); }
+.meas-val { color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+/* Pipeline Progress */
+.pipeline-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+}
+.pipeline-panel h3 { font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.pipeline-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+.pipeline-step:last-of-type { border-bottom: none; }
+.step-icon { width: 20px; text-align: center; font-size: 14px; }
+.step-name { flex: 1; }
+.step-time { color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.step-pending .step-icon { color: var(--text-muted); }
+.step-running .step-icon { color: var(--warning); }
+.step-done .step-icon { color: var(--positive); }
+.step-error .step-icon { color: var(--critical); }
+.total-time {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Section */
+.section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+.section-header {
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.section-body { padding: 16px; }
+
+/* Risk Badge */
+.risk-badge {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+.risk-routine { background: #1e1e2e; color: var(--text-muted); }
+.risk-urgent { background: #3d2800; color: #ff9500; border: 1px solid #ff9500; }
+.risk-critical { background: #3d0000; color: #ff3b30; border: 1px solid #ff3b30; animation: blink 1s infinite; }
+.risk-unknown { background: var(--bg-tertiary); color: var(--text-muted); }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+/* Summary */
+.summary-content { font-size: 14px; line-height: 1.7; }
+.summary-content .one-line { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.disease-list { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.disease-tag {
+    padding: 3px 10px;
+    background: var(--accent-subtle);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--accent);
+}
+
+/* Report */
+.report-section { margin-bottom: 12px; }
+.report-section .label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+.report-section .content { font-size: 13px; line-height: 1.7; color: var(--text-primary); }
+
+/* Accordion */
+.accordion-header {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    user-select: none;
+}
+.accordion-header:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+.accordion-header .arrow { transition: transform 0.2s; }
+.accordion-header.open .arrow { transform: rotate(90deg); }
+.accordion-body { display: none; padding: 16px; font-size: 12px; }
+.accordion-body.open { display: block; }
+.accordion-body pre {
+    background: var(--bg-primary);
+    padding: 12px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Upload */
+.upload-area {
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    display: none;
+    cursor: pointer;
+}
+.upload-area.visible { display: block; }
+.upload-area:hover { border-color: var(--accent); }
+.upload-area p { font-size: 13px; color: var(--text-muted); }
+
+/* Run Button */
+.run-btn {
+    padding: 10px 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background 0.15s;
+}
+.run-btn:hover { background: var(--accent-hover); }
+.run-btn:disabled { background: var(--bg-tertiary); color: var(--text-muted); cursor: not-allowed; }
+
+/* Error */
+.error-banner {
+    background: #3d0000;
+    border: 1px solid #ff3b30;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    color: #ff6b6b;
+    font-size: 13px;
+}
+.error-banner strong { color: #ff3b30; }
+
+.lateral-banner {
+    background: #3d3000;
+    border: 1px solid var(--warning);
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    color: #fbbf24;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Hidden */
+.hidden { display: none; }
+
+/* Patient Info */
+.patient-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    font-size: 13px;
+}
+.patient-info-grid .info-item { display: flex; justify-content: space-between; padding: 4px 0; }
+.patient-info-grid .info-label { color: var(--text-muted); }
+.patient-info-grid .info-value { color: var(--text-primary); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Dr. AI Radiologist v3 &mdash; Chest X-Ray Pipeline</h1>
+    <p>6-Layer: Segmentation &rarr; DenseNet &rarr; YOLOv8 &rarr; Clinical Logic &rarr; RAG &rarr; Bedrock Report &nbsp;|&nbsp; K8s Microservice</p>
+</div>
+
+<div class="container">
+    <!-- Test Cases -->
+    <div class="test-cases" id="testCases">
+        <select class="case-select" id="caseSelect">
+            <option value="">-- 테스트 케이스 선택 --</option>
+            <optgroup label="기본 테스트 케이스 (3건, PA View)">
+                <option value="chf">심부전 (CHF) — 72세 남성</option>
+                <option value="tension_pneumothorax">긴장성 기흉 (Tension PTX) — 25세 남성</option>
+                <option value="normal">정상 (Normal) — 35세 여성</option>
+            </optgroup>
+            <optgroup label="S3 샘플 이미지 (80건, PA Only)">
+                <option value="s3_001">S3-001: 01275cbe</option>
+                <option value="s3_002">S3-002: 014049a7</option>
+                <option value="s3_003">S3-003: 06275b2d</option>
+                <option value="s3_004">S3-004: 0721e3ed</option>
+                <option value="s3_005">S3-005: 07538782</option>
+                <option value="s3_006">S3-006: 0c759487</option>
+                <option value="s3_007">S3-007: 0e95cc69</option>
+                <option value="s3_008">S3-008: 0f1acbee</option>
+                <option value="s3_009">S3-009: 17e20942</option>
+                <option value="s3_010">S3-010: 18b3b77c</option>
+                <option value="s3_011">S3-011: 18fffbd9</option>
+                <option value="s3_012">S3-012: 1d276292</option>
+                <option value="s3_013">S3-013: 23098650</option>
+                <option value="s3_014">S3-014: 24e4f359</option>
+                <option value="s3_015">S3-015: 28cd45b6</option>
+                <option value="s3_016">S3-016: 2a12f753</option>
+                <option value="s3_017">S3-017: 2f29f743</option>
+                <option value="s3_018">S3-018: 3332cf8c</option>
+                <option value="s3_019">S3-019: 34bf54ba</option>
+                <option value="s3_020">S3-020: 3685363a</option>
+                <option value="s3_021">S3-021: 380fda55</option>
+                <option value="s3_022">S3-022: 3d798667</option>
+                <option value="s3_023">S3-023: 3fcea49d</option>
+                <option value="s3_024">S3-024: 4591f316</option>
+                <option value="s3_025">S3-025: 47f67214</option>
+                <option value="s3_026">S3-026: 4aae66f7</option>
+                <option value="s3_027">S3-027: 4f2d3004</option>
+                <option value="s3_028">S3-028: 4f2f3a1a</option>
+                <option value="s3_029">S3-029: 54201716</option>
+                <option value="s3_030">S3-030: 5b6889de</option>
+                <option value="s3_031">S3-031: 5cec810f</option>
+                <option value="s3_032">S3-032: 6eccd432</option>
+                <option value="s3_033">S3-033: 7d9ce65c</option>
+                <option value="s3_034">S3-034: 86f79923</option>
+                <option value="s3_035">S3-035: 87c1098e</option>
+                <option value="s3_036">S3-036: 8ac339b6</option>
+                <option value="s3_037">S3-037: 8b1d0dd1</option>
+                <option value="s3_038">S3-038: 90ab0fe4</option>
+                <option value="s3_039">S3-039: 9a1d1aad</option>
+                <option value="s3_040">S3-040: 9b0b1654</option>
+                <option value="s3_041">S3-041: 9b1a8a51</option>
+                <option value="s3_042">S3-042: 9b379118</option>
+                <option value="s3_043">S3-043: 9b89f79f</option>
+                <option value="s3_044">S3-044: 9e9f4b1a</option>
+                <option value="s3_045">S3-045: 9ebf8954</option>
+                <option value="s3_046">S3-046: 9ff48609</option>
+                <option value="s3_047">S3-047: a1877853</option>
+                <option value="s3_048">S3-048: a35790a5</option>
+                <option value="s3_049">S3-049: a9250859</option>
+                <option value="s3_050">S3-050: aa646a3c</option>
+                <option value="s3_051">S3-051: ac25f6ba</option>
+                <option value="s3_052">S3-052: ac4deb55</option>
+                <option value="s3_053">S3-053: acb45927</option>
+                <option value="s3_054">S3-054: af6eb9fe</option>
+                <option value="s3_055">S3-055: b04cec19</option>
+                <option value="s3_056">S3-056: b1ad7312</option>
+                <option value="s3_057">S3-057: b2093612</option>
+                <option value="s3_058">S3-058: b3bbc97d</option>
+                <option value="s3_059">S3-059: b48f4647</option>
+                <option value="s3_060">S3-060: b58fc178</option>
+                <option value="s3_061">S3-061: b6f1e5de</option>
+                <option value="s3_062">S3-062: b914f3ca</option>
+                <option value="s3_063">S3-063: bcb5e90b</option>
+                <option value="s3_064">S3-064: bedd217a</option>
+                <option value="s3_065">S3-065: c186bfb3</option>
+                <option value="s3_066">S3-066: c52a3ba5</option>
+                <option value="s3_067">S3-067: c584b5c4</option>
+                <option value="s3_068">S3-068: cb1c7c96</option>
+                <option value="s3_069">S3-069: cc984e8b</option>
+                <option value="s3_070">S3-070: cf6471f1</option>
+                <option value="s3_071">S3-071: d3033027</option>
+                <option value="s3_072">S3-072: d5ab23e9</option>
+                <option value="s3_073">S3-073: d80a4e2b</option>
+                <option value="s3_074">S3-074: da6190a9</option>
+                <option value="s3_075">S3-075: e68dca32</option>
+                <option value="s3_076">S3-076: ec5b73fd</option>
+                <option value="s3_077">S3-077: ed8dfd0e</option>
+                <option value="s3_078">S3-078: eec95604</option>
+                <option value="s3_079">S3-079: f0c39d29</option>
+                <option value="s3_080">S3-080: f29cb136</option>
+            </optgroup>
+        </select>
+        <button class="test-btn upload-btn" id="uploadToggle">Upload Image</button>
+        <div class="skip-toggle">
+            <input type="checkbox" id="skipRagReport" checked>
+            <label for="skipRagReport">RAG+Bedrock 스킵 (빠른 테스트)</label>
+        </div>
+    </div>
+
+    <!-- Upload Area -->
+    <div class="upload-area" id="uploadArea">
+        <p>Click or drag CXR image here (JPEG/PNG)</p>
+        <input type="file" id="fileInput" accept="image/*" style="display:none">
+    </div>
+
+    <!-- Run Button -->
+    <button class="run-btn" id="runBtn" disabled>Select a test case or upload image</button>
+
+    <!-- Patient Info -->
+    <div class="section hidden" id="patientSection">
+        <div class="section-header">Patient Information</div>
+        <div class="section-body">
+            <div class="patient-info-grid" id="patientGrid"></div>
+        </div>
+    </div>
+
+    <!-- Main Grid: Image + Pipeline -->
+    <div class="main-grid">
+        <div>
+            <div class="image-panel" id="imagePanel">
+                <div class="placeholder" id="imagePlaceholder">No image selected</div>
+                <div class="image-container" id="imageContainer" style="display:none;">
+                    <img id="originalImg" src="">
+                    <div class="overlay" id="maskOverlay"><img id="maskImg" src=""></div>
+                    <svg id="measureSvg" class="overlay" viewBox="0 0 100 100"
+                         preserveAspectRatio="xMidYMid meet" style="pointer-events:none;"></svg>
+                    <svg id="yoloSvg" class="overlay" viewBox="0 0 100 100"
+                         preserveAspectRatio="xMidYMid meet" style="pointer-events:none;display:none;"></svg>
+                </div>
+                <div class="img-btn-group" id="imgBtnGroup" style="display:none;">
+                    <button class="img-btn active-btn" id="btnOverlay" onclick="toggleOverlay()">Mask ON/OFF</button>
+                    <button class="img-btn active-btn" id="btnMeasure" onclick="toggleMeasure()">Measure ON/OFF</button>
+                    <button class="img-btn active-btn" id="btnYolo" onclick="toggleYolo()">YOLO ON/OFF</button>
+                </div>
+                <div class="legend" id="imgLegend" style="display:none;">
+                    <div class="legend-item"><div class="legend-color" style="background:rgba(41,128,185,0.7)"></div>R Lung</div>
+                    <div class="legend-item"><div class="legend-color" style="background:rgba(39,174,96,0.7)"></div>L Lung</div>
+                    <div class="legend-item"><div class="legend-color" style="background:rgba(231,76,60,0.8)"></div>Heart</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#fbbf24"></div>Mediastinum</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#4ade80"></div>CP Angle</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#818cf8"></div>Diaphragm</div>
+                </div>
+            </div>
+            <div class="measurements-panel hidden" id="measurementsPanel">
+                <h3>Anatomy Measurements</h3>
+                <div class="ctr-display">
+                    <div class="ctr-value" id="ctrValue">--</div>
+                    <div class="ctr-label">CTR (Cardiothoracic Ratio)</div>
+                    <div class="ctr-status" id="ctrStatus"></div>
+                </div>
+                <div class="meas-grid" id="measGrid"></div>
+            </div>
+        </div>
+        <div class="pipeline-panel" id="pipelinePanel">
+            <h3>Pipeline Progress</h3>
+            <div class="pipeline-step step-pending" id="step-layer1">
+                <span class="step-icon">&#9744;</span>
+                <span class="step-name">Layer 1: Segmentation</span>
+                <span class="step-time" id="time-layer1"></span>
+            </div>
+            <div class="pipeline-step step-pending" id="step-layer2">
+                <span class="step-icon">&#9744;</span>
+                <span class="step-name">Layer 2: DenseNet Detection</span>
+                <span class="step-time" id="time-layer2"></span>
+            </div>
+            <div class="pipeline-step step-pending" id="step-layer2b">
+                <span class="step-icon">&#9744;</span>
+                <span class="step-name">Layer 2b: YOLOv8 Detection</span>
+                <span class="step-time" id="time-layer2b"></span>
+            </div>
+            <div class="pipeline-step step-pending" id="step-layer3">
+                <span class="step-icon">&#9744;</span>
+                <span class="step-name">Layer 3: Clinical Logic</span>
+                <span class="step-time" id="time-layer3"></span>
+            </div>
+            <div class="pipeline-step step-pending" id="step-layer5">
+                <span class="step-icon">&#9744;</span>
+                <span class="step-name">Layer 5: RAG (Similar Cases)</span>
+                <span class="step-time" id="time-layer5"></span>
+            </div>
+            <div class="pipeline-step step-pending" id="step-layer6">
+                <span class="step-icon">&#9744;</span>
+                <span class="step-name">Layer 6: Bedrock Report</span>
+                <span class="step-time" id="time-layer6"></span>
+            </div>
+            <div class="total-time hidden" id="totalTime">
+                <span>Total</span>
+                <span id="totalTimeValue"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="error-banner hidden" id="errorBanner"></div>
+
+    <!-- Lateral View Warning Banner -->
+    <div class="lateral-banner hidden" id="lateralBanner"></div>
+
+    <!-- Summary -->
+    <div class="section hidden" id="summarySection">
+        <div class="section-header">
+            <span>Summary</span>
+            <span class="risk-badge" id="riskBadge"></span>
+        </div>
+        <div class="section-body summary-content" id="summaryBody"></div>
+    </div>
+
+    <!-- Report -->
+    <div class="section hidden" id="reportSection">
+        <div class="section-header">Report</div>
+        <div class="section-body" id="reportBody"></div>
+    </div>
+
+    <!-- Layer Details (accordion) -->
+    <div class="section hidden" id="layerDetails">
+        <div class="section-header">Layer Details</div>
+        <div id="layerAccordions"></div>
+    </div>
+
+    <!-- RAW JSON -->
+    <div class="section hidden" id="rawSection">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="arrow">&#9654;</span> RAW JSON Response
+        </div>
+        <div class="accordion-body">
+            <pre id="rawJson"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+// ================================================================
+// v3: 단일 /predict 호출 (같은 서버)
+// ================================================================
+// v3는 단일 엔드포인트 — 6개 Layer를 서버 내부에서 순차 실행
+const API_URL = '/predict';
+
+// ================================================================
+// State
+// ================================================================
+let selectedCase = null;
+let imageBase64 = null;
+let patientInfo = {};
+let priorResults = [];
+
+// ================================================================
+// Test Case Data (embedded, same as test_cases.py)
+// ================================================================
+const TEST_CASES = {
+    chf: {
+        name: '심부전 (CHF)', description: '72세 남성, 호흡곤란 2주, 하지 부종',
+        image: '/static/test-images/096052b7.jpg',
+        patient_info: { patient_id:'TC001', age:72, sex:'M', chief_complaint:'호흡곤란, 하지 부종',
+            vitals:{temperature:36.8, heart_rate:98, blood_pressure:'150/90', spo2:92, respiratory_rate:24}},
+        prior_results: [{modal:'ecg', summary:'동성빈맥, 좌심실비대 소견'}]
+    },
+    pneumonia: {
+        name: '폐렴 (Pneumonia)', description: '67세 남성, 발열 38.5C, 기침',
+        image: '/static/test-images/174413ec.jpg',
+        patient_info: { patient_id:'TC002', age:67, sex:'M', chief_complaint:'발열, 기침, 농성 객담 3일',
+            vitals:{temperature:38.5, heart_rate:105, blood_pressure:'120/70', spo2:94, respiratory_rate:22}},
+        prior_results: [{modal:'lab', summary:'WBC 15000, CRP 12.5, PCT 0.8'}]
+    },
+    tension_pneumothorax: {
+        name: '긴장성 기흉', description: '25세 남성, 교통사고 후 좌측 흉통',
+        image: '/static/test-images/2a2277a9.jpg',
+        patient_info: { patient_id:'TC003', age:25, sex:'M', chief_complaint:'교통사고 후 좌측 흉통, 호흡곤란',
+            vitals:{temperature:36.5, heart_rate:130, blood_pressure:'80/50', spo2:82, respiratory_rate:36}},
+        prior_results: []
+    },
+    normal: {
+        name: '정상 (Normal)', description: '35세 여성, 건강검진',
+        image: '/static/test-images/68b5c4b1.jpg',
+        patient_info: { patient_id:'TC004', age:35, sex:'F', chief_complaint:'건강검진',
+            vitals:{temperature:36.5, heart_rate:72, blood_pressure:'120/80', spo2:99, respiratory_rate:16}},
+        prior_results: []
+    },
+    multi_finding: {
+        name: '다중 소견', description: '80세 여성, 낙상 후 흉통, COPD',
+        image: '/static/test-images/e084de3b.jpg',
+        patient_info: { patient_id:'TC005', age:80, sex:'F', chief_complaint:'낙상 후 흉통, 만성 호흡곤란 악화',
+            vitals:{temperature:37.2, heart_rate:115, blood_pressure:'100/60', spo2:87, respiratory_rate:30}},
+        prior_results: [{modal:'ecg', summary:'심방세동, 빈맥'},{modal:'lab', summary:'WBC 18000, D-dimer 2.5, BNP 850'}]
+    }
+};
+
+// ================================================================
+// S3 샘플 이미지 매핑 (80건, PA Only)
+// ================================================================
+const S3_SAMPLES = {
+    s3_001: '01275cbe-a2f95d71-0374e495-68b16452-ebdcb789.jpg',
+    s3_002: '014049a7-1fc7cc5b-d9fba786-7ecc26a0-060c147a.jpg',
+    s3_003: '06275b2d-2775330b-b115667a-512c03e6-0b42342b.jpg',
+    s3_004: '0721e3ed-97ad959e-bf1211b0-e924ea48-678458c1.jpg',
+    s3_005: '07538782-4768fa87-dd4f2100-6935d000-7b6c3b8f.jpg',
+    s3_006: '0c759487-e5ff61e5-a92e73d3-08506c5b-8ff2b085.jpg',
+    s3_007: '0e95cc69-b47dfaf0-96b54022-1878fa11-5f058ecd.jpg',
+    s3_008: '0f1acbee-a9046131-a4ed2bb1-e72d4c8c-b06fb50e.jpg',
+    s3_009: '17e20942-b55bbe1b-c798d9e6-d16cc82b-e2a6b1b0.jpg',
+    s3_010: '18b3b77c-82a2c934-c987f058-1642af81-cb7f5374.jpg',
+    s3_011: '18fffbd9-a6ba704e-8c82171e-c3c0b0e1-34f9d053.jpg',
+    s3_012: '1d276292-0963bb20-a1b90dec-412781b9-f86a3c5d.jpg',
+    s3_013: '23098650-9d2a2dcd-1074de1d-d9d95c8a-75521204.jpg',
+    s3_014: '24e4f359-8ef7a104-d0d5e929-6776ce60-b7e6c2da.jpg',
+    s3_015: '28cd45b6-c22590ca-af6d8f22-e1893f36-f215e05e.jpg',
+    s3_016: '2a12f753-8ecd46fa-c7ca8e64-7196ed00-8d0ea894.jpg',
+    s3_017: '2f29f743-c4c4bbc8-9ca6d4a9-d5ff7972-0d4bbcc6.jpg',
+    s3_018: '3332cf8c-edba75ae-55b3f8c6-3c649171-e82d4154.jpg',
+    s3_019: '34bf54ba-73cc6263-d2eba44f-ededac28-bde43bc1.jpg',
+    s3_020: '3685363a-599b1efd-71dc6691-7ee0c304-eed6419b.jpg',
+    s3_021: '380fda55-d2283afd-511dcad7-803d3b6a-ed8c6b64.jpg',
+    s3_022: '3d798667-d7079b61-7249960d-06f5da6e-1f51a268.jpg',
+    s3_023: '3fcea49d-024622c5-401a6d21-bca6e95f-58608da7.jpg',
+    s3_024: '4591f316-2489e2ed-7e91fcac-93b3e3f3-933fa947.jpg',
+    s3_025: '47f67214-fd100a4e-25cad8ec-9cabbc9e-8ad27a95.jpg',
+    s3_026: '4aae66f7-d0127598-afc8231c-bea3cadc-2f85469b.jpg',
+    s3_027: '4f2d3004-4b58562a-f904aa59-480e84a1-fd3c5133.jpg',
+    s3_028: '4f2f3a1a-effcfb47-c32d3dc5-8df764fa-5cb5773b.jpg',
+    s3_029: '54201716-229e2658-1685e23d-65df6d4c-e5ecd2bc.jpg',
+    s3_030: '5b6889de-1d3cbfd4-a54eb36d-2056dbb5-bcfd6b51.jpg',
+    s3_031: '5cec810f-f22d7ccf-352a8949-fcb1963a-f2ea0598.jpg',
+    s3_032: '6eccd432-4e097045-4c0ef38e-e73f49f6-8799da2c.jpg',
+    s3_033: '7d9ce65c-67986f11-9fee45dd-6afbbedf-a66ee372.jpg',
+    s3_034: '86f79923-f7cb3b44-666c7d7d-047dcd37-fff2fb04.jpg',
+    s3_035: '87c1098e-9c3bb6e3-a61f96b2-ee3edd92-93ac1cdf.jpg',
+    s3_036: '8ac339b6-ee33ab44-a3fee9f0-c009fb5d-9bc6023c.jpg',
+    s3_037: '8b1d0dd1-0b89368f-7c335f32-6fd8499d-5aeab3ea.jpg',
+    s3_038: '90ab0fe4-45b62318-c06a83cc-b86e19c3-1d2fb057.jpg',
+    s3_039: '9a1d1aad-081d4460-77bc5fac-8b28e0be-912c4998.jpg',
+    s3_040: '9b0b1654-d61cf032-47f34c65-756b4cc9-fa46ae29.jpg',
+    s3_041: '9b1a8a51-2b8e4a04-1719059d-aa6bc888-7ace612b.jpg',
+    s3_042: '9b379118-83aa2c46-8c881f58-2b85c0d8-3213e16c.jpg',
+    s3_043: '9b89f79f-9be40ca7-112ce4fd-768c6454-8041aaae.jpg',
+    s3_044: '9e9f4b1a-1ff28f4f-b886cef1-02ad1caf-58dc62d9.jpg',
+    s3_045: '9ebf8954-84c6b9cd-82996125-f2880212-e359e743.jpg',
+    s3_046: '9ff48609-785ad7ee-fbcaf94c-3df58890-cb4d48e7.jpg',
+    s3_047: 'a1877853-72688a50-746fb0bf-3018617e-1fee158f.jpg',
+    s3_048: 'a35790a5-35706ebc-6a848c2d-f13b279e-708cdef7.jpg',
+    s3_049: 'a9250859-9d4e15c5-ded03be8-2ed007b9-b5f98bed.jpg',
+    s3_050: 'aa646a3c-b6da4839-25ba35a5-cfc71661-9af0fdcd.jpg',
+    s3_051: 'ac25f6ba-9a593e79-65f6780a-32205e75-745d188f.jpg',
+    s3_052: 'ac4deb55-ad246e57-296a8913-199ddddd-d2bd36e5.jpg',
+    s3_053: 'acb45927-e0c19317-cd3e2be3-1cfeb201-d0bd3ea4.jpg',
+    s3_054: 'af6eb9fe-b9376cf4-60df0855-9a91927d-561d0f06.jpg',
+    s3_055: 'b04cec19-c348f0ca-b80088b3-68c2d95c-fc3c60a6.jpg',
+    s3_056: 'b1ad7312-8331afb8-5fc05c84-72c93ea0-5a579be8.jpg',
+    s3_057: 'b2093612-0ee94341-26838e2f-d6912ecd-14c5aa64.jpg',
+    s3_058: 'b3bbc97d-790b738b-9210ac5d-366320fe-c5deaf0e.jpg',
+    s3_059: 'b48f4647-76137743-eef39d2c-bd4532f0-ec4b8964.jpg',
+    s3_060: 'b58fc178-4ab7aba9-e502d79b-a7f2f69c-ccbf0bde.jpg',
+    s3_061: 'b6f1e5de-a6a76833-bb8963d0-90e0fc36-29645cf1.jpg',
+    s3_062: 'b914f3ca-a71b6ec3-521f4afb-4a923094-31eda098.jpg',
+    s3_063: 'bcb5e90b-c7d3f928-7bd202ee-4e772a8f-e2240e90.jpg',
+    s3_064: 'bedd217a-418581cb-eaa6a927-cce73ecb-00de2c03.jpg',
+    s3_065: 'c186bfb3-56922e24-5ac39324-5e6125e6-99b77a00.jpg',
+    s3_066: 'c52a3ba5-b4e3cee3-f2644da6-6b43246f-654f21a0.jpg',
+    s3_067: 'c584b5c4-b5b1dad6-a6f30167-c0411948-46379f73.jpg',
+    s3_068: 'cb1c7c96-6d932e23-d291b3b1-d3178893-95e73c0b.jpg',
+    s3_069: 'cc984e8b-e916ce5c-6f2e6d32-b9a40eb1-ef4e07cb.jpg',
+    s3_070: 'cf6471f1-db592bdb-83fc003a-4ec4bfaf-617b3015.jpg',
+    s3_071: 'd3033027-b60beadd-dec6d225-27717511-c75d4c04.jpg',
+    s3_072: 'd5ab23e9-31a17975-996185a8-e36bf225-1e8eeb24.jpg',
+    s3_073: 'd80a4e2b-fd801f39-edbf2040-3b8dc43e-1cdca434.jpg',
+    s3_074: 'da6190a9-b304e4b9-4a4cab1e-9ad9b290-fec42be9.jpg',
+    s3_075: 'e68dca32-5544edfe-d28f740f-9686d21a-e1844494.jpg',
+    s3_076: 'ec5b73fd-646f1749-74747f76-ea5b5dc9-1fcc393a.jpg',
+    s3_077: 'ed8dfd0e-86741458-99af0d74-c19e3a9f-dff40026.jpg',
+    s3_078: 'eec95604-a331cb3e-a2b4951b-7166b34d-854379db.jpg',
+    s3_079: 'f0c39d29-e88800ce-fafb4e9e-55a1e4a0-5dd66382.jpg',
+    s3_080: 'f29cb136-14141b8b-eaeee338-00b93ca8-c7b61578.jpg'
+};
+
+// ================================================================
+// UI Handlers
+// ================================================================
+document.getElementById('caseSelect').addEventListener('change', async function() {
+    const val = this.value;
+    if (!val) return;
+
+    document.getElementById('uploadToggle').classList.remove('active');
+    document.getElementById('uploadArea').classList.remove('visible');
+    resetResults();
+
+    // S3 샘플 이미지인 경우
+    if (val.startsWith('s3_')) {
+        const filename = S3_SAMPLES[val];
+        if (!filename) return;
+        selectedCase = val;
+        const imagePath = '/static/test-images/s3_sample/' + filename;
+        const label = this.options[this.selectedIndex].text;
+        patientInfo = { patient_id: val.toUpperCase(), age: 50, sex: 'M', chief_complaint: '흉부 X-Ray 판독 (S3 샘플)' };
+        priorResults = [];
+        showPatientInfo(patientInfo, priorResults);
+
+        document.getElementById('runBtn').disabled = true;
+        document.getElementById('runBtn').textContent = '이미지 로딩 중...';
+        try {
+            const resp = await fetch(imagePath);
+            const blob = await resp.blob();
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imageBase64 = e.target.result;
+                rawBase64 = imageBase64.split(',')[1];
+                document.getElementById('imagePlaceholder').style.display = 'none';
+                document.getElementById('imageContainer').style.display = 'flex';
+                document.getElementById('originalImg').src = imageBase64;
+                document.getElementById('maskOverlay').style.display = 'none';
+                document.getElementById('runBtn').disabled = false;
+                document.getElementById('runBtn').textContent = 'Run Pipeline: ' + label;
+            };
+            reader.readAsDataURL(blob);
+        } catch (err) {
+            document.getElementById('runBtn').textContent = '이미지 로드 실패: ' + err.message;
+        }
+        return;
+    }
+
+    // 기본 테스트 케이스인 경우
+    selectedCase = val;
+    const tc = TEST_CASES[selectedCase];
+    patientInfo = tc.patient_info;
+    priorResults = tc.prior_results;
+    showPatientInfo(patientInfo, priorResults);
+
+    if (tc.image) {
+        document.getElementById('runBtn').disabled = true;
+        document.getElementById('runBtn').textContent = '이미지 로딩 중...';
+        try {
+            const resp = await fetch(tc.image);
+            const blob = await resp.blob();
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imageBase64 = e.target.result;
+                rawBase64 = imageBase64.split(',')[1];
+                document.getElementById('imagePlaceholder').style.display = 'none';
+                document.getElementById('imageContainer').style.display = 'flex';
+                document.getElementById('originalImg').src = imageBase64;
+                document.getElementById('maskOverlay').style.display = 'none';
+                document.getElementById('runBtn').disabled = false;
+                document.getElementById('runBtn').textContent = 'Run Pipeline: ' + tc.name;
+            };
+            reader.readAsDataURL(blob);
+        } catch (err) {
+            document.getElementById('runBtn').textContent = '이미지 로드 실패: ' + err.message;
+        }
+    }
+});
+
+document.getElementById('uploadToggle').addEventListener('click', () => {
+    document.getElementById('caseSelect').value = '';
+    document.getElementById('uploadToggle').classList.add('active');
+    selectedCase = null;
+    document.getElementById('uploadArea').classList.add('visible');
+    document.getElementById('runBtn').disabled = true;
+    document.getElementById('runBtn').textContent = 'Upload an image first';
+    resetResults();
+});
+
+document.getElementById('uploadArea').addEventListener('click', () => document.getElementById('fileInput').click());
+document.getElementById('uploadArea').addEventListener('dragover', e => { e.preventDefault(); });
+document.getElementById('uploadArea').addEventListener('drop', e => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+document.getElementById('fileInput').addEventListener('change', e => {
+    if (e.target.files.length) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        imageBase64 = e.target.result;
+        rawBase64 = imageBase64.split(',')[1];
+        hideImageViewer();
+        document.getElementById('imagePlaceholder').style.display = 'none';
+        document.getElementById('imageContainer').style.display = 'flex';
+        document.getElementById('originalImg').src = imageBase64;
+        document.getElementById('maskOverlay').style.display = 'none';
+        patientInfo = {};
+        priorResults = [];
+        document.getElementById('patientSection').classList.add('hidden');
+        document.getElementById('runBtn').disabled = false;
+        document.getElementById('runBtn').textContent = 'Run Pipeline: Custom Upload';
+    };
+    reader.readAsDataURL(file);
+}
+
+document.getElementById('runBtn').addEventListener('click', runPipeline);
+
+// ================================================================
+// Pipeline Execution (Method B: JS direct sequential calls)
+// ================================================================
+async function runPipeline() {
+    if (!rawBase64 && !imageBase64) {
+        showError('이미지를 먼저 선택하세요');
+        return;
+    }
+    const btn = document.getElementById('runBtn');
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+    resetResults();
+    resetProgress();
+    const pipelineStart = Date.now();
+
+    // v3: 단일 /predict 호출 — 서버 내부에서 6-Layer 순차 실행
+    const b64 = rawBase64 || (imageBase64 ? imageBase64.split(',')[1] : '');
+    const pi = patientInfo || {};
+    const skipRag = document.getElementById('skipRagReport').checked;
+    const payload = {
+        patient_id: pi.patient_id || 'WEB-' + Date.now(),
+        patient_info: {
+            age: pi.age || 50,
+            sex: pi.sex || 'M',
+            chief_complaint: pi.chief_complaint || '흉부 X-Ray 판독',
+            history: pi.history || []
+        },
+        data: { image_base64: b64 },
+        context: skipRag ? { skip_stages: ['rag', 'report'] } : {}
+    };
+
+    // 모든 스텝 running 표시
+    ['layer1','layer2','layer2b','layer3','layer5','layer6'].forEach(s => updateStep(s, 'running'));
+
+    try {
+        const resp = await fetch(API_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload),
+        });
+        if (!resp.ok) {
+            const errData = await resp.json().catch(() => ({}));
+            throw new Error('HTTP ' + resp.status + ': ' + (errData.detail || resp.statusText));
+        }
+        const data = await resp.json();
+
+        // ── Lateral View Gate: 측면 촬영 감지 시 경고 배너 + 오버레이 숨김 ──
+        if (data.metadata?.lateral_rejected) {
+            // 타이밍: Stage 1만 done, 나머지 skipped
+            const timings = data.metadata?.timings || {};
+            updateStep('layer1', 'done', timings['segmentation']);
+            ['layer2','layer2b','layer3','layer5','layer6'].forEach(s => updateStep(s, 'done'));
+
+            // 이미지만 표시 (오버레이 없이)
+            document.getElementById('imagePlaceholder').style.display = 'none';
+            document.getElementById('imageContainer').style.display = 'flex';
+            if (imageBase64) document.getElementById('originalImg').src = imageBase64;
+            // 마스크/YOLO/측정 오버레이 숨김
+            document.getElementById('maskOverlay').style.display = 'none';
+            document.getElementById('measureSvg').style.display = 'none';
+            document.getElementById('yoloSvg').style.display = 'none';
+            document.getElementById('imgBtnGroup').style.display = 'none';
+
+            // 경고 배너 표시
+            const banner = document.getElementById('lateralBanner');
+            banner.innerHTML = '\u26a0\ufe0f \uce21\uba74(Lateral) \ucd2c\uc601\uc740 PA/AP \uc804\uc6a9 \ubaa8\ub378\ub85c \ubd84\uc11d\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.' +
+                '<span onclick="this.parentElement.classList.add(\'hidden\')" style="float:right;cursor:pointer;font-size:16px;margin-left:12px">&times;</span>';
+            banner.classList.remove('hidden');
+
+            // Raw JSON은 표시
+            renderV3Raw(data);
+
+            // 아래 정상 렌더링 건너뛰기
+            btn.disabled = false;
+            btn.textContent = selectedCase ? ('Run Pipeline: ' + (TEST_CASES[selectedCase]?.name || selectedCase)) : 'Run Pipeline: Custom Upload';
+            const totalMs = Date.now() - pipelineStart;
+            const totalEl = document.getElementById('totalTime');
+            totalEl.classList.remove('hidden');
+            document.getElementById('totalTimeValue').textContent = (totalMs / 1000).toFixed(1) + 's';
+            return;
+        }
+
+        // 타이밍 매핑: v3 metadata.timings → v1 step IDs
+        const timings = data.metadata?.timings || {};
+        const timingsMap = {
+            'segmentation': 'layer1', 'densenet': 'layer2', 'yolo': 'layer2b',
+            'clinical_logic': 'layer3', 'rag': 'layer5', 'report': 'layer6'
+        };
+        for (const [key, stepId] of Object.entries(timingsMap)) {
+            if (timings[key] !== undefined) {
+                updateStep(stepId, 'done', timings[key]);
+            } else {
+                updateStep(stepId, 'done');
+            }
+        }
+
+        // 이미지 표시 (이미 미리보기에 있지만 확인)
+        document.getElementById('imagePlaceholder').style.display = 'none';
+        document.getElementById('imageContainer').style.display = 'flex';
+        if (imageBase64) document.getElementById('originalImg').src = imageBase64;
+        document.getElementById('imgBtnGroup').style.display = 'flex';
+
+        // v3 결과로 v1 UI 렌더링
+        renderV3Summary(data);
+        renderV3Report(data);
+        renderV3Raw(data);
+
+        // 세그멘테이션 마스크 오버레이
+        if (data.metadata?.mask_base64) {
+            await showImages({ mask_base64: data.metadata.mask_base64 });
+        }
+
+        // YOLO bbox가 metadata에 있으면 그리기
+        if (data.metadata?.yolo_detections) {
+            drawYoloBoxes({ detections: data.metadata.yolo_detections, image_size: data.metadata?.image_size });
+        }
+
+        // 해부학 측정값이 있으면 표시
+        if (data.metadata?.anatomy || data.metadata?.measurements) {
+            showMeasurements({
+                measurements: data.metadata.anatomy || data.metadata.measurements,
+                original_size: data.metadata.original_size || data.metadata.image_size
+            });
+        }
+
+    } catch (err) {
+        console.error('Pipeline error:', err);
+        ['layer1','layer2','layer2b','layer3','layer5','layer6'].forEach(s => {
+            const el = document.getElementById('step-' + s);
+            if (el.className.includes('running')) updateStep(s, 'error');
+        });
+        showError(err.message || String(err));
+    }
+
+    // Total time
+    const totalMs = Date.now() - pipelineStart;
+    const totalEl = document.getElementById('totalTime');
+    totalEl.classList.remove('hidden');
+    document.getElementById('totalTimeValue').textContent = (totalMs / 1000).toFixed(1) + 's';
+
+    btn.disabled = false;
+    if (selectedCase && TEST_CASES[selectedCase]) {
+        btn.textContent = 'Run Pipeline: ' + TEST_CASES[selectedCase].name;
+    } else if (selectedCase && selectedCase.startsWith('s3_')) {
+        const sel = document.getElementById('caseSelect');
+        btn.textContent = 'Run Pipeline: ' + (sel.options[sel.selectedIndex]?.text || selectedCase);
+    } else {
+        btn.textContent = 'Run Pipeline: Custom Upload';
+    }
+}
+
+// ================================================================
+// v3 결과 렌더링 함수들
+// ================================================================
+function renderV3Summary(data) {
+    const sec = document.getElementById('summarySection');
+    sec.classList.remove('hidden');
+    // risk_level은 이제 top-level (data.risk_level)
+    const risk = (data.risk_level || 'unknown').toLowerCase();
+    const badge = document.getElementById('riskBadge');
+    badge.textContent = (data.risk_level || 'UNKNOWN').toUpperCase();
+    badge.className = 'risk-badge risk-' + (risk === 'critical' ? 'critical' : risk === 'high' ? 'urgent' : 'routine');
+
+    let html = '';
+    // 검출된 소견 태그 (findings는 이제 detected=True만 포함)
+    const detected = (data.findings || []);
+    if (detected.length) {
+        html += '<div class="disease-list">' + detected.map(d =>
+            '<span class="disease-tag">' + d.name.replace(/_/g,' ') + '</span>'
+        ).join('') + '</div>';
+    }
+    // 요약
+    if (data.summary) {
+        html += '<div style="margin-top:10px;font-size:13px;line-height:1.7;color:var(--text-primary)">' + data.summary + '</div>';
+    }
+    // pertinent negatives (관련 음성 소견)
+    if (data.pertinent_negatives && data.pertinent_negatives.length) {
+        html += '<div style="margin-top:8px;font-size:13px;color:var(--text-secondary)">';
+        html += '관련 음성 소견: ' + data.pertinent_negatives.join(', ');
+        html += '</div>';
+    }
+    // suggested next actions
+    if (data.suggested_next_actions && data.suggested_next_actions.length) {
+        html += '<div style="margin-top:8px;font-size:13px;color:var(--warning)">';
+        html += '권장 후속 조치: ' + data.suggested_next_actions.map(function(a) { return a.description || JSON.stringify(a); }).join(' / ');
+        html += '</div>';
+    }
+    // 감별진단
+    if (data.metadata?.differential_diagnosis?.length) {
+        html += '<div style="margin-top:8px;font-size:13px;color:var(--text-secondary)">Differential: ';
+        html += data.metadata.differential_diagnosis.map((d,i) => (i+1)+'. '+(d.diagnosis||d)).join(' | ');
+        html += '</div>';
+    }
+    document.getElementById('summaryBody').innerHTML = html;
+}
+
+function renderV3Report(data) {
+    if (!data.report) return;
+    const sec = document.getElementById('reportSection');
+    sec.classList.remove('hidden');
+    // v3 report는 plain text (Bedrock 생성)
+    let html = '<div class="report-section"><div class="content">' +
+        data.report.replace(/\n/g, '<br>') + '</div></div>';
+    document.getElementById('reportBody').innerHTML = html;
+}
+
+function renderV3Raw(data) {
+    const sec = document.getElementById('rawSection');
+    sec.classList.remove('hidden');
+    document.getElementById('rawJson').textContent = JSON.stringify(data, null, 2);
+
+    // Findings 상세 (레이어 디테일 섹션 재활용)
+    const detSec = document.getElementById('layerDetails');
+    detSec.classList.remove('hidden');
+    let html = '';
+    // Findings 테이블 (detected=True인 소견만 포함)
+    const findingsCount = (data.findings||[]).length;
+    const allCount = data.metadata?.all_findings_count || 14;
+    html += '<div class="accordion-header open" onclick="toggleAccordion(this)">';
+    html += '<span class="arrow" style="transform:rotate(90deg)">&#9654;</span> Detected Findings (' + findingsCount + ' / ' + allCount + ' total)</div>';
+    html += '<div class="accordion-body open"><table style="width:100%;font-size:12px;border-collapse:collapse">';
+    html += '<tr style="color:var(--text-muted)"><th style="text-align:left;padding:4px">Finding</th><th>Detected</th><th>Confidence</th><th style="text-align:left">Detail</th></tr>';
+    (data.findings || []).forEach(f => {
+        html += '<tr style="border-bottom:1px solid var(--border)">';
+        html += '<td style="padding:4px;color:var(--critical)">' + f.name + '</td>';
+        html += '<td style="text-align:center;color:var(--critical)">YES</td>';
+        html += '<td style="text-align:center">' + (f.confidence * 100).toFixed(0) + '%</td>';
+        html += '<td style="padding:4px;font-size:11px;color:var(--text-secondary)">' + (f.detail || '-') + '</td>';
+        html += '</tr>';
+    });
+    if (findingsCount === 0) {
+        html += '<tr><td colspan="4" style="padding:8px;text-align:center;color:var(--positive)">No significant findings detected</td></tr>';
+    }
+    html += '</table></div>';
+
+    // Metadata
+    html += '<div class="accordion-header" onclick="toggleAccordion(this)">';
+    html += '<span class="arrow">&#9654;</span> Metadata</div>';
+    html += '<div class="accordion-body"><pre>' + JSON.stringify(data.metadata, null, 2) + '</pre></div>';
+
+    document.getElementById('layerAccordions').innerHTML = html;
+}
+
+// ================================================================
+// 시각화 함수들 — drawYoloBoxes, showMeasurements, drawMeasurements
+// ================================================================
+
+// ================================================================
+// UI Updates
+// ================================================================
+function updateStep(layer, status, time) {
+    const el = document.getElementById('step-' + layer);
+    el.className = 'pipeline-step step-' + status;
+    const iconMap = { pending:'\u2610', running:'\u23F3', done:'\u2705', error:'\u274C' };
+    el.querySelector('.step-icon').textContent = iconMap[status] || '';
+    if (time !== undefined) {
+        const t = typeof time === 'number' ? time : parseFloat(time);
+        document.getElementById('time-' + layer).textContent = t < 1 ? (t*1000).toFixed(0)+'ms' : t.toFixed(1)+'s';
+    }
+}
+
+function resetProgress() {
+    ['layer1','layer2','layer2b','layer3','layer5','layer6'].forEach(l => {
+        updateStep(l, 'pending');
+        document.getElementById('time-' + l).textContent = '';
+    });
+    document.getElementById('totalTime').classList.add('hidden');
+}
+
+function resetResults() {
+    ['summarySection','reportSection','layerDetails','rawSection','errorBanner','lateralBanner','measurementsPanel'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+    });
+    hideImageViewer();
+}
+
+function hideImageViewer() {
+    document.getElementById('imageContainer').style.display = 'none';
+    document.getElementById('imgBtnGroup').style.display = 'none';
+    document.getElementById('imgLegend').style.display = 'none';
+    document.getElementById('maskOverlay').style.display = 'none';
+    document.getElementById('measureSvg').style.display = 'none';
+    document.getElementById('measureSvg').innerHTML = '';
+    document.getElementById('yoloSvg').style.display = 'none';
+    document.getElementById('yoloSvg').innerHTML = '';
+    document.getElementById('imagePlaceholder').style.display = '';
+    document.getElementById('imagePlaceholder').textContent = 'No image selected';
+}
+
+let overlayVisible = true;
+let measureVisible = true;
+let yoloVisible = true;
+
+function toggleOverlay() {
+    overlayVisible = !overlayVisible;
+    document.getElementById('maskOverlay').style.display = overlayVisible ? 'block' : 'none';
+    document.getElementById('btnOverlay').classList.toggle('active-btn', overlayVisible);
+}
+
+function toggleMeasure() {
+    measureVisible = !measureVisible;
+    document.getElementById('measureSvg').style.display = measureVisible ? 'block' : 'none';
+    document.getElementById('btnMeasure').classList.toggle('active-btn', measureVisible);
+}
+
+function toggleYolo() {
+    yoloVisible = !yoloVisible;
+    document.getElementById('yoloSvg').style.display = yoloVisible ? 'block' : 'none';
+    document.getElementById('btnYolo').classList.toggle('active-btn', yoloVisible);
+}
+
+function drawYoloBoxes(layer2b) {
+    const svg = document.getElementById('yoloSvg');
+    console.log('[YOLO] drawYoloBoxes called', layer2b);
+    if (!layer2b || !layer2b.detections || layer2b.detections.length === 0) {
+        console.log('[YOLO] No detections, skipping');
+        return;
+    }
+    console.log('[YOLO] Drawing', layer2b.detections.length, 'boxes');
+
+    const imgSize = layer2b.image_size || [1, 1];
+    const imgW = imgSize[0], imgH = imgSize[1];
+    svg.setAttribute('viewBox', `0 0 ${imgW} ${imgH}`);
+    svg.style.display = 'block';
+    yoloVisible = true;
+    document.getElementById('btnYolo').classList.add('active-btn');
+
+    let html = '';
+    layer2b.detections.forEach(d => {
+        const [x1, y1, x2, y2] = d.bbox;
+        const w = x2 - x1, h = y2 - y1;
+        const color = d.color || '#ef4444';
+        const label = `${d.class_name} ${(d.confidence * 100).toFixed(0)}%`;
+        const sw = Math.max(4, Math.round(imgW / 200));  // viewBox 크기에 비례한 선 굵기
+        const fs = Math.max(26, Math.round(imgW / 60));  // 글자 크기도 비례
+        const lh = Math.round(fs * 1.5);
+        html += `<rect x="${x1}" y="${y1}" width="${w}" height="${h}" fill="none" stroke="${color}" stroke-width="${sw}"/>`;
+        html += `<rect x="${x1}" y="${y1 - lh}" width="${label.length * fs * 0.65 + 12}" height="${lh}" fill="${color}" rx="4"/>`;
+        html += `<text x="${x1 + 6}" y="${y1 - lh * 0.3}" fill="white" font-size="${fs}" font-weight="bold">${label}</text>`;
+    });
+    svg.innerHTML = html;
+}
+
+function showError(msg) {
+    const el = document.getElementById('errorBanner');
+    el.innerHTML = '<strong>Pipeline Error:</strong> ' + msg +
+        '<span onclick="this.parentElement.classList.add(\'hidden\')" style="float:right;cursor:pointer;font-size:16px;margin-left:12px">&times;</span>';
+    el.classList.remove('hidden');
+}
+
+async function showImages(layer1) {
+    const container = document.getElementById('imageContainer');
+    const placeholder = document.getElementById('imagePlaceholder');
+    const origImg = document.getElementById('originalImg');
+    const maskOvl = document.getElementById('maskOverlay');
+    const maskImg = document.getElementById('maskImg');
+    const btnGroup = document.getElementById('imgBtnGroup');
+    const legend = document.getElementById('imgLegend');
+
+    // 이미지는 이미 미리보기에 표시되어 있음
+    if (imageBase64) {
+        origImg.src = imageBase64;
+    }
+
+    // Show container
+    placeholder.style.display = 'none';
+    container.style.display = 'flex';
+
+    // Overlay mask
+    if (layer1.mask_base64) {
+        maskImg.src = 'data:image/png;base64,' + layer1.mask_base64;
+        maskOvl.style.display = 'block';
+        overlayVisible = true;
+        document.getElementById('btnOverlay').classList.add('active-btn');
+        btnGroup.style.display = 'flex';
+        legend.style.display = 'flex';
+    }
+}
+
+function showMeasurements(layer1) {
+    const m = layer1.measurements;
+    if (!m) return;
+    const panel = document.getElementById('measurementsPanel');
+    panel.classList.remove('hidden');
+
+    // CTR display
+    const ctrEl = document.getElementById('ctrValue');
+    const statusEl = document.getElementById('ctrStatus');
+    ctrEl.textContent = m.ctr ? m.ctr.toFixed(4) : '--';
+    if (m.ctr_status === 'normal') {
+        ctrEl.style.color = '#22c55e';
+        statusEl.textContent = 'Normal';
+        statusEl.className = 'ctr-status ctr-normal';
+    } else if (m.ctr_status === 'cardiomegaly') {
+        ctrEl.style.color = '#f59e0b';
+        statusEl.textContent = 'Cardiomegaly';
+        statusEl.className = 'ctr-status ctr-warning';
+    } else {
+        ctrEl.style.color = '#ef4444';
+        statusEl.textContent = 'Severe Cardiomegaly';
+        statusEl.className = 'ctr-status ctr-danger';
+    }
+
+    // Measurements grid
+    const grid = document.getElementById('measGrid');
+    const items = [
+        ['Heart Width', m.heart_width_px ? m.heart_width_px + ' px' : '--'],
+        ['Thorax Width', m.thorax_width_px ? m.thorax_width_px + ' px' : '--'],
+        ['Heart Area', m.heart_area_px ? (m.heart_area_px/1000).toFixed(0) + 'K px\u00B2' : '--'],
+        ['R Lung Area', m.right_lung_area_px ? (m.right_lung_area_px/1000).toFixed(0) + 'K px\u00B2' : '--'],
+        ['L Lung Area', m.left_lung_area_px ? (m.left_lung_area_px/1000).toFixed(0) + 'K px\u00B2' : '--'],
+        ['Lung Ratio (L/R)', m.lung_area_ratio ? m.lung_area_ratio.toFixed(3) : '--'],
+    ];
+    if (m.mediastinum) {
+        items.push(['Mediastinum', (m.mediastinum.status || '--') + (m.mediastinum.width_px ? ' (' + m.mediastinum.width_px + 'px)' : '')]);
+    }
+    if (m.trachea) {
+        items.push(['Trachea', m.trachea.midline ? 'Midline' : 'Deviated ' + (m.trachea.deviation_direction || '')]);
+    }
+    if (m.cp_angle) {
+        if (m.cp_angle.right) items.push(['R CP Angle', (m.cp_angle.right.angle_degrees ? m.cp_angle.right.angle_degrees.toFixed(1) + '\u00B0' : '--') + ' (' + (m.cp_angle.right.status || '--') + ')']);
+        if (m.cp_angle.left) items.push(['L CP Angle', (m.cp_angle.left.angle_degrees ? m.cp_angle.left.angle_degrees.toFixed(1) + '\u00B0' : '--') + ' (' + (m.cp_angle.left.status || '--') + ')']);
+    }
+    if (m.diaphragm) {
+        items.push(['Diaphragm', m.diaphragm.status || '--']);
+    }
+
+    grid.innerHTML = items.map(([label, val]) =>
+        '<div class="meas-item"><span class="meas-label">' + label + '</span><span class="meas-val">' + val + '</span></div>'
+    ).join('');
+
+    // Draw SVG measurement overlays on image
+    drawMeasurements(layer1);
+}
+
+function drawMeasurements(layer1) {
+    const svg = document.getElementById('measureSvg');
+    const origSize = layer1.original_size;
+    if (!origSize) return;
+    const [h, w] = origSize;
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+
+    const m = layer1.measurements;
+    let s = '';
+    const sw = Math.max(4, Math.round(w / 200));  // YOLO와 동일 비율
+
+    // 공통 라벨 스타일 — YOLO 텍스트와 비슷한 크기
+    const fs = Math.max(26, Math.round(w / 60));  // YOLO와 동일
+    const bgPad = Math.round(fs * 0.3);  // 배경 패딩
+
+    // Mediastinum (종격동 폭)
+    const med = m.mediastinum;
+    if (med && med.width_px > 0) {
+        const y = med.measurement_y_level;
+        s += '<line x1="'+med.x_left+'" y1="'+y+'" x2="'+med.x_right+'" y2="'+y+'" stroke="#fbbf24" stroke-width="'+sw+'" stroke-dasharray="'+(sw*4)+','+(sw*2)+'" />';
+        s += '<circle cx="'+med.x_left+'" cy="'+y+'" r="'+(Math.round(sw*1.5))+'" fill="#fbbf24" />';
+        s += '<circle cx="'+med.x_right+'" cy="'+y+'" r="'+(Math.round(sw*1.5))+'" fill="#fbbf24" />';
+        const tx = (med.x_left + med.x_right) / 2;
+        // 라벨: 종격동 폭 + 수치
+        s += '<rect x="'+(tx - fs*5)+'" y="'+(y - fs - bgPad*2)+'" width="'+(fs*10)+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
+        s += '<text x="'+tx+'" y="'+(y - bgPad*1.5)+'" fill="#fbbf24" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">종격동 폭 '+med.width_px+'px</text>';
+    }
+
+    // Trachea (기관 중심선) — 모든 좌표는 백엔드에서 계산된 값 사용
+    const tra = m.trachea;
+    if (tra && tra.thorax_center_x > 0) {
+        // 기관 y 범위 (백엔드 제공: 쇄골~carina)
+        const tyStart = tra.trachea_y_start || Math.round(h * 0.10);
+        const tyEnd = tra.trachea_y_end || Math.round(h * 0.33);
+
+        // 1) 흉곽 중심선 (참조선, 흰 점선) — 폐 영역 전체
+        s += '<line x1="'+tra.thorax_center_x+'" y1="'+tyStart+'" x2="'+tra.thorax_center_x+'" y2="'+Math.round(h*0.70)+'" stroke="rgba(255,255,255,0.12)" stroke-width="'+Math.round(sw*0.4)+'" stroke-dasharray="'+(sw*3)+','+(sw*4)+'" />';
+
+        // 2) 기관 중심선 (쇄골~carina 구간만, 짧은 실선)
+        const mColor = tra.alert ? '#f87171' : '#fbbf24';
+        const mSw = tra.alert ? Math.round(sw*1.5) : sw;
+        s += '<line x1="'+tra.mediastinum_center_x+'" y1="'+tyStart+'" x2="'+tra.mediastinum_center_x+'" y2="'+tyEnd+'" stroke="'+mColor+'" stroke-width="'+mSw+'" />';
+        // carina 마커 (기관 끝점)
+        s += '<circle cx="'+tra.mediastinum_center_x+'" cy="'+tyEnd+'" r="'+Math.round(sw*1.2)+'" fill="'+mColor+'" />';
+
+        // 3) 편위 화살표 (기관 중간 높이에서 흉곽중심→기관중심)
+        if (!tra.midline) {
+            const arrowY = Math.round((tyStart + tyEnd) / 2);
+            s += '<line x1="'+tra.thorax_center_x+'" y1="'+arrowY+'" x2="'+tra.mediastinum_center_x+'" y2="'+arrowY+'" stroke="'+mColor+'" stroke-width="'+Math.round(sw*0.8)+'" stroke-dasharray="'+(sw*2)+','+(sw)+'" />';
+        }
+
+        // 4) 라벨 (기관 위쪽에 배치)
+        const traLabel = tra.midline ? '기관 정중앙' : '⚠ 기관 편위 ('+( tra.deviation_direction || '?')+')';
+        const traLabelW = traLabel.length * fs * 0.55;
+        const labelY = tyStart - fs - bgPad * 2;
+        s += '<rect x="'+(tra.mediastinum_center_x - traLabelW/2)+'" y="'+labelY+'" width="'+traLabelW+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
+        s += '<text x="'+tra.mediastinum_center_x+'" y="'+(labelY + fs + bgPad*0.3)+'" fill="'+mColor+'" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">'+traLabel+'</text>';
+    }
+
+    // CP Angles (늑골횡격막각)
+    if (m.cp_angle) {
+        ['right', 'left'].forEach(function(side) {
+            const cp = m.cp_angle[side];
+            if (cp && cp.point && cp.point[0] > 0) {
+                const color = cp.status === 'blunted' ? '#f87171' : '#4ade80';
+                const statusText = cp.status === 'blunted' ? '둔화' : '정상';
+                const sideKo = side === 'right' ? '우' : '좌';
+                const r1 = Math.round(sw * 2.5), r2 = Math.round(sw * 4);
+                s += '<circle cx="'+cp.point[0]+'" cy="'+cp.point[1]+'" r="'+r1+'" fill="'+color+'" opacity="0.8" />';
+                s += '<circle cx="'+cp.point[0]+'" cy="'+cp.point[1]+'" r="'+r2+'" fill="none" stroke="'+color+'" stroke-width="'+sw+'" />';
+                // 라벨: CP Angle + 각도 + 상태
+                const cpLabel = sideKo+'측 CP각 '+cp.angle_degrees+'° ('+statusText+')';
+                const cpY = cp.point[1] - r2 - sw*3;
+                const cpLabelW = cpLabel.length * fs * 0.55;
+                s += '<rect x="'+(cp.point[0] - cpLabelW/2)+'" y="'+(cpY - fs - bgPad)+'" width="'+cpLabelW+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
+                s += '<text x="'+cp.point[0]+'" y="'+(cpY - bgPad*0.3)+'" fill="'+color+'" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">'+cpLabel+'</text>';
+            }
+        });
+    }
+
+    // Diaphragm (횡격막)
+    const dia = m.diaphragm;
+    if (dia && dia.status !== 'unmeasurable') {
+        const rp = dia.right_dome_point, lp = dia.left_dome_point;
+        const ts = Math.round(sw * 3);
+        if (rp && rp[0] > 0) {
+            s += '<polygon points="'+rp[0]+','+(rp[1]-ts)+' '+(rp[0]-ts*0.7)+','+(rp[1]+ts*0.4)+' '+(rp[0]+ts*0.7)+','+(rp[1]+ts*0.4)+'" fill="#818cf8" />';
+            // 라벨
+            s += '<rect x="'+(rp[0] - fs*3)+'" y="'+(rp[1] + ts)+'" width="'+(fs*6)+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
+            s += '<text x="'+rp[0]+'" y="'+(rp[1] + ts + fs + bgPad*0.5)+'" fill="#818cf8" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">우 횡격막</text>';
+        }
+        if (lp && lp[0] > 0) {
+            s += '<polygon points="'+lp[0]+','+(lp[1]-ts)+' '+(lp[0]-ts*0.7)+','+(lp[1]+ts*0.4)+' '+(lp[0]+ts*0.7)+','+(lp[1]+ts*0.4)+'" fill="#818cf8" />';
+            s += '<rect x="'+(lp[0] - fs*3)+'" y="'+(lp[1] + ts)+'" width="'+(fs*6)+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
+            s += '<text x="'+lp[0]+'" y="'+(lp[1] + ts + fs + bgPad*0.5)+'" fill="#818cf8" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">좌 횡격막</text>';
+        }
+        if (rp && lp && rp[0] > 0 && lp[0] > 0) {
+            s += '<line x1="'+rp[0]+'" y1="'+rp[1]+'" x2="'+lp[0]+'" y2="'+lp[1]+'" stroke="rgba(129,140,248,0.5)" stroke-width="'+sw+'" stroke-dasharray="'+(sw*3)+','+(sw*2)+'" />';
+        }
+    }
+
+    // CTR 측정선 (심장 폭 + 흉곽 폭)
+    if (m.heart_width_px > 0 && m.thorax_width_px > 0 && m.ctr > 0) {
+        const ctrData = m.ctr_lines || {};
+        // heart_left/right, thorax_left/right, heart_row, thorax_row이 있으면 그 좌표 사용
+        const hl = ctrData.heart_left_x, hr = ctrData.heart_right_x, hRow = ctrData.heart_row;
+        const tl = ctrData.thorax_left_x, tr2 = ctrData.thorax_right_x, tRow = ctrData.thorax_row;
+
+        if (hl > 0 && hr > 0 && hRow > 0) {
+            // 심장 폭 (빨간 실선)
+            s += '<line x1="'+hl+'" y1="'+hRow+'" x2="'+hr+'" y2="'+hRow+'" stroke="#ef4444" stroke-width="'+(sw*1.5)+'" />';
+            s += '<circle cx="'+hl+'" cy="'+hRow+'" r="'+(Math.round(sw*1.5))+'" fill="#ef4444" />';
+            s += '<circle cx="'+hr+'" cy="'+hRow+'" r="'+(Math.round(sw*1.5))+'" fill="#ef4444" />';
+            const hMid = (hl + hr) / 2;
+            const hLabel = '심장 폭 ' + m.heart_width_px + 'px';
+            const hLW = hLabel.length * fs * 0.55;
+            s += '<rect x="'+(hMid - hLW/2)+'" y="'+(hRow - fs - bgPad*3)+'" width="'+hLW+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
+            s += '<text x="'+hMid+'" y="'+(hRow - bgPad*2)+'" fill="#ef4444" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">'+hLabel+'</text>';
+        }
+
+        if (tl > 0 && tr2 > 0 && tRow > 0) {
+            // 흉곽 폭 (파란 점선)
+            s += '<line x1="'+tl+'" y1="'+tRow+'" x2="'+tr2+'" y2="'+tRow+'" stroke="#60a5fa" stroke-width="'+sw+'" stroke-dasharray="'+(sw*4)+','+(sw*2)+'" />';
+            s += '<circle cx="'+tl+'" cy="'+tRow+'" r="'+(Math.round(sw*1.5))+'" fill="#60a5fa" />';
+            s += '<circle cx="'+tr2+'" cy="'+tRow+'" r="'+(Math.round(sw*1.5))+'" fill="#60a5fa" />';
+            const tMid = (tl + tr2) / 2;
+            const tLabel = '흉곽 폭 ' + m.thorax_width_px + 'px';
+            const tLW = tLabel.length * fs * 0.55;
+            s += '<rect x="'+(tMid - tLW/2)+'" y="'+(tRow + bgPad)+'" width="'+tLW+'" height="'+(fs + bgPad*2)+'" rx="'+(bgPad)+'" fill="rgba(0,0,0,0.7)" />';
+            s += '<text x="'+tMid+'" y="'+(tRow + fs + bgPad)+'" fill="#60a5fa" font-size="'+fs+'" text-anchor="middle" font-family="sans-serif">'+tLabel+'</text>';
+        }
+    }
+
+    svg.innerHTML = s;
+    svg.style.display = 'block';
+    measureVisible = true;
+    document.getElementById('btnMeasure').classList.add('active-btn');
+    document.getElementById('imgBtnGroup').style.display = 'flex';
+}
+
+function showPatientInfo(pi, pr) {
+    const sec = document.getElementById('patientSection');
+    sec.classList.remove('hidden');
+    const grid = document.getElementById('patientGrid');
+    let html = '';
+    if (pi.age) html += '<div class="info-item"><span class="info-label">Age</span><span class="info-value">'+pi.age+'</span></div>';
+    if (pi.sex) html += '<div class="info-item"><span class="info-label">Sex</span><span class="info-value">'+pi.sex+'</span></div>';
+    if (pi.chief_complaint) html += '<div class="info-item"><span class="info-label">Chief Complaint</span><span class="info-value">'+pi.chief_complaint+'</span></div>';
+    if (pi.vitals) {
+        const v = pi.vitals;
+        if (v.temperature) html += '<div class="info-item"><span class="info-label">Temp</span><span class="info-value">'+v.temperature+'C</span></div>';
+        if (v.heart_rate) html += '<div class="info-item"><span class="info-label">HR</span><span class="info-value">'+v.heart_rate+' bpm</span></div>';
+        if (v.blood_pressure) html += '<div class="info-item"><span class="info-label">BP</span><span class="info-value">'+v.blood_pressure+'</span></div>';
+        if (v.spo2) html += '<div class="info-item"><span class="info-label">SpO2</span><span class="info-value">'+v.spo2+'%</span></div>';
+        if (v.respiratory_rate) html += '<div class="info-item"><span class="info-label">RR</span><span class="info-value">'+v.respiratory_rate+'/min</span></div>';
+    }
+    if (pr && pr.length) {
+        pr.forEach(p => {
+            html += '<div class="info-item"><span class="info-label">'+p.modal.toUpperCase()+'</span><span class="info-value">'+p.summary+'</span></div>';
+        });
+    }
+    grid.innerHTML = html;
+}
+
+function toggleAccordion(header) {
+    header.classList.toggle('open');
+    const body = header.nextElementSibling;
+    body.classList.toggle('open');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+v3/models/rag-svc/chest/faiss_index.bin filter=lfs diff=lfs merge=lfs -text
+v3/models/rag-svc/chest/metadata.jsonl filter=lfs diff=lfs merge=lfs -text
+v3/models/rag-svc/embedding-model/bge-small-en-v1.5/model.safetensors filter=lfs diff=lfs merge=lfs -text
+v3/models/chest-svc/unet.onnx filter=lfs diff=lfs merge=lfs -text
+v3/models/chest-svc/yolov8.onnx filter=lfs diff=lfs merge=lfs -text
+v3/models/chest-svc/densenet.onnx.data filter=lfs diff=lfs merge=lfs -text

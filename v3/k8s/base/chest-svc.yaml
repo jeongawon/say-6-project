@@ -1,0 +1,116 @@
+# ── chest-svc Deployment ─────────────────────────────────────
+# 흉부 X-Ray 6-Layer 파이프라인 서비스 (담당: 박현우)
+# ONNX 모델 3개를 메모리에 상주시키므로 리소스가 가장 큼
+# CPU 1core / Memory 2Gi 필요 — 모델 로딩 시간 약 30초
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chest-svc
+  namespace: dr-ai
+  labels:
+    app: chest-svc
+    app.kubernetes.io/name: chest-svc
+    app.kubernetes.io/part-of: dr-ai
+    # component: modal-service — 모달(의료영상) 분석 서비스 그룹
+    app.kubernetes.io/component: modal-service
+spec:
+  # 레플리카 1개 — ONNX 모델 메모리 사용량이 크므로 스케일 시 노드 리소스 확인 필요
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chest-svc
+  template:
+    metadata:
+      labels:
+        app: chest-svc
+        app.kubernetes.io/name: chest-svc
+        app.kubernetes.io/part-of: dr-ai
+    spec:
+      containers:
+        - name: chest-svc
+          # 이미지 태그는 overlay(local/eks)의 kustomization.yaml에서 오버라이드됨
+          image: chest-svc:latest
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          # ── 환경변수 주입 (2개의 ConfigMap) ──────────────
+          # common-config: Bedrock, DB, Redis, RAG 등 공통 설정
+          # dr-ai-config: 환경별(local/eks) 오버라이드 설정
+          # 동일 키가 있으면 뒤에 선언된 dr-ai-config가 우선
+          envFrom:
+            - configMapRef:
+                name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
+            - configMapRef:
+                name: dr-ai-config         # 환경별 오버라이드 (local/eks)
+            - secretRef:
+                name: aws-credentials
+          # ── 리소스 설정 ──────────────────────────────────
+          # ONNX 모델 3개(classification, detection, segmentation) 로딩에
+          # 최소 2Gi 메모리 필요 — 부족하면 OOMKilled 발생
+          # 모델 추가 시 limits.memory를 늘려야 함
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          # ── 모델 볼륨 마운트 ─────────────────────────────
+          # /models 경로에 ONNX 모델 파일이 마운트됨 (읽기 전용)
+          # local: hostPath, EKS: EFS로 제공
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              subPath: chest-svc
+              readOnly: true
+          # ── Liveness Probe ───────────────────────────────
+          # 모델 로딩에 약 30초 걸리므로 initialDelaySeconds: 30
+          # 30초 안에 로딩 실패 시 failureThreshold(3) * periodSeconds(15) = 45초 후 재시작
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # ── Readiness Probe ──────────────────────────────
+          # 모델이 완전히 로드된 후에만 트래픽 수신
+          # /readyz 엔드포인트에서 모델 로드 상태 확인
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      # ── 볼륨 정의 ─────────────────────────────────────
+      # models-pvc: 로컬에서는 pv-models.yaml, EKS에서는 storageclass.yaml에서 정의
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: models-pvc
+---
+# ── chest-svc Service ────────────────────────────────────────
+# ClusterIP 타입 — 클러스터 내부에서만 접근 가능
+# central-orchestrator가 http://chest-svc:8000 으로 호출
+# 외부 노출이 필요하면 type을 NodePort 또는 LoadBalancer로 변경
+apiVersion: v1
+kind: Service
+metadata:
+  name: chest-svc
+  namespace: dr-ai
+  labels:
+    app: chest-svc
+    app.kubernetes.io/name: chest-svc
+    app.kubernetes.io/part-of: dr-ai
+spec:
+  type: ClusterIP
+  selector:
+    app: chest-svc
+  ports:
+    # 서비스 포트 8000 → 컨테이너 포트 8000 (FastAPI 기본 포트)
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP

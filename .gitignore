@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+venv/
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Tools
+.claude/
+.bkit/
+.playwright-mcp/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Models & Data (Git LFS or S3 managed)
+*.onnx
+*.onnx.data
+*.npy
+*.bin
+*.safetensors
+v3/models/
+
+# FAISS indices
+*.jsonl
+
+# Test symlinks (local dev only)
+v3/services/*/static
+
+# Large archives
+*.zip

@@ -1,0 +1,13 @@
+# ── dr-ai Namespace ──────────────────────────────────────────
+# 프로젝트 전체가 사용하는 K8s 네임스페이스 정의
+# 모든 서비스(chest, ecg, blood, rag, report, orchestrator)가 이 네임스페이스에 배포됨
+# 네임스페이스 이름을 변경하려면 name 필드와 모든 YAML의 namespace 필드를 함께 수정
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dr-ai
+  labels:
+    # part-of: 이 리소스가 dr-ai 프로젝트에 속함을 표시
+    app.kubernetes.io/part-of: dr-ai
+    # managed-by: Kustomize로 관리됨을 표시
+    app.kubernetes.io/managed-by: kustomize

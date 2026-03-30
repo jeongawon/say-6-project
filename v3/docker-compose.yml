@@ -1,0 +1,262 @@
+# ── Dr. AI Radiologist v3 — Docker Compose ───────────────────
+# 로컬 통합 테스트용 환경 구성 파일 (Phase 2에서 사용)
+# 모든 마이크로서비스를 한 번에 실행하여 통합 테스트 수행
+# 실행: docker compose up --build
+# 중지: docker compose down -v
+# ──────────────────────────────────────────────────────────────
+version: "3.8"
+
+# Dr. AI Radiologist v3 — Production-ready local development environment
+# Run:  docker compose up --build
+# Stop: docker compose down -v
+
+# ── 공통 환경변수 (YAML 앵커) ──────────────────────────────────
+# 모든 서비스에서 공유하는 환경변수를 앵커(&common-env)로 정의
+# 각 서비스에서 <<: *common-env 로 병합하여 사용
+x-common-env: &common-env
+  # DB 연결 — 로컬 PostgreSQL 컨테이너 (AWS RDS 대체)
+  DATABASE_URL: postgresql://postgres:postgres@postgres:5432/drai
+  # Redis 연결 — 캐싱/세션용 (AWS ElastiCache 대체)
+  REDIS_URL: redis://redis:6379/0
+  # ONNX 모델 디렉토리 — 서비스별 환경변수로 오버라이드
+  MODEL_DIR: /models
+  # 내부 서비스 간 통신 URL
+  RAG_URL: http://rag-svc:8000
+  REPORT_URL: http://report-svc:8000
+  # AWS Bedrock 리전 (Claude API 호출용)
+  BEDROCK_REGION: ap-northeast-2
+
+services:
+
+  # ── 인프라 서비스 (AWS 관리형 서비스의 로컬 대체) ────────────
+
+  # PostgreSQL — AWS RDS 대체, 환자/분석 결과 저장용 관계형 DB
+  postgres:
+    image: postgres:16
+    environment:
+      # 초기 데이터베이스 및 사용자 설정
+      POSTGRES_DB: drai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    # 호스트 5432 → 컨테이너 5432 포트 매핑 (로컬 DB 도구 접속용)
+    ports:
+      - "5432:5432"
+    # 데이터 영속화 — 컨테이너 재시작 시에도 데이터 유지
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    # 헬스체크 — pg_isready 명령으로 DB 접속 가능 여부 확인
+    # 다른 서비스들이 depends_on: condition: service_healthy 로 대기
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d drai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Redis — AWS ElastiCache 대체, 캐싱 및 세션 저장용
+  redis:
+    image: redis:7
+    # 호스트 6379 → 컨테이너 6379 포트 매핑 (로컬 Redis 도구 접속용)
+    ports:
+      - "6379:6379"
+    # 헬스체크 — redis-cli ping 으로 응답 확인
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ── 모달 서비스 (의료 AI 분석 서비스) ──────────────────────
+
+  # chest-svc — 흉부 X-Ray 6-Layer 파이프라인 서비스
+  # ONNX Runtime으로 3개 모델 추론 (UNet 폐 분할 + DenseNet 질병 분류 + YOLO 이상 탐지)
+  chest-svc:
+    build: ./services/chest-svc
+    # 호스트 8001 → 컨테이너 8000 (각 서비스 내부는 모두 8000 포트 사용)
+    ports:
+      - "8001:8000"
+    # 로컬 models 폴더를 읽기 전용(:ro)으로 마운트 — ONNX 모델 파일 제공
+    # 테스트 UI는 tests/v3/에서 볼륨 마운트 (v3/에는 static 폴더 없음)
+    volumes:
+      - ./models/chest-svc:/models:ro
+      - ../tests/v3/chest-svc/static:/app/static:ro
+    environment:
+      # 공통 환경변수 병합 (DB, Redis, 모델 경로 등)
+      <<: *common-env
+      # 다른 분석 서비스의 내부 URL (오케스트레이터 라우팅용)
+      CHEST_URL: http://chest-svc:8000
+      ECG_URL: http://ecg-svc:8000
+      BLOOD_URL: http://blood-svc:8000
+    # 의존성 — DB, Redis, RAG 서비스가 healthy 상태일 때만 시작
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rag-svc:
+        condition: service_healthy
+    # 헬스체크 — /healthz 엔드포인트로 서비스 상태 확인
+    # start_period: 30s — 모델 로딩에 시간이 걸리므로 대기 시간 길게 설정
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ecg-svc — 심전도(ECG) 분석 서비스
+  # 12-lead ECG 데이터를 분석하여 부정맥 등 이상 소견 탐지
+  ecg-svc:
+    build: ./services/ecg-svc
+    # 호스트 8002 → 컨테이너 8000
+    ports:
+      - "8002:8000"
+    environment:
+      <<: *common-env
+      CHEST_URL: http://chest-svc:8000
+      ECG_URL: http://ecg-svc:8000
+      BLOOD_URL: http://blood-svc:8000
+    # 의존성 — DB, Redis, RAG가 ready 상태여야 시작
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rag-svc:
+        condition: service_healthy
+    # 헬스체크 — 모델이 가벼워서 start_period 10s로 충분
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # blood-svc — 혈액 검사 분석 서비스
+  # CBC/화학 검사 결과를 기반으로 이상 수치 판별
+  blood-svc:
+    build: ./services/blood-svc
+    # 호스트 8003 → 컨테이너 8000
+    ports:
+      - "8003:8000"
+    environment:
+      <<: *common-env
+      CHEST_URL: http://chest-svc:8000
+      ECG_URL: http://ecg-svc:8000
+      BLOOD_URL: http://blood-svc:8000
+    # 의존성 — DB, Redis, RAG가 ready 상태여야 시작
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rag-svc:
+        condition: service_healthy
+    # 헬스체크 — 모델 없이 규칙 기반이므로 빠르게 기동
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # rag-svc — RAG (Retrieval-Augmented Generation) 서비스
+  # FAISS 벡터DB + 의학 문헌 검색으로 LLM 응답 품질 향상
+  rag-svc:
+    build: ./services/rag-svc
+    # 호스트 8004 → 컨테이너 8000
+    ports:
+      - "8004:8000"
+    # 모델/임베딩 파일을 읽기 전용으로 마운트 (서비스별 디렉토리)
+    volumes:
+      - ./models/rag-svc:/models:ro
+    environment:
+      <<: *common-env
+      # rag-svc는 MODEL_DIR 안에 chest/, ecg/, blood/ 서브디렉토리 사용
+      MODEL_DIR: /models/chest
+    # 의존성 — DB, Redis만 필요 (다른 분석 서비스에 의존하지 않음)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # 헬스체크 — FAISS 인덱스 로딩 시간을 고려하여 start_period 20s
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # report-svc — 의료 보고서 생성 서비스
+  # 분석 결과를 종합하여 Bedrock Claude로 의료 보고서 생성
+  report-svc:
+    build: ./services/report-svc
+    # 호스트 8005 → 컨테이너 8000
+    ports:
+      - "8005:8000"
+    environment:
+      <<: *common-env
+    # 의존성 — DB, Redis, RAG가 ready 상태여야 시작
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rag-svc:
+        condition: service_healthy
+    # 헬스체크 — 모델 로딩 없이 API만 호출하므로 빠르게 기동
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ── 중앙 오케스트레이터 ─────────────────────────────────────
+
+  # central-orchestrator — API Gateway + 서비스 조율
+  # 클라이언트 요청을 받아 chest/ecg/blood 서비스에 분배하고 결과를 종합
+  central-orchestrator:
+    build: ./services/central-orchestrator
+    # 호스트 8000 → 컨테이너 8000 (메인 진입점)
+    ports:
+      - "8000:8000"
+    # 테스트 UI는 tests/v3/에서 볼륨 마운트
+    volumes:
+      - ../tests/v3/central-orchestrator/static:/app/static:ro
+    environment:
+      <<: *common-env
+      # 각 분석 서비스의 내부 Docker 네트워크 URL
+      CHEST_URL: http://chest-svc:8000
+      ECG_URL: http://ecg-svc:8000
+      BLOOD_URL: http://blood-svc:8000
+    # 의존성 — 모든 서비스가 healthy 상태일 때 마지막으로 시작
+    # 오케스트레이터는 모든 하위 서비스를 호출하므로 전부 준비되어야 함
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      chest-svc:
+        condition: service_healthy
+      ecg-svc:
+        condition: service_healthy
+      blood-svc:
+        condition: service_healthy
+      rag-svc:
+        condition: service_healthy
+      report-svc:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# ── 볼륨 정의 ────────────────────────────────────────────────
+# pg_data: PostgreSQL 데이터 영속 볼륨 (docker compose down -v 로 삭제 가능)
+volumes:
+  pg_data:

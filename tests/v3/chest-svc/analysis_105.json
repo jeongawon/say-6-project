@@ -1,0 +1,5164 @@
+{
+  "summary": {
+    "total": 105,
+    "elapsed": 56.3,
+    "yolo_detection_rate": "52/105",
+    "densenet_positive_rate": "105/105",
+    "ctr_cardiomegaly_rate": "73/105",
+    "yolo_classes": {
+      "Cardiomegaly": 35,
+      "Other_lesion": 25,
+      "Aortic_enlargement": 11,
+      "Pleural_effusion": 3,
+      "ILD": 1,
+      "Pulmonary_fibrosis": 1,
+      "Pneumothorax": 1
+    },
+    "densenet_classes": {
+      "Edema": 105,
+      "Atelectasis": 104,
+      "Hernia": 102,
+      "Cardiomegaly": 101,
+      "Mass": 101,
+      "Nodule": 82,
+      "Effusion": 57,
+      "Emphysema": 50,
+      "Fibrosis": 24,
+      "Pneumonia": 11,
+      "Consolidation": 6,
+      "No_Finding": 2
+    },
+    "cross_validation": {
+      "both_cardio": 32,
+      "yolo_only_cardio": 3,
+      "ctr_only_cardio": 41
+    }
+  },
+  "results": [
+    {
+      "file": "096052b7",
+      "source": "real",
+      "size": "3056x2544",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.423
+        }
+      ],
+      "ctr": 0.5204,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.7,
+        "right_lung": 9.5,
+        "heart": 9.1
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.832
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.655
+        },
+        {
+          "class": "Edema",
+          "prob": 0.884
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.507
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.65
+        },
+        {
+          "class": "Mass",
+          "prob": 0.804
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.518
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "174413ec",
+      "source": "real",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.798,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 7.7,
+        "right_lung": 10.8,
+        "heart": 6.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.874
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.809
+        },
+        {
+          "class": "Edema",
+          "prob": 0.908
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.531
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.788
+        },
+        {
+          "class": "Mass",
+          "prob": 0.89
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.631
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "2a2277a9",
+      "source": "real",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.415,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 13.7,
+        "right_lung": 13.2,
+        "heart": 7.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.789
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.583
+        },
+        {
+          "class": "Edema",
+          "prob": 0.753
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.596
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.638
+        },
+        {
+          "class": "Mass",
+          "prob": 0.632
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.505
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "68b5c4b1",
+      "source": "real",
+      "size": "2539x2705",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.338
+        }
+      ],
+      "ctr": 0.4194,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 11.5,
+        "right_lung": 13.6,
+        "heart": 7.9
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.795
+        },
+        {
+          "class": "Edema",
+          "prob": 0.593
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.514
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.652
+        },
+        {
+          "class": "Mass",
+          "prob": 0.813
+        }
+      ],
+      "densenet_count": 5
+    },
+    {
+      "file": "e084de3b",
+      "source": "real",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.7171,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.6,
+        "right_lung": 11.2,
+        "heart": 11.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.817
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.709
+        },
+        {
+          "class": "Edema",
+          "prob": 0.927
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.603
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.726
+        },
+        {
+          "class": "Mass",
+          "prob": 0.809
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.644
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "01275cbe-a2f95d71-0374e495-68b16452-ebdcb789",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.458
+        }
+      ],
+      "ctr": 0.5231,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.0,
+        "right_lung": 8.6,
+        "heart": 11.1
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.825
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.732
+        },
+        {
+          "class": "Consolidation",
+          "prob": 0.514
+        },
+        {
+          "class": "Edema",
+          "prob": 0.928
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.526
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.544
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.811
+        },
+        {
+          "class": "Mass",
+          "prob": 0.908
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.729
+        }
+      ],
+      "densenet_count": 9
+    },
+    {
+      "file": "014049a7-1fc7cc5b-d9fba786-7ecc26a0-060c147a",
+      "source": "s3",
+      "size": "2539x3035",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.391,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 20.3,
+        "right_lung": 16.3,
+        "heart": 8.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.773
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.618
+        },
+        {
+          "class": "Edema",
+          "prob": 0.826
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.573
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.52
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.551
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.666
+        },
+        {
+          "class": "Mass",
+          "prob": 0.83
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.539
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.58
+        }
+      ],
+      "densenet_count": 10
+    },
+    {
+      "file": "06275b2d-2775330b-b115667a-512c03e6-0b42342b",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.3143,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 9.2,
+        "right_lung": 20.0,
+        "heart": 5.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.766
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.736
+        },
+        {
+          "class": "Edema",
+          "prob": 0.963
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.535
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.605
+        },
+        {
+          "class": "Mass",
+          "prob": 0.799
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.529
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "0721e3ed-97ad959e-bf1211b0-e924ea48-678458c1",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.5092,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.5,
+        "right_lung": 7.9,
+        "heart": 10.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.814
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.7
+        },
+        {
+          "class": "Edema",
+          "prob": 0.849
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.613
+        },
+        {
+          "class": "Mass",
+          "prob": 0.768
+        }
+      ],
+      "densenet_count": 5
+    },
+    {
+      "file": "07538782-4768fa87-dd4f2100-6935d000-7b6c3b8f",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4934,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 17.8,
+        "right_lung": 11.7,
+        "heart": 9.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.818
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.71
+        },
+        {
+          "class": "Edema",
+          "prob": 0.927
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.596
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.692
+        },
+        {
+          "class": "Mass",
+          "prob": 0.9
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.566
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.505
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "0a7820a5-9773a76e-f79e31e2-d06bccec-16051f21",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 1.0038,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.7,
+        "right_lung": 11.9,
+        "heart": 8.0
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.814
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.781
+        },
+        {
+          "class": "Edema",
+          "prob": 0.928
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.543
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.652
+        },
+        {
+          "class": "Mass",
+          "prob": 0.766
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.515
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "0c759487-e5ff61e5-a92e73d3-08506c5b-8ff2b085",
+      "source": "s3",
+      "size": "2539x3050",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.396
+        }
+      ],
+      "ctr": 0.6168,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.8,
+        "right_lung": 6.7,
+        "heart": 12.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.817
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.705
+        },
+        {
+          "class": "Edema",
+          "prob": 0.908
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.561
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.696
+        },
+        {
+          "class": "Mass",
+          "prob": 0.882
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.541
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "0e95cc69-b47dfaf0-96b54022-1878fa11-5f058ecd",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.3973,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 8.6,
+        "right_lung": 10.7,
+        "heart": 6.3
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.851
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.736
+        },
+        {
+          "class": "Edema",
+          "prob": 0.946
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.59
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.611
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.838
+        },
+        {
+          "class": "Mass",
+          "prob": 0.953
+        },
+        {
+          "class": "No_Finding",
+          "prob": 0.505
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.599
+        }
+      ],
+      "densenet_count": 9
+    },
+    {
+      "file": "0f1acbee-a9046131-a4ed2bb1-e72d4c8c-b06fb50e",
+      "source": "s3",
+      "size": "2520x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.5138,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.1,
+        "right_lung": 11.6,
+        "heart": 9.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.808
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.789
+        },
+        {
+          "class": "Edema",
+          "prob": 0.928
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.502
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.58
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.64
+        },
+        {
+          "class": "Mass",
+          "prob": 0.725
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.539
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "1414c751-0b2ec9b2-9e196ad8-c4d02b13-f44ce5cb",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.9812,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 11.4,
+        "right_lung": 13.4,
+        "heart": 13.6
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.731
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.758
+        },
+        {
+          "class": "Edema",
+          "prob": 0.926
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.505
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.666
+        },
+        {
+          "class": "Mass",
+          "prob": 0.896
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.543
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "17e20942-b55bbe1b-c798d9e6-d16cc82b-e2a6b1b0",
+      "source": "s3",
+      "size": "2906x2539",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.397
+        }
+      ],
+      "ctr": 0.6473,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.6,
+        "right_lung": 7.7,
+        "heart": 13.6
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.815
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.796
+        },
+        {
+          "class": "Edema",
+          "prob": 0.945
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.548
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.676
+        },
+        {
+          "class": "Mass",
+          "prob": 0.867
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "18b3b77c-82a2c934-c987f058-1642af81-cb7f5374",
+      "source": "s3",
+      "size": "2140x1760",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.5021,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.3,
+        "right_lung": 12.2,
+        "heart": 10.3
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.811
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.716
+        },
+        {
+          "class": "Edema",
+          "prob": 0.919
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.574
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.515
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.796
+        },
+        {
+          "class": "Mass",
+          "prob": 0.843
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.537
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "18fffbd9-a6ba704e-8c82171e-c3c0b0e1-34f9d053",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4309,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 18.0,
+        "right_lung": 14.4,
+        "heart": 10.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.659
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.638
+        },
+        {
+          "class": "Edema",
+          "prob": 0.858
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.507
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.565
+        },
+        {
+          "class": "Mass",
+          "prob": 0.708
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "1d276292-0963bb20-a1b90dec-412781b9-f86a3c5d",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.6417,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 6.8,
+        "right_lung": 18.0,
+        "heart": 4.6
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.699
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.671
+        },
+        {
+          "class": "Edema",
+          "prob": 0.929
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.587
+        },
+        {
+          "class": "Mass",
+          "prob": 0.678
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.52
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "23098650-9d2a2dcd-1074de1d-d9d95c8a-75521204",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.5142,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 13.0,
+        "right_lung": 10.7,
+        "heart": 8.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.725
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.641
+        },
+        {
+          "class": "Edema",
+          "prob": 0.859
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.658
+        },
+        {
+          "class": "Mass",
+          "prob": 0.603
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.588
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "24e4f359-8ef7a104-d0d5e929-6776ce60-b7e6c2da",
+      "source": "s3",
+      "size": "2021x2021",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.3734,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 17.4,
+        "right_lung": 13.9,
+        "heart": 7.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.812
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.552
+        },
+        {
+          "class": "Edema",
+          "prob": 0.746
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.514
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.652
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.572
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.7
+        },
+        {
+          "class": "Mass",
+          "prob": 0.843
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.573
+        }
+      ],
+      "densenet_count": 9
+    },
+    {
+      "file": "28cd45b6-c22590ca-af6d8f22-e1893f36-f215e05e",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.6497,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.9,
+        "right_lung": 23.1,
+        "heart": 12.1
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.824
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.804
+        },
+        {
+          "class": "Edema",
+          "prob": 0.951
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.555
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.651
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.575
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.817
+        },
+        {
+          "class": "Mass",
+          "prob": 0.928
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.647
+        }
+      ],
+      "densenet_count": 9
+    },
+    {
+      "file": "2a12f753-8ecd46fa-c7ca8e64-7196ed00-8d0ea894",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.301
+        }
+      ],
+      "ctr": 0.4631,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 7.2,
+        "right_lung": 11.6,
+        "heart": 11.7
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.786
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.797
+        },
+        {
+          "class": "Edema",
+          "prob": 0.947
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.598
+        },
+        {
+          "class": "Mass",
+          "prob": 0.9
+        }
+      ],
+      "densenet_count": 5
+    },
+    {
+      "file": "2f29f743-c4c4bbc8-9ca6d4a9-d5ff7972-0d4bbcc6",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4749,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 10.0,
+        "right_lung": 9.3,
+        "heart": 6.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.734
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.658
+        },
+        {
+          "class": "Edema",
+          "prob": 0.865
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.525
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.58
+        },
+        {
+          "class": "Mass",
+          "prob": 0.549
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.554
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "3332cf8c-edba75ae-55b3f8c6-3c649171-e82d4154",
+      "source": "s3",
+      "size": "2539x3050",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.546
+        },
+        {
+          "class": "ILD",
+          "conf": 0.278
+        }
+      ],
+      "ctr": 0.5534,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.2,
+        "right_lung": 5.8,
+        "heart": 9.6
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.79
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.7
+        },
+        {
+          "class": "Edema",
+          "prob": 0.914
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.549
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.571
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.654
+        },
+        {
+          "class": "Mass",
+          "prob": 0.873
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.547
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "34bf54ba-73cc6263-d2eba44f-ededac28-bde43bc1",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.3295,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 19.5,
+        "right_lung": 18.1,
+        "heart": 7.7
+      },
+      "densenet_positive": [
+        {
+          "class": "Edema",
+          "prob": 0.709
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.533
+        }
+      ],
+      "densenet_count": 2
+    },
+    {
+      "file": "3685363a-599b1efd-71dc6691-7ee0c304-eed6419b",
+      "source": "s3",
+      "size": "3049x2273",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4267,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 10.5,
+        "right_lung": 11.3,
+        "heart": 8.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.804
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.678
+        },
+        {
+          "class": "Edema",
+          "prob": 0.882
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.517
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.691
+        },
+        {
+          "class": "Mass",
+          "prob": 0.831
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.559
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "37213da4-fcc517d0-871ea84f-6c1367f8-e4d5d2b8",
+      "source": "s3",
+      "size": "1910x2022",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.38
+        }
+      ],
+      "ctr": 0.9905,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.3,
+        "right_lung": 11.9,
+        "heart": 13.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.713
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.862
+        },
+        {
+          "class": "Edema",
+          "prob": 0.967
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.535
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.522
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.76
+        },
+        {
+          "class": "Mass",
+          "prob": 0.816
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.54
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "380fda55-d2283afd-511dcad7-803d3b6a-ed8c6b64",
+      "source": "s3",
+      "size": "1759x2021",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.424,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 15.3,
+        "right_lung": 15.8,
+        "heart": 7.9
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.769
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.682
+        },
+        {
+          "class": "Edema",
+          "prob": 0.879
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.571
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.648
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.517
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.71
+        },
+        {
+          "class": "Mass",
+          "prob": 0.862
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.619
+        }
+      ],
+      "densenet_count": 9
+    },
+    {
+      "file": "3d798667-d7079b61-7249960d-06f5da6e-1f51a268",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.37
+        }
+      ],
+      "ctr": 0.5338,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 14.4,
+        "right_lung": 13.1,
+        "heart": 14.9
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.797
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.767
+        },
+        {
+          "class": "Edema",
+          "prob": 0.951
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.522
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.53
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.633
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.792
+        },
+        {
+          "class": "Mass",
+          "prob": 0.926
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.683
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.534
+        }
+      ],
+      "densenet_count": 10
+    },
+    {
+      "file": "3f606c42-82177f82-f7ade431-84d74249-a19205ed",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.9545,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 14.6,
+        "right_lung": 17.2,
+        "heart": 12.1
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.69
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.689
+        },
+        {
+          "class": "Edema",
+          "prob": 0.925
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.555
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.676
+        },
+        {
+          "class": "Mass",
+          "prob": 0.69
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.523
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "3fcea49d-024622c5-401a6d21-bca6e95f-58608da7",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 3,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.664
+        },
+        {
+          "class": "Pleural_effusion",
+          "conf": 0.277
+        },
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.258
+        }
+      ],
+      "ctr": 0.5059,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 8.7,
+        "right_lung": 11.4,
+        "heart": 11.6
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.705
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.543
+        },
+        {
+          "class": "Edema",
+          "prob": 0.818
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.659
+        },
+        {
+          "class": "Mass",
+          "prob": 0.738
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.568
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "43131507-3b255489-2120de9a-1f04dcc8-3683c32c",
+      "source": "s3",
+      "size": "2540x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.9968,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 15.6,
+        "right_lung": 11.3,
+        "heart": 10.1
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.813
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.847
+        },
+        {
+          "class": "Edema",
+          "prob": 0.961
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.526
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.745
+        },
+        {
+          "class": "Mass",
+          "prob": 0.923
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.558
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "4591f316-2489e2ed-7e91fcac-93b3e3f3-933fa947",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.356
+        }
+      ],
+      "ctr": 0.6273,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 9.2,
+        "right_lung": 6.7,
+        "heart": 12.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.819
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.769
+        },
+        {
+          "class": "Edema",
+          "prob": 0.943
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.593
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.69
+        },
+        {
+          "class": "Mass",
+          "prob": 0.893
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.568
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "468d4d92-41b963f5-1154372d-8e226382-f498de7f",
+      "source": "s3",
+      "size": "1760x2140",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.335
+        }
+      ],
+      "ctr": 1.01,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 15.7,
+        "right_lung": 14.2,
+        "heart": 10.0
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.778
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.761
+        },
+        {
+          "class": "Edema",
+          "prob": 0.936
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.673
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.525
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.774
+        },
+        {
+          "class": "Mass",
+          "prob": 0.884
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.567
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "47f67214-fd100a4e-25cad8ec-9cabbc9e-8ad27a95",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.436
+        },
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.311
+        }
+      ],
+      "ctr": 0.5761,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 16.3,
+        "right_lung": 10.7,
+        "heart": 15.0
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.839
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.734
+        },
+        {
+          "class": "Edema",
+          "prob": 0.915
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.536
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.645
+        },
+        {
+          "class": "Mass",
+          "prob": 0.872
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.503
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "4aae66f7-d0127598-afc8231c-bea3cadc-2f85469b",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.466
+        }
+      ],
+      "ctr": 0.5463,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 8.4,
+        "right_lung": 6.2,
+        "heart": 8.1
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.797
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.754
+        },
+        {
+          "class": "Edema",
+          "prob": 0.895
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.676
+        },
+        {
+          "class": "Mass",
+          "prob": 0.858
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.54
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "4d0c14f5-d5f56e6d-743cf0f3-5f245fc5-a468ac39",
+      "source": "s3",
+      "size": "1786x2021",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.302
+        }
+      ],
+      "ctr": 0.906,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 11.2,
+        "right_lung": 16.5,
+        "heart": 11.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.838
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.839
+        },
+        {
+          "class": "Edema",
+          "prob": 0.939
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.617
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.585
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.564
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.827
+        },
+        {
+          "class": "Mass",
+          "prob": 0.943
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.608
+        }
+      ],
+      "densenet_count": 9
+    },
+    {
+      "file": "4f2d3004-4b58562a-f904aa59-480e84a1-fd3c5133",
+      "source": "s3",
+      "size": "2654x2539",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.496
+        },
+        {
+          "class": "Pulmonary_fibrosis",
+          "conf": 0.344
+        }
+      ],
+      "ctr": 0.49,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 12.5,
+        "right_lung": 10.3,
+        "heart": 10.9
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.802
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.777
+        },
+        {
+          "class": "Edema",
+          "prob": 0.953
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.544
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.645
+        },
+        {
+          "class": "Mass",
+          "prob": 0.833
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.527
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "4f2f3a1a-effcfb47-c32d3dc5-8df764fa-5cb5773b",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.42
+        }
+      ],
+      "ctr": 0.5588,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 14.8,
+        "right_lung": 7.6,
+        "heart": 10.7
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.816
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.699
+        },
+        {
+          "class": "Edema",
+          "prob": 0.927
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.716
+        },
+        {
+          "class": "Mass",
+          "prob": 0.849
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.553
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "54201716-229e2658-1685e23d-65df6d4c-e5ecd2bc",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.33
+        }
+      ],
+      "ctr": 0.404,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 12.7,
+        "right_lung": 14.8,
+        "heart": 10.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.79
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.764
+        },
+        {
+          "class": "Edema",
+          "prob": 0.921
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.736
+        },
+        {
+          "class": "Mass",
+          "prob": 0.851
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.554
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "5b6889de-1d3cbfd4-a54eb36d-2056dbb5-bcfd6b51",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.297
+        }
+      ],
+      "ctr": 0.444,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 18.5,
+        "right_lung": 13.9,
+        "heart": 10.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.719
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.61
+        },
+        {
+          "class": "Edema",
+          "prob": 0.868
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.605
+        },
+        {
+          "class": "Mass",
+          "prob": 0.708
+        }
+      ],
+      "densenet_count": 5
+    },
+    {
+      "file": "5cec810f-f22d7ccf-352a8949-fcb1963a-f2ea0598",
+      "source": "s3",
+      "size": "2539x3021",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.302
+        },
+        {
+          "class": "Pleural_effusion",
+          "conf": 0.264
+        }
+      ],
+      "ctr": 0.6037,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 9.5,
+        "right_lung": 8.9,
+        "heart": 12.3
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.823
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.826
+        },
+        {
+          "class": "Edema",
+          "prob": 0.961
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.512
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.735
+        },
+        {
+          "class": "Mass",
+          "prob": 0.914
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.655
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "623d6a9d-049d9807-15260b07-e609daed-5f94401a",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.9937,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 8.3,
+        "right_lung": 20.7,
+        "heart": 14.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.817
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.801
+        },
+        {
+          "class": "Edema",
+          "prob": 0.958
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.765
+        },
+        {
+          "class": "Mass",
+          "prob": 0.886
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.621
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "6eccd432-4e097045-4c0ef38e-e73f49f6-8799da2c",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.259
+        }
+      ],
+      "ctr": 0.5312,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 15.3,
+        "right_lung": 11.9,
+        "heart": 11.3
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.765
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.683
+        },
+        {
+          "class": "Edema",
+          "prob": 0.878
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.575
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.621
+        },
+        {
+          "class": "Mass",
+          "prob": 0.772
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "7d9ce65c-67986f11-9fee45dd-6afbbedf-a66ee372",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4149,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 14.4,
+        "right_lung": 12.2,
+        "heart": 7.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.646
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.62
+        },
+        {
+          "class": "Edema",
+          "prob": 0.79
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.508
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.541
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.623
+        },
+        {
+          "class": "Mass",
+          "prob": 0.585
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "86f79923-f7cb3b44-666c7d7d-047dcd37-fff2fb04",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.271
+        }
+      ],
+      "ctr": 0.4783,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 10.9,
+        "right_lung": 8.7,
+        "heart": 7.0
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.676
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.585
+        },
+        {
+          "class": "Edema",
+          "prob": 0.823
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.579
+        },
+        {
+          "class": "Mass",
+          "prob": 0.713
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.534
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "87c1098e-9c3bb6e3-a61f96b2-ee3edd92-93ac1cdf",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.552
+        },
+        {
+          "class": "Pneumothorax",
+          "conf": 0.397
+        }
+      ],
+      "ctr": 0.4498,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 12.7,
+        "right_lung": 13.4,
+        "heart": 7.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.775
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.628
+        },
+        {
+          "class": "Edema",
+          "prob": 0.902
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.528
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.623
+        },
+        {
+          "class": "Mass",
+          "prob": 0.826
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.525
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "8a98b7b8-2ef4254c-eeaa7c5a-085b33ba-bc13996d",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.9937,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 9.0,
+        "right_lung": 16.4,
+        "heart": 11.6
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.821
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.815
+        },
+        {
+          "class": "Edema",
+          "prob": 0.953
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.74
+        },
+        {
+          "class": "Mass",
+          "prob": 0.862
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.607
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "8ac339b6-ee33ab44-a3fee9f0-c009fb5d-9bc6023c",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.295
+        }
+      ],
+      "ctr": 0.5259,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 13.8,
+        "right_lung": 7.5,
+        "heart": 14.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.736
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.788
+        },
+        {
+          "class": "Edema",
+          "prob": 0.907
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.543
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.614
+        },
+        {
+          "class": "Mass",
+          "prob": 0.79
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "8b1d0dd1-0b89368f-7c335f32-6fd8499d-5aeab3ea",
+      "source": "s3",
+      "size": "1986x2022",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.601,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 9.7,
+        "right_lung": 6.9,
+        "heart": 11.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.827
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.807
+        },
+        {
+          "class": "Edema",
+          "prob": 0.946
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.606
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.547
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.572
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.774
+        },
+        {
+          "class": "Mass",
+          "prob": 0.895
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.662
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.557
+        }
+      ],
+      "densenet_count": 10
+    },
+    {
+      "file": "90ab0fe4-45b62318-c06a83cc-b86e19c3-1d2fb057",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.414
+        },
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.335
+        }
+      ],
+      "ctr": 0.5667,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.6,
+        "right_lung": 8.8,
+        "heart": 10.0
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.852
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.841
+        },
+        {
+          "class": "Edema",
+          "prob": 0.955
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.713
+        },
+        {
+          "class": "Mass",
+          "prob": 0.832
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.551
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "98498dc5-b0fddd99-b95675b5-04efe150-c4e1a670",
+      "source": "s3",
+      "size": "2516x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.284
+        }
+      ],
+      "ctr": 0.8553,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 11.9,
+        "right_lung": 15.8,
+        "heart": 14.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.821
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.793
+        },
+        {
+          "class": "Edema",
+          "prob": 0.966
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.5
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.551
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.532
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.786
+        },
+        {
+          "class": "Mass",
+          "prob": 0.902
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.628
+        }
+      ],
+      "densenet_count": 9
+    },
+    {
+      "file": "9a1d1aad-081d4460-77bc5fac-8b28e0be-912c4998",
+      "source": "s3",
+      "size": "2383x2684",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4862,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 12.4,
+        "right_lung": 10.5,
+        "heart": 8.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.83
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.658
+        },
+        {
+          "class": "Edema",
+          "prob": 0.843
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.629
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.716
+        },
+        {
+          "class": "Mass",
+          "prob": 0.865
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.577
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "9b0b1654-d61cf032-47f34c65-756b4cc9-fa46ae29",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.605
+        }
+      ],
+      "ctr": 0.5539,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.4,
+        "right_lung": 8.7,
+        "heart": 10.9
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.801
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.696
+        },
+        {
+          "class": "Edema",
+          "prob": 0.881
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.5
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.56
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.667
+        },
+        {
+          "class": "Mass",
+          "prob": 0.851
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.5
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "9b1a8a51-2b8e4a04-1719059d-aa6bc888-7ace612b",
+      "source": "s3",
+      "size": "2669x2539",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.541
+        }
+      ],
+      "ctr": 0.5365,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 15.4,
+        "right_lung": 11.9,
+        "heart": 10.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.802
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.767
+        },
+        {
+          "class": "Edema",
+          "prob": 0.909
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.555
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.616
+        },
+        {
+          "class": "Mass",
+          "prob": 0.859
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "9b379118-83aa2c46-8c881f58-2b85c0d8-3213e16c",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 3,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.522
+        },
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.485
+        },
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.36
+        }
+      ],
+      "ctr": 0.5167,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 11.7,
+        "right_lung": 8.2,
+        "heart": 10.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.836
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.792
+        },
+        {
+          "class": "Edema",
+          "prob": 0.929
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.6
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.758
+        },
+        {
+          "class": "Mass",
+          "prob": 0.877
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.538
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "9b89f79f-9be40ca7-112ce4fd-768c6454-8041aaae",
+      "source": "s3",
+      "size": "2539x2956",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.5687,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.2,
+        "right_lung": 8.9,
+        "heart": 11.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.77
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.802
+        },
+        {
+          "class": "Edema",
+          "prob": 0.922
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.603
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.555
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.703
+        },
+        {
+          "class": "Mass",
+          "prob": 0.874
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.547
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "9e9f4b1a-1ff28f4f-b886cef1-02ad1caf-58dc62d9",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.469,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 13.0,
+        "right_lung": 11.0,
+        "heart": 7.9
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.561
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.518
+        },
+        {
+          "class": "Edema",
+          "prob": 0.736
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.505
+        }
+      ],
+      "densenet_count": 4
+    },
+    {
+      "file": "9ebf8954-84c6b9cd-82996125-f2880212-e359e743",
+      "source": "s3",
+      "size": "1756x1970",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.388
+        },
+        {
+          "class": "Other_lesion",
+          "conf": 0.303
+        }
+      ],
+      "ctr": 0.722,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.5,
+        "right_lung": 11.8,
+        "heart": 8.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.751
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.774
+        },
+        {
+          "class": "Edema",
+          "prob": 0.933
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.537
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.533
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.748
+        },
+        {
+          "class": "Mass",
+          "prob": 0.771
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.581
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "9ff48609-785ad7ee-fbcaf94c-3df58890-cb4d48e7",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.352
+        }
+      ],
+      "ctr": 0.5183,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 14.8,
+        "right_lung": 10.0,
+        "heart": 11.6
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.824
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.808
+        },
+        {
+          "class": "Edema",
+          "prob": 0.931
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.59
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.701
+        },
+        {
+          "class": "Mass",
+          "prob": 0.914
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "a1877853-72688a50-746fb0bf-3018617e-1fee158f",
+      "source": "s3",
+      "size": "2539x3050",
+      "yolo_count": 3,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.534
+        },
+        {
+          "class": "Other_lesion",
+          "conf": 0.319
+        },
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.28
+        }
+      ],
+      "ctr": 0.5105,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 9.9,
+        "right_lung": 7.9,
+        "heart": 7.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.801
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.755
+        },
+        {
+          "class": "Edema",
+          "prob": 0.896
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.572
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.586
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.698
+        },
+        {
+          "class": "Mass",
+          "prob": 0.907
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.529
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "a35790a5-35706ebc-6a848c2d-f13b279e-708cdef7",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4156,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 14.1,
+        "right_lung": 14.6,
+        "heart": 7.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.696
+        },
+        {
+          "class": "Edema",
+          "prob": 0.752
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.547
+        }
+      ],
+      "densenet_count": 3
+    },
+    {
+      "file": "a9250859-9d4e15c5-ded03be8-2ed007b9-b5f98bed",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.441
+        },
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.291
+        }
+      ],
+      "ctr": 0.5088,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 11.3,
+        "right_lung": 10.7,
+        "heart": 9.9
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.813
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.771
+        },
+        {
+          "class": "Edema",
+          "prob": 0.927
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.565
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.629
+        },
+        {
+          "class": "Mass",
+          "prob": 0.818
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.544
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "aa646a3c-b6da4839-25ba35a5-cfc71661-9af0fdcd",
+      "source": "s3",
+      "size": "1760x2140",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.2672,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 16.9,
+        "right_lung": 8.7,
+        "heart": 6.3
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.798
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.826
+        },
+        {
+          "class": "Edema",
+          "prob": 0.966
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.515
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.527
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.522
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.764
+        },
+        {
+          "class": "Mass",
+          "prob": 0.887
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.542
+        }
+      ],
+      "densenet_count": 9
+    },
+    {
+      "file": "ac25f6ba-9a593e79-65f6780a-32205e75-745d188f",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.6162,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 11.6,
+        "right_lung": 19.7,
+        "heart": 9.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.647
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.637
+        },
+        {
+          "class": "Edema",
+          "prob": 0.868
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.544
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.52
+        },
+        {
+          "class": "Mass",
+          "prob": 0.666
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "ac4deb55-ad246e57-296a8913-199ddddd-d2bd36e5",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.5038,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.2,
+        "right_lung": 10.1,
+        "heart": 9.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.773
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.795
+        },
+        {
+          "class": "Edema",
+          "prob": 0.904
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.51
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.655
+        },
+        {
+          "class": "Mass",
+          "prob": 0.813
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.586
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "acb45927-e0c19317-cd3e2be3-1cfeb201-d0bd3ea4",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4385,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 17.1,
+        "right_lung": 14.5,
+        "heart": 8.7
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.775
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.706
+        },
+        {
+          "class": "Edema",
+          "prob": 0.939
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.549
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.577
+        },
+        {
+          "class": "Mass",
+          "prob": 0.812
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.556
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "af6eb9fe-b9376cf4-60df0855-9a91927d-561d0f06",
+      "source": "s3",
+      "size": "2604x2539",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.648
+        }
+      ],
+      "ctr": 0.544,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 14.8,
+        "right_lung": 10.8,
+        "heart": 11.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.826
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.832
+        },
+        {
+          "class": "Consolidation",
+          "prob": 0.527
+        },
+        {
+          "class": "Edema",
+          "prob": 0.956
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.546
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.691
+        },
+        {
+          "class": "Mass",
+          "prob": 0.89
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.563
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "b04cec19-c348f0ca-b80088b3-68c2d95c-fc3c60a6",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.701
+        },
+        {
+          "class": "Other_lesion",
+          "conf": 0.655
+        }
+      ],
+      "ctr": 0.5486,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.1,
+        "right_lung": 6.9,
+        "heart": 10.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.844
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.836
+        },
+        {
+          "class": "Edema",
+          "prob": 0.923
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.672
+        },
+        {
+          "class": "Mass",
+          "prob": 0.892
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.52
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "b1ad7312-8331afb8-5fc05c84-72c93ea0-5a579be8",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.347
+        }
+      ],
+      "ctr": 0.4861,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 11.7,
+        "right_lung": 9.3,
+        "heart": 9.6
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.783
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.772
+        },
+        {
+          "class": "Edema",
+          "prob": 0.94
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.694
+        },
+        {
+          "class": "Mass",
+          "prob": 0.825
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.548
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "b2093612-0ee94341-26838e2f-d6912ecd-14c5aa64",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo_count": 3,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.359
+        },
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.302
+        },
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.266
+        }
+      ],
+      "ctr": 0.5796,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.7,
+        "right_lung": 9.1,
+        "heart": 12.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.832
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.778
+        },
+        {
+          "class": "Edema",
+          "prob": 0.934
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.569
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.655
+        },
+        {
+          "class": "Mass",
+          "prob": 0.896
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.545
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.514
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "b2510c2a-56419980-6af178ab-c13da136-4854adda",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.9076,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 9.6,
+        "right_lung": 17.4,
+        "heart": 10.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.819
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.865
+        },
+        {
+          "class": "Edema",
+          "prob": 0.961
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.63
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.732
+        },
+        {
+          "class": "Mass",
+          "prob": 0.943
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.571
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "b3bbc97d-790b738b-9210ac5d-366320fe-c5deaf0e",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.319
+        }
+      ],
+      "ctr": 0.5654,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 16.9,
+        "right_lung": 9.4,
+        "heart": 15.9
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.819
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.788
+        },
+        {
+          "class": "Edema",
+          "prob": 0.908
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.614
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.769
+        },
+        {
+          "class": "Mass",
+          "prob": 0.88
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.561
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "b48f4647-76137743-eef39d2c-bd4532f0-ec4b8964",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.427,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 16.6,
+        "right_lung": 16.9,
+        "heart": 10.0
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.703
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.59
+        },
+        {
+          "class": "Edema",
+          "prob": 0.877
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.581
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.601
+        },
+        {
+          "class": "Mass",
+          "prob": 0.679
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "b58fc178-4ab7aba9-e502d79b-a7f2f69c-ccbf0bde",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.354
+        },
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.331
+        }
+      ],
+      "ctr": 0.5734,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 11.7,
+        "right_lung": 10.5,
+        "heart": 18.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.76
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.739
+        },
+        {
+          "class": "Edema",
+          "prob": 0.885
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.54
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.676
+        },
+        {
+          "class": "Mass",
+          "prob": 0.799
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "b6f1e5de-a6a76833-bb8963d0-90e0fc36-29645cf1",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4926,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 16.6,
+        "right_lung": 14.0,
+        "heart": 10.6
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.771
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.626
+        },
+        {
+          "class": "Edema",
+          "prob": 0.839
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.557
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.503
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.698
+        },
+        {
+          "class": "Mass",
+          "prob": 0.742
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.569
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "b914f3ca-a71b6ec3-521f4afb-4a923094-31eda098",
+      "source": "s3",
+      "size": "1736x2022",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.554,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.2,
+        "right_lung": 9.6,
+        "heart": 11.7
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.783
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.805
+        },
+        {
+          "class": "Edema",
+          "prob": 0.911
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.646
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.541
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.666
+        },
+        {
+          "class": "Mass",
+          "prob": 0.925
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "bcb5e90b-c7d3f928-7bd202ee-4e772a8f-e2240e90",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.499
+        },
+        {
+          "class": "Other_lesion",
+          "conf": 0.278
+        }
+      ],
+      "ctr": 0.5116,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 6.8,
+        "right_lung": 5.7,
+        "heart": 8.0
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.78
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.783
+        },
+        {
+          "class": "Edema",
+          "prob": 0.924
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.541
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.563
+        },
+        {
+          "class": "Mass",
+          "prob": 0.847
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.548
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "bedd217a-418581cb-eaa6a927-cce73ecb-00de2c03",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.416
+        }
+      ],
+      "ctr": 0.7778,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 18.3,
+        "right_lung": 11.6,
+        "heart": 4.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.829
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.808
+        },
+        {
+          "class": "Edema",
+          "prob": 0.933
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.576
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.504
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.767
+        },
+        {
+          "class": "Mass",
+          "prob": 0.875
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.565
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "c186bfb3-56922e24-5ac39324-5e6125e6-99b77a00",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.6971,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 7.2,
+        "right_lung": 16.9,
+        "heart": 4.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.84
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.827
+        },
+        {
+          "class": "Edema",
+          "prob": 0.942
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.518
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.581
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.755
+        },
+        {
+          "class": "Mass",
+          "prob": 0.905
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.625
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "c52a3ba5-b4e3cee3-f2644da6-6b43246f-654f21a0",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.455
+        }
+      ],
+      "ctr": 0.5714,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 8.9,
+        "right_lung": 6.7,
+        "heart": 12.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.874
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.781
+        },
+        {
+          "class": "Edema",
+          "prob": 0.904
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.6
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.538
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.762
+        },
+        {
+          "class": "Mass",
+          "prob": 0.907
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.555
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "c584b5c4-b5b1dad6-a6f30167-c0411948-46379f73",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.416
+        }
+      ],
+      "ctr": 0.5044,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.4,
+        "right_lung": 9.5,
+        "heart": 9.0
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.719
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.635
+        },
+        {
+          "class": "Edema",
+          "prob": 0.917
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.694
+        },
+        {
+          "class": "Mass",
+          "prob": 0.604
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.621
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "c5afcc9d-ba789d3b-23fa6a30-7548ca1d-e293bd75",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.9682,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.9,
+        "right_lung": 15.3,
+        "heart": 11.3
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.745
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.76
+        },
+        {
+          "class": "Edema",
+          "prob": 0.946
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.558
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.617
+        },
+        {
+          "class": "Mass",
+          "prob": 0.714
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.575
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "c6c4d43b-763f7cf3-4da37648-dee3d33f-ab8aed19",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.273
+        }
+      ],
+      "ctr": 1.0161,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.6,
+        "right_lung": 14.8,
+        "heart": 12.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.836
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.871
+        },
+        {
+          "class": "Edema",
+          "prob": 0.979
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.501
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.779
+        },
+        {
+          "class": "Mass",
+          "prob": 0.911
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.678
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "c886ee4a-66b59c37-80a41c70-96f5dc33-e842d7b6",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.8698,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.1,
+        "right_lung": 20.8,
+        "heart": 10.3
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.819
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.796
+        },
+        {
+          "class": "Edema",
+          "prob": 0.949
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.522
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.541
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.804
+        },
+        {
+          "class": "Mass",
+          "prob": 0.906
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.633
+        }
+      ],
+      "densenet_count": 8
+    },
+    {
+      "file": "cb1c7c96-6d932e23-d291b3b1-d3178893-95e73c0b",
+      "source": "s3",
+      "size": "2489x2920",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.5642,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 9.2,
+        "right_lung": 6.3,
+        "heart": 9.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.823
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.803
+        },
+        {
+          "class": "Consolidation",
+          "prob": 0.522
+        },
+        {
+          "class": "Edema",
+          "prob": 0.947
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.517
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.534
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.676
+        },
+        {
+          "class": "Mass",
+          "prob": 0.915
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.572
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.525
+        }
+      ],
+      "densenet_count": 10
+    },
+    {
+      "file": "cc984e8b-e916ce5c-6f2e6d32-b9a40eb1-ef4e07cb",
+      "source": "s3",
+      "size": "2539x3050",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.491
+        },
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.474
+        }
+      ],
+      "ctr": 0.6227,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.5,
+        "right_lung": 9.4,
+        "heart": 16.0
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.77
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.677
+        },
+        {
+          "class": "Edema",
+          "prob": 0.917
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.505
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.676
+        },
+        {
+          "class": "Mass",
+          "prob": 0.874
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.584
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "cf6471f1-db592bdb-83fc003a-4ec4bfaf-617b3015",
+      "source": "s3",
+      "size": "2424x2906",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.5
+        },
+        {
+          "class": "Pleural_effusion",
+          "conf": 0.314
+        }
+      ],
+      "ctr": 0.5294,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 9.5,
+        "right_lung": 10.0,
+        "heart": 8.3
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.879
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.747
+        },
+        {
+          "class": "Edema",
+          "prob": 0.936
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.682
+        },
+        {
+          "class": "Mass",
+          "prob": 0.901
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.514
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "d3033027-b60beadd-dec6d225-27717511-c75d4c04",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.5217,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 10.3,
+        "right_lung": 7.8,
+        "heart": 9.7
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.821
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.77
+        },
+        {
+          "class": "Edema",
+          "prob": 0.905
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.537
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.653
+        },
+        {
+          "class": "Mass",
+          "prob": 0.818
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.555
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "d3af0df4-2786d100-daa97bd2-fb1283a5-85c17dad",
+      "source": "s3",
+      "size": "2021x2021",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.9905,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 14.3,
+        "right_lung": 8.7,
+        "heart": 10.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.893
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.853
+        },
+        {
+          "class": "Edema",
+          "prob": 0.968
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.508
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.816
+        },
+        {
+          "class": "Mass",
+          "prob": 0.956
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.682
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "d5ab23e9-31a17975-996185a8-e36bf225-1e8eeb24",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.283
+        }
+      ],
+      "ctr": 0.4917,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 18.0,
+        "right_lung": 15.0,
+        "heart": 12.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.68
+        },
+        {
+          "class": "Edema",
+          "prob": 0.825
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.555
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.549
+        }
+      ],
+      "densenet_count": 4
+    },
+    {
+      "file": "d80a4e2b-fd801f39-edbf2040-3b8dc43e-1cdca434",
+      "source": "s3",
+      "size": "2439x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4625,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 10.0,
+        "right_lung": 7.9,
+        "heart": 8.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.77
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.837
+        },
+        {
+          "class": "Edema",
+          "prob": 0.942
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.558
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.775
+        },
+        {
+          "class": "Mass",
+          "prob": 0.897
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.643
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "da6190a9-b304e4b9-4a4cab1e-9ad9b290-fec42be9",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4615,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 13.0,
+        "right_lung": 11.9,
+        "heart": 9.3
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.557
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.642
+        },
+        {
+          "class": "Edema",
+          "prob": 0.907
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.601
+        },
+        {
+          "class": "Mass",
+          "prob": 0.536
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.522
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "e143fbd5-67d55526-f08160e9-9255351c-1339539c",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.9968,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 17.0,
+        "right_lung": 16.7,
+        "heart": 12.8
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.698
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.758
+        },
+        {
+          "class": "Edema",
+          "prob": 0.942
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.525
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.571
+        },
+        {
+          "class": "Mass",
+          "prob": 0.676
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "e362839f-6ddbc048-63f5869d-db4fbe1b-5526c715",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 1.0064,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 7.1,
+        "right_lung": 23.6,
+        "heart": 10.9
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.746
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.817
+        },
+        {
+          "class": "Edema",
+          "prob": 0.967
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.566
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.74
+        },
+        {
+          "class": "Mass",
+          "prob": 0.856
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.663
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "e68dca32-5544edfe-d28f740f-9686d21a-e1844494",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4656,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 14.5,
+        "right_lung": 9.1,
+        "heart": 10.3
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.843
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.775
+        },
+        {
+          "class": "Consolidation",
+          "prob": 0.649
+        },
+        {
+          "class": "Edema",
+          "prob": 0.806
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.617
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.704
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.627
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.803
+        },
+        {
+          "class": "Mass",
+          "prob": 0.945
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.783
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.708
+        }
+      ],
+      "densenet_count": 11
+    },
+    {
+      "file": "ec5b73fd-646f1749-74747f76-ea5b5dc9-1fcc393a",
+      "source": "s3",
+      "size": "1610x1810",
+      "yolo_count": 3,
+      "yolo_detections": [
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.509
+        },
+        {
+          "class": "Aortic_enlargement",
+          "conf": 0.41
+        },
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.378
+        }
+      ],
+      "ctr": 0.5892,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 13.3,
+        "right_lung": 7.8,
+        "heart": 12.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.845
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.829
+        },
+        {
+          "class": "Edema",
+          "prob": 0.922
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.641
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.566
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.529
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.801
+        },
+        {
+          "class": "Mass",
+          "prob": 0.91
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.565
+        }
+      ],
+      "densenet_count": 9
+    },
+    {
+      "file": "ed8dfd0e-86741458-99af0d74-c19e3a9f-dff40026",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.502
+        },
+        {
+          "class": "Other_lesion",
+          "conf": 0.271
+        }
+      ],
+      "ctr": 0.5435,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.6,
+        "right_lung": 10.2,
+        "heart": 11.5
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.814
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.75
+        },
+        {
+          "class": "Edema",
+          "prob": 0.948
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.565
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.717
+        },
+        {
+          "class": "Mass",
+          "prob": 0.932
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.573
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "eead3bd3-136ae699-efde5b54-70f5308f-9c4033ba",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.9809,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 13.1,
+        "right_lung": 13.7,
+        "heart": 8.2
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.745
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.779
+        },
+        {
+          "class": "Edema",
+          "prob": 0.942
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.572
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.609
+        },
+        {
+          "class": "Mass",
+          "prob": 0.677
+        }
+      ],
+      "densenet_count": 6
+    },
+    {
+      "file": "eec95604-a331cb3e-a2b4951b-7166b34d-854379db",
+      "source": "s3",
+      "size": "2525x3021",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.4643,
+      "ctr_status": "normal",
+      "seg_areas": {
+        "left_lung": 13.8,
+        "right_lung": 9.1,
+        "heart": 11.4
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.883
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.761
+        },
+        {
+          "class": "Consolidation",
+          "prob": 0.701
+        },
+        {
+          "class": "Edema",
+          "prob": 0.884
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.71
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.661
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.709
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.866
+        },
+        {
+          "class": "Mass",
+          "prob": 0.965
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.799
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.59
+        }
+      ],
+      "densenet_count": 11
+    },
+    {
+      "file": "f0c39d29-e88800ce-fafb4e9e-55a1e4a0-5dd66382",
+      "source": "s3",
+      "size": "1560x2022",
+      "yolo_count": 0,
+      "yolo_detections": [],
+      "ctr": 0.6171,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 7.4,
+        "right_lung": 18.3,
+        "heart": 8.7
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.772
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.782
+        },
+        {
+          "class": "Edema",
+          "prob": 0.929
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.607
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.64
+        },
+        {
+          "class": "Mass",
+          "prob": 0.797
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.572
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "f29cb136-14141b8b-eaeee338-00b93ca8-c7b61578",
+      "source": "s3",
+      "size": "2539x2920",
+      "yolo_count": 2,
+      "yolo_detections": [
+        {
+          "class": "Cardiomegaly",
+          "conf": 0.605
+        },
+        {
+          "class": "Other_lesion",
+          "conf": 0.251
+        }
+      ],
+      "ctr": 0.5044,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.5,
+        "right_lung": 8.8,
+        "heart": 8.9
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.859
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.777
+        },
+        {
+          "class": "Consolidation",
+          "prob": 0.515
+        },
+        {
+          "class": "Edema",
+          "prob": 0.957
+        },
+        {
+          "class": "Effusion",
+          "prob": 0.568
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.516
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.784
+        },
+        {
+          "class": "Mass",
+          "prob": 0.955
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.609
+        },
+        {
+          "class": "Pneumonia",
+          "prob": 0.538
+        }
+      ],
+      "densenet_count": 10
+    },
+    {
+      "file": "f3ea945d-4938568d-287a1523-139e8e4b-9697fe71",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.263
+        }
+      ],
+      "ctr": 0.9647,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 7.6,
+        "right_lung": 19.1,
+        "heart": 10.1
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.866
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.782
+        },
+        {
+          "class": "Edema",
+          "prob": 0.944
+        },
+        {
+          "class": "Emphysema",
+          "prob": 0.646
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.731
+        },
+        {
+          "class": "Mass",
+          "prob": 0.885
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.553
+        }
+      ],
+      "densenet_count": 7
+    },
+    {
+      "file": "ff7e98f9-9c5fc5f1-79ace407-cc8c7b02-cf9ea3df",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo_count": 1,
+      "yolo_detections": [
+        {
+          "class": "Other_lesion",
+          "conf": 0.31
+        }
+      ],
+      "ctr": 0.9121,
+      "ctr_status": "cardiomegaly",
+      "seg_areas": {
+        "left_lung": 12.1,
+        "right_lung": 14.8,
+        "heart": 15.1
+      },
+      "densenet_positive": [
+        {
+          "class": "Atelectasis",
+          "prob": 0.804
+        },
+        {
+          "class": "Cardiomegaly",
+          "prob": 0.78
+        },
+        {
+          "class": "Edema",
+          "prob": 0.968
+        },
+        {
+          "class": "Fibrosis",
+          "prob": 0.69
+        },
+        {
+          "class": "Hernia",
+          "prob": 0.899
+        },
+        {
+          "class": "Mass",
+          "prob": 0.941
+        },
+        {
+          "class": "No_Finding",
+          "prob": 0.6
+        },
+        {
+          "class": "Nodule",
+          "prob": 0.697
+        }
+      ],
+      "densenet_count": 8
+    }
+  ]
+}

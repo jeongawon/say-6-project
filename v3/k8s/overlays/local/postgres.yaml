@@ -1,0 +1,126 @@
+# ── PostgreSQL StatefulSet ────────────────────────────────────
+# 로컬 개발용 PostgreSQL 16 데이터베이스
+# StatefulSet 사용 — 파드 재시작 시에도 데이터 유지 (PVC 자동 생성)
+# EKS 환경에서는 AWS RDS를 사용하므로 이 파일은 로컬 전용
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: dr-ai
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: dr-ai
+    # component: database — 데이터 저장 계층
+    app.kubernetes.io/component: database
+spec:
+  # serviceName: Headless Service 이름과 일치해야 함
+  serviceName: postgres-svc
+  # 레플리카 1개 — 로컬에서는 단일 인스턴스로 충분
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+        app.kubernetes.io/name: postgres
+        app.kubernetes.io/part-of: dr-ai
+    spec:
+      containers:
+        - name: postgres
+          # PostgreSQL 16 공식 이미지
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          # ── 환경변수 ─────────────────────────────────────
+          # 초기 DB/유저/비밀번호 설정
+          # 비밀번호 변경 시 configmap.yaml의 DATABASE_URL도 함께 수정
+          env:
+            - name: POSTGRES_DB
+              value: drai
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          # ── 리소스 설정 ──────────────────────────────────
+          # 로컬 개발용 — requests 250m/512Mi, limits 500m/1Gi
+          # 데이터가 많아지면 limits.memory를 늘릴 것
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          # ── 데이터 볼륨 마운트 ───────────────────────────
+          # PostgreSQL 데이터 디렉토리 — PVC로 영속화
+          volumeMounts:
+            - name: pg-data
+              mountPath: /var/lib/postgresql/data
+          # ── Liveness Probe ───────────────────────────────
+          # pg_isready 명령으로 DB 연결 가능 여부 확인
+          # 초기화에 약 15초 소요
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+                - -d
+                - drai
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # ── Readiness Probe ──────────────────────────────
+          # DB가 쿼리를 받을 준비가 되었는지 확인
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+                - -d
+                - drai
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+  # ── VolumeClaimTemplate ────────────────────────────────────
+  # StatefulSet이 자동으로 PVC를 생성 — 파드 삭제 후에도 데이터 유지
+  # 용량 변경 시 storage 값을 수정 (기본 5Gi)
+  # 주의: 이미 생성된 PVC는 크기 축소 불가
+  volumeClaimTemplates:
+    - metadata:
+        name: pg-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+---
+# ── PostgreSQL Service ───────────────────────────────────────
+# ClusterIP 타입 — 클러스터 내부에서 postgres-svc:5432로 접근
+# ConfigMap의 DATABASE_URL에서 이 서비스명을 참조
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+  namespace: dr-ai
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: dr-ai
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    # PostgreSQL 기본 포트 5432
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DR-AI v3 Integration Test</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--accent:#38bdf8;--green:#22c55e;--red:#ef4444;
+  --yellow:#eab308;--orange:#f97316;--text:#e2e8f0;--dim:#94a3b8;--purple:#a78bfa;--pink:#f472b6;--cyan:#22d3ee}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'SF Mono','Fira Code',monospace;background:var(--bg);color:var(--text);padding:16px;font-size:13px}
+h1{font-size:1.2rem}.sub{color:var(--dim);font-size:0.75rem;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px}
+.card h2{font-size:0.9rem;margin-bottom:8px;color:var(--accent)}
+.flex{display:flex;gap:8px;align-items:center}
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+button{background:var(--accent);color:var(--bg);border:none;padding:6px 14px;border-radius:5px;
+  cursor:pointer;font-family:inherit;font-weight:600;font-size:0.8rem}
+button:hover{opacity:.85}button:disabled{opacity:.3;cursor:not-allowed}
+.btn-green{background:var(--green)}.btn-sm{padding:4px 10px;font-size:0.72rem}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.badge{display:inline-block;padding:1px 7px;border-radius:4px;font-size:.68rem;font-weight:600}
+.badge-ok{background:#166534;color:var(--green)}.badge-err{background:#7f1d1d;color:var(--red)}
+.badge-run{background:#713f12;color:var(--yellow)}
+.topo-svg{width:100%;height:160px}
+.topo-node{cursor:pointer}
+.topo-node rect{rx:6;fill:var(--card);stroke:var(--border);stroke-width:1.5;transition:stroke .3s,fill .3s}
+.topo-node.ok rect{stroke:var(--green)}.topo-node.active rect{stroke:var(--yellow);fill:#422006}
+.topo-node.err rect{stroke:var(--red);fill:#450a0a}
+.topo-node text{fill:var(--text);font-size:10px;font-family:inherit;text-anchor:middle}
+.topo-node .sub-text{fill:var(--dim);font-size:8px}
+.topo-arrow{stroke:var(--border);stroke-width:1;fill:none;marker-end:url(#arrowhead)}
+.topo-arrow.active{stroke:var(--yellow);stroke-width:2;stroke-dasharray:6 3;animation:dash .8s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-18}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.topo-node.active rect{animation:pulse 1s ease-in-out infinite}
+.cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.case-card{background:var(--bg);border:2px solid var(--border);border-radius:7px;padding:10px;cursor:pointer;transition:border .2s}
+.case-card:hover{border-color:var(--accent)}.case-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.case-card.running{border-color:var(--yellow)}.case-card.done{border-color:var(--green)}.case-card.fail{border-color:var(--red)}
+.case-top{display:flex;gap:8px}.case-thumb{width:64px;height:64px;border-radius:4px;object-fit:cover;background:var(--card);flex-shrink:0}
+.case-info .pid{font-weight:700;font-size:.82rem}.case-info .complaint{color:var(--yellow);font-size:.7rem;margin:1px 0}
+.tag{background:var(--card);color:var(--dim);padding:0 5px;border-radius:3px;font-size:.62rem;display:inline-block;margin:1px}
+.case-status{margin-top:6px;font-size:.72rem;color:var(--dim);min-height:16px}
+.wf-row{display:flex;align-items:center;height:22px;margin:1px 0;cursor:pointer;border-radius:3px;padding:0 4px}
+.wf-row:hover{background:rgba(56,189,248,.08)}.wf-row.selected{background:rgba(56,189,248,.15)}
+.wf-label{width:180px;flex-shrink:0;font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px}
+.wf-track{flex:1;position:relative;height:14px}
+.wf-bar{position:absolute;height:14px;border-radius:3px;min-width:2px}
+.wf-bar .wf-time{position:absolute;right:-44px;top:0;font-size:.62rem;color:var(--dim);width:42px}
+.wf-depth-0 .wf-label{font-weight:700;color:var(--accent)}
+.wf-depth-1 .wf-label{padding-left:14px;color:var(--text)}
+.wf-depth-2 .wf-label{padding-left:28px;color:var(--dim)}
+.clr-orchestrator{background:var(--accent)}.clr-chest{background:var(--orange)}.clr-ecg{background:var(--purple)}
+.clr-blood{background:var(--pink)}.clr-rag{background:var(--cyan)}.clr-report{background:var(--green)}
+.clr-bedrock{background:#6366f1}.clr-db{background:#64748b}.clr-sub{background:#475569}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;max-height:350px;overflow-y:auto}
+.detail-box h3{font-size:.78rem;color:var(--accent);margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:3px}
+.detail-box pre{font-size:.7rem;white-space:pre-wrap;word-break:break-all}
+.finding-row{background:var(--card);border-radius:4px;padding:6px 8px;margin-bottom:3px;font-size:.72rem}
+.finding-row .fn{font-weight:600}.finding-row .fc{color:var(--green)}.finding-row .fs{color:var(--yellow)}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.timer{color:var(--yellow);font-weight:600;font-size:.8rem}
+.empty-msg{color:var(--dim);font-size:.8rem;padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<h1>DR-AI v3 Integration Test Dashboard</h1>
+<p class="sub">Jaeger-style Waterfall Timeline &mdash; 6 Microservices on K8s | Timeout: 300s per case</p>
+
+<!-- ZONE A -->
+<div class="card">
+  <div class="flex-between"><h2>Zone A &mdash; Service Topology</h2><button class="btn-sm" onclick="checkHealth()">Refresh</button></div>
+  <svg class="topo-svg" viewBox="0 0 780 150" id="topoSvg">
+    <defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="var(--border)"/></marker></defs>
+    <line class="topo-arrow" id="arr-orch-chest" x1="155" y1="40" x2="260" y2="40"/>
+    <line class="topo-arrow" id="arr-orch-ecg" x1="115" y1="55" x2="260" y2="100"/>
+    <line class="topo-arrow" id="arr-orch-blood" x1="115" y1="55" x2="260" y2="135"/>
+    <line class="topo-arrow" id="arr-chest-rag" x1="360" y1="40" x2="430" y2="40"/>
+    <line class="topo-arrow" id="arr-orch-report" x1="155" y1="40" x2="430" y2="100"/>
+    <line class="topo-arrow" id="arr-orch-db" x1="155" y1="55" x2="600" y2="40"/>
+    <line class="topo-arrow" id="arr-orch-redis" x1="155" y1="55" x2="600" y2="100"/>
+    <g class="topo-node" id="tn-orchestrator" transform="translate(30,20)"><rect width="130" height="46"/><text x="65" y="22">orchestrator</text><text class="sub-text" x="65" y="35">:8000</text></g>
+    <g class="topo-node" id="tn-chest" transform="translate(265,15)"><rect width="95" height="46"/><text x="48" y="22">chest-svc</text><text class="sub-text" x="48" y="35">ONNX x3</text></g>
+    <g class="topo-node" id="tn-ecg" transform="translate(265,75)"><rect width="95" height="46"/><text x="48" y="22">ecg-svc</text><text class="sub-text" x="48" y="35">ONNX ML</text></g>
+    <g class="topo-node" id="tn-blood" transform="translate(265,110)"><rect width="95" height="36"/><text x="48" y="22">blood-svc</text></g>
+    <g class="topo-node" id="tn-rag" transform="translate(435,15)"><rect width="90" height="46"/><text x="45" y="22">rag-svc</text><text class="sub-text" x="45" y="35">FAISS</text></g>
+    <g class="topo-node" id="tn-report" transform="translate(435,75)"><rect width="90" height="46"/><text x="45" y="22">report-svc</text><text class="sub-text" x="45" y="35">Bedrock</text></g>
+    <g class="topo-node" id="tn-postgres" transform="translate(580,15)"><rect width="90" height="38"/><text x="45" y="22">PostgreSQL</text></g>
+    <g class="topo-node" id="tn-redis" transform="translate(580,75)"><rect width="90" height="38"/><text x="45" y="22">Redis</text></g>
+    <g transform="translate(690,35)"><rect width="75" height="34" rx="6" fill="none" stroke="#6366f1" stroke-width="1" stroke-dasharray="4 2"/><text x="38" y="22" fill="#6366f1" font-size="10" text-anchor="middle" font-family="inherit">Bedrock</text></g>
+  </svg>
+</div>
+
+<!-- Test Cases -->
+<div class="card">
+  <div class="flex-between">
+    <h2>Test Cases</h2>
+    <div class="flex">
+      <button class="btn-sm btn-outline" onclick="runSelected()" id="btnRun" disabled>Run Selected</button>
+      <button class="btn-sm btn-green" onclick="runAll()" id="btnAll">Run All</button>
+    </div>
+  </div>
+  <div class="cases" id="casesGrid"></div>
+</div>
+
+<!-- ZONE B -->
+<div class="card">
+  <div class="flex-between"><h2>Zone B &mdash; Waterfall Timeline</h2><span class="timer" id="wfTimer"></span></div>
+  <div id="waterfall"><div class="empty-msg">Run a test case to see the request timeline</div></div>
+</div>
+
+<!-- ZONE C -->
+<div class="card">
+  <div class="flex-between"><h2>Zone C &mdash; Detail Panel</h2><span id="detailTitle" style="color:var(--dim);font-size:.75rem">Click a timeline bar</span></div>
+  <div class="detail-grid" id="detailGrid">
+    <div class="detail-box"><h3>Request</h3><pre id="detailReq">-</pre></div>
+    <div class="detail-box"><h3>Response</h3><pre id="detailRes">-</pre></div>
+    <div class="detail-box"><h3>Findings</h3><div id="detailFindings"><span style="color:var(--dim)">-</span></div></div>
+    <div class="detail-box"><h3>Metadata / Timings</h3><pre id="detailMeta">-</pre></div>
+  </div>
+</div>
+
+<script>
+// ECG signal_path — ecg-svc가 읽을 수 있는 경로 (로컬/Docker)
+// 페이지 로드 시 ecg-svc의 /testdata-path에서 실제 경로 가져옴
+let ECG_TESTDATA = '/models/testdata';
+// ECG signal 매핑: case → .npy 파일 (stemi, normal, afib, hf)
+const ECG_SIGNAL_MAP = {case1:'stemi.npy', case2:'normal.npy', case3:'afib.npy', case4:'normal.npy'};
+
+const TEST_CASES=[
+  {id:'case1',patient_id:'PT-2026-001',
+   patient_info:{age:68,sex:'M',chief_complaint:'Chest pain and dyspnea for 3 days',
+                 history:['hypertension','smoking 30 pack-years','hyperlipidemia'],
+                 temperature:37.2,blood_pressure:'160/95',spo2:94,respiratory_rate:22},
+   image:'/testdata/case1.jpg',
+   ecg_signal:'stemi.npy',
+   blood:{WBC:13200,RBC:4.1,Hemoglobin:12.8,Hematocrit:38,Platelet:195000,ESR:42,CRP:6.8,
+          BUN:28,Creatinine:1.4,eGFR:52,Glucose:165,HbA1c:7.2,AST:48,ALT:35,Troponin_I:0.12,BNP:520,Na:137,K:4.6,Cl:101},
+   desc:'68M chest pain, smoker, STEMI ECG signal + troponin/BNP high'},
+  {id:'case2',patient_id:'PT-2026-002',
+   patient_info:{age:45,sex:'F',chief_complaint:'Persistent cough and fever for 1 week',
+                 history:['asthma'],
+                 temperature:38.5,blood_pressure:'125/82',spo2:96,respiratory_rate:20},
+   image:'/testdata/case2.jpg',
+   ecg_signal:'normal.npy',
+   blood:{WBC:18500,RBC:4.5,Hemoglobin:13.5,Hematocrit:40,Platelet:310000,ESR:65,CRP:14.2,
+          BUN:15,Creatinine:0.8,eGFR:95,Glucose:105,HbA1c:5.4,AST:22,ALT:18,Troponin_I:0.01,BNP:45,Na:140,K:4.0,Cl:103},
+   desc:'45F cough+fever, normal ECG, high WBC/CRP'},
+  {id:'case3',patient_id:'PT-2026-003',
+   patient_info:{age:72,sex:'M',chief_complaint:'Progressive dyspnea and leg edema for 2 weeks',
+                 history:['CHF','atrial fibrillation','diabetes','CKD stage 3'],
+                 temperature:36.4,blood_pressure:'100/65',spo2:91,respiratory_rate:26},
+   image:'/testdata/case3.jpg',
+   ecg_signal:'afib.npy',
+   blood:{WBC:9800,RBC:3.4,Hemoglobin:9.8,Hematocrit:30,Platelet:160000,ESR:38,CRP:4.5,
+          BUN:48,Creatinine:2.5,eGFR:28,Glucose:210,HbA1c:8.5,AST:55,ALT:42,Troponin_I:0.04,BNP:1850,Na:132,K:5.4,Cl:98},
+   desc:'72M CHF/AFib ECG signal, dyspnea+edema, BNP 1850'},
+  {id:'case4',patient_id:'PT-2026-004',
+   patient_info:{age:28,sex:'F',chief_complaint:'Annual health checkup, no symptoms',
+                 history:[],
+                 temperature:36.5,blood_pressure:'120/80',spo2:99,respiratory_rate:16},
+   image:'/testdata/case4.jpg',
+   ecg_signal:'normal.npy',
+   blood:{WBC:6200,RBC:4.6,Hemoglobin:13.8,Hematocrit:41,Platelet:240000,ESR:8,CRP:0.3,
+          BUN:12,Creatinine:0.7,eGFR:110,Glucose:88,HbA1c:5.1,AST:18,ALT:15,Troponin_I:0.001,BNP:15,Na:141,K:4.1,Cl:104},
+   desc:'28F healthy checkup, normal ECG, all normal (negative control)'}
+];
+
+let selectedCase=null; const caseResults={};
+const SVC_COLORS={orchestrator:'clr-orchestrator',chest:'clr-chest',ecg:'clr-ecg',blood:'clr-blood',
+                  rag:'clr-rag',report:'clr-report',bedrock:'clr-bedrock',db:'clr-db'};
+
+function renderCases(){
+  document.getElementById('casesGrid').innerHTML=TEST_CASES.map(tc=>`
+    <div class="case-card" id="cc-${tc.id}" onclick="selectCase('${tc.id}')">
+      <div class="case-top">
+        <img class="case-thumb" src="${tc.image}" alt="xray">
+        <div class="case-info">
+          <div class="pid">${tc.patient_id}</div>
+          <div class="complaint">${tc.patient_info.chief_complaint}</div>
+          <div>${tc.patient_info.history.map(h=>'<span class="tag">'+h+'</span>').join('')}
+          <span class="tag">${tc.patient_info.age}${tc.patient_info.sex}</span>
+          <span class="tag">CXR</span><span class="tag">${tc.ecg_signal?'ECG ML':'ECG'}</span><span class="tag">Blood</span></div>
+        </div>
+      </div>
+      <div class="case-status" id="cs-${tc.id}">${tc.desc}</div>
+    </div>`).join('');
+}
+
+function selectCase(id){
+  selectedCase=id;
+  document.querySelectorAll('.case-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('cc-'+id).classList.add('selected');
+  document.getElementById('btnRun').disabled=false;
+  if(caseResults[id]) showWaterfall(id);
+}
+
+// Topology
+function setNodeState(n,s){const el=document.getElementById('tn-'+n);if(el)el.className='topo-node '+(s||'')}
+function setArrowActive(id,a){const el=document.getElementById(id);if(el)el.className='topo-arrow'+(a?' active':'')}
+function resetTopo(){
+  document.querySelectorAll('.topo-node').forEach(n=>n.className='topo-node');
+  document.querySelectorAll('.topo-arrow').forEach(a=>a.className='topo-arrow');
+}
+
+async function checkHealth(){
+  try{
+    const r=await fetch('/readyz',{signal:AbortSignal.timeout(5000)});
+    const d=await r.json();
+    setNodeState('orchestrator',r.ok?'ok':'err');
+    setNodeState('postgres',d.checks?.db?'ok':'err');
+    setNodeState('redis',d.checks?.redis?'ok':'err');
+    ['chest','ecg','blood','rag','report'].forEach(s=>setNodeState(s,r.ok?'ok':'err'));
+  }catch(e){
+    ['orchestrator','chest','ecg','blood','rag','report','postgres','redis'].forEach(s=>setNodeState(s,'err'));
+  }
+}
+
+// ===== RUN TEST =====
+let _timerIv=null;
+function _log(msg){console.log('[DR-AI]',msg);const w=document.getElementById('waterfall');if(w&&!w._logging){w._logging=true;w.innerHTML=''}if(w)w.innerHTML+=`<div style="font-size:.72rem;color:var(--dim);padding:1px 4px">[${((performance.now()/1000)%1000).toFixed(1)}] ${msg}</div>`}
+
+async function runCase(tc){
+  _log('runCase start: '+tc.id);
+  const card=document.getElementById('cc-'+tc.id);
+  const statusEl=document.getElementById('cs-'+tc.id);
+  if(!card||!statusEl){_log('ERROR: card or status element not found for '+tc.id);return}
+  card.className='case-card running';
+  resetTopo(); setNodeState('orchestrator','active');
+
+  const t0=performance.now();
+  if(_timerIv) clearInterval(_timerIv);
+  _timerIv=setInterval(()=>{
+    const sec=((performance.now()-t0)/1000).toFixed(0);
+    statusEl.innerHTML=`<span class="spinner"></span> Running... ${sec}s`;
+  },500);
+
+  const spans=[];
+  try{
+    // 1. Encode image
+    _log('Fetching image: '+tc.image);
+    statusEl.innerHTML='<span class="spinner"></span> Loading image...';
+    const imgRes=await fetch(tc.image);
+    if(!imgRes.ok){throw new Error('Image fetch failed: '+imgRes.status)}
+    const blob=await imgRes.blob();
+    _log('Image loaded: '+blob.size+' bytes');
+    const b64=await new Promise((ok,fail)=>{const r=new FileReader();r.onload=()=>ok(r.result.split(',')[1]);r.onerror=fail;r.readAsDataURL(blob)});
+    _log('Base64 encoded: '+b64.length+' chars');
+
+    // 2. POST /examine — ECG: signal_path (ML) + blood + chest
+    const ecgData = tc.ecg_signal
+      ? {signal_path: ECG_TESTDATA + '/' + tc.ecg_signal, leads: 12}
+      : (tc.ecg || {});
+    const body={patient_id:tc.patient_id,patient_info:tc.patient_info,
+                data:{chest:{image_base64:b64},ecg:ecgData,blood:tc.blood}};
+    const bodySize=(JSON.stringify(body).length/1024).toFixed(0);
+    _log('POST /examine ('+bodySize+'KB)...');
+
+    setArrowActive('arr-orch-db',true);setArrowActive('arr-orch-redis',true);
+    const examStart=performance.now();
+    const res=await fetch('/examine',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body),signal:AbortSignal.timeout(300000)});
+    _log('Response received: HTTP '+res.status);
+    const data=await res.json();
+    _log('JSON parsed: status='+data.status+', exams='+JSON.stringify(data.exams_performed)+', reports='+((data.modal_reports||[]).length));
+    const examEnd=performance.now();
+    clearInterval(_timerIv); _timerIv=null;
+    const totalSec=((examEnd-t0)/1000).toFixed(1);
+    const totalMs=examEnd-examStart;
+
+    // 3. Build waterfall spans
+    spans.push({label:'orchestrator /examine',svc:'orchestrator',dur:totalMs,start:0,depth:0,
+                req:{patient_id:tc.patient_id,data_keys:Object.keys(body.data)},
+                res:{status:data.status,exams:data.exams_performed,session_id:data.session_id}});
+
+    // Bedrock decisions (estimate timing from total)
+    const decisions=data.exam_decisions||[];
+    const reports=data.modal_reports||[];
+    const nSteps=decisions.length+reports.length+1;
+    const stepMs=totalMs/Math.max(nSteps,1);
+    let cursor=0;
+
+    for(let i=0;i<decisions.length;i++){
+      const dec=decisions[i];
+      // Interleave decisions and modal reports
+      spans.push({label:`Bedrock #${i+1}: ${dec.next_exam||dec.reasoning?.substring(0,30)||'decide'}`,
+                  svc:'bedrock',dur:stepMs*0.3,start:cursor,depth:1,req:{step:i+1},res:dec});
+      cursor+=stepMs*0.35;
+
+      // Find matching modal report
+      const mr=reports.find(r=>r.modal===dec.next_exam);
+      if(mr){
+        const modal=mr.modal;
+        const timings=mr.metadata?.timings||{};
+        const mDur=(mr.metadata?.total_time||0)*1000 || Object.values(timings).reduce((a,v)=>(typeof v==='number'?a+v*1000:a),0) || stepMs*0.6;
+
+        if(modal==='chest'){setNodeState('chest','active');setArrowActive('arr-orch-chest',true)}
+        if(modal==='ecg'){setNodeState('ecg','active');setArrowActive('arr-orch-ecg',true)}
+        if(modal==='blood'){setNodeState('blood','active');setArrowActive('arr-orch-blood',true)}
+
+        spans.push({label:`${modal}-svc /predict`,svc:modal,dur:mDur,start:cursor,depth:1,
+                    req:{patient_id:tc.patient_id,modal},
+                    res:{risk_level:mr.risk_level,detected:mr.findings?.filter(f=>f.detected).length||0,summary:mr.summary?.substring(0,80)},
+                    findings:mr.findings,metadata:mr.metadata});
+
+        // Sub-spans for internal timings
+        if(Object.keys(timings).length){
+          let subOff=0;
+          for(const [stage,sec] of Object.entries(timings)){
+            if(typeof sec!=='number')continue;
+            const ms=sec*1000;
+            spans.push({label:stage,svc:'sub',dur:Math.max(ms,8),start:cursor+subOff+5,depth:2,
+                        req:{stage},res:{ms:ms.toFixed(1)}});
+            subOff+=Math.max(ms,12)+3;
+          }
+        }
+        cursor+=mDur+stepMs*0.05;
+      }
+    }
+
+    // Report-svc
+    if(data.final_report && data.final_report.length>10){
+      spans.push({label:'report-svc /generate',svc:'report',dur:stepMs*0.8,start:cursor,depth:1,
+                  req:{modals:data.exams_performed},res:{diagnosis:data.diagnosis?.substring(0,80)}});
+      setNodeState('report','active');setArrowActive('arr-orch-report',true);
+      cursor+=stepMs*0.85;
+    }
+
+    if(data.session_id){
+      spans.push({label:'PostgreSQL save',svc:'db',dur:50,start:cursor,depth:1,
+                  req:{action:'INSERT'},res:{session_id:data.session_id}});
+    }
+
+    // 4. Store and display
+    _log('Building result: spans='+spans.length+', totalSec='+totalSec);
+    const isSuccess=res.ok && data.status==='success';
+    caseResults[tc.id]={ok:isSuccess,data,spans,totalSec};
+
+    if(isSuccess){
+      card.className='case-card done';
+      const exams=(data.exams_performed||[]).join(' → ')||'none';
+      statusEl.innerHTML=`<span class="badge badge-ok">PASS</span> ${totalSec}s &mdash; ${exams}`;
+      _log('PASS: '+exams);
+    }else{
+      card.className='case-card fail';
+      const err=data.error||data.detail||'status: '+data.status;
+      statusEl.innerHTML=`<span class="badge badge-err">FAIL</span> ${totalSec}s &mdash; ${String(err).substring(0,80)}`;
+      _log('FAIL: '+String(err).substring(0,100));
+    }
+
+    // Always show waterfall
+    _log('Rendering waterfall...');
+    document.getElementById('waterfall')._logging=false;
+    showWaterfall(tc.id);
+    if(spans.length>1) showDetail(1,tc.id);
+    _log('Done!');
+    setTimeout(()=>{resetTopo();checkHealth()},2000);
+
+  }catch(e){
+    clearInterval(_timerIv); _timerIv=null;
+    const elapsed=((performance.now()-t0)/1000).toFixed(1);
+    _log('CATCH ERROR: '+e.message+' ('+e.name+')');
+    card.className='case-card fail';
+    statusEl.innerHTML=`<span class="badge badge-err">ERR</span> ${elapsed}s &mdash; ${e.message}`;
+    caseResults[tc.id]={ok:false,data:{error:e.message},spans,totalSec:elapsed};
+    if(spans.length){document.getElementById('waterfall')._logging=false;showWaterfall(tc.id)}
+    resetTopo();
+  }
+}
+
+async function runSelected(){if(!selectedCase)return;const tc=TEST_CASES.find(c=>c.id===selectedCase);if(tc)await runCase(tc)}
+async function runAll(){
+  const btn=document.getElementById('btnAll');btn.disabled=true;btn.textContent='Running...';
+  for(const tc of TEST_CASES){selectCase(tc.id);await runCase(tc)}
+  btn.disabled=false;btn.textContent='Run All';
+}
+
+// ===== WATERFALL =====
+function showWaterfall(id){
+  const r=caseResults[id];if(!r)return;
+  const wf=document.getElementById('waterfall');
+  document.getElementById('wfTimer').textContent=(r.totalSec||'?')+'s';
+
+  if(!r.spans||!r.spans.length){
+    wf.innerHTML=`<div class="empty-msg">${r.ok?'No spans':'Error: '+JSON.stringify(r.data).substring(0,200)}</div>`;
+    return;
+  }
+
+  const maxEnd=Math.max(...r.spans.map(s=>(s.start||0)+(s.dur||0)),1);
+  wf.innerHTML=r.spans.map((s,i)=>{
+    const left=((s.start||0)/maxEnd*92).toFixed(2);
+    const width=Math.max((s.dur||0)/maxEnd*92,0.4).toFixed(2);
+    const durText=(s.dur||0)>=1000?((s.dur/1000).toFixed(1)+'s'):(Math.round(s.dur||0)+'ms');
+    const clr=SVC_COLORS[s.svc]||'clr-sub';
+    return `<div class="wf-row wf-depth-${s.depth||0}" onclick="showDetail(${i},'${id}')" data-idx="${i}">
+      <div class="wf-label">${s.label||'?'}</div>
+      <div class="wf-track"><div class="wf-bar ${clr}" style="left:${left}%;width:${width}%"><span class="wf-time">${durText}</span></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ===== DETAIL =====
+function showDetail(idx,caseId){
+  const r=caseResults[caseId];if(!r||!r.spans||!r.spans[idx])return;
+  const s=r.spans[idx];
+  document.getElementById('detailTitle').textContent=s.label||'?';
+  document.getElementById('detailReq').textContent=JSON.stringify(s.req||{},null,2);
+  document.getElementById('detailRes').textContent=JSON.stringify(s.res||{},null,2);
+
+  const fDiv=document.getElementById('detailFindings');
+  if(s.findings&&s.findings.length){
+    const det=s.findings.filter(f=>f.detected);
+    const neg=s.findings.filter(f=>!f.detected);
+    let h=det.map(f=>
+      `<div class="finding-row"><span class="fn">${f.name}</span> <span class="fc">${(f.confidence*100).toFixed(0)}%</span>
+       ${f.severity?'<span class="fs">['+f.severity+']</span>':''}
+       ${f.location?'<span style="color:var(--dim)">'+f.location+'</span>':''}
+       ${f.detail?'<div style="color:var(--dim);font-size:.68rem">'+f.detail+'</div>':''}</div>`
+    ).join('');
+    if(neg.length) h+=`<div style="color:var(--dim);font-size:.68rem;margin-top:4px">Normal (${neg.length}): ${neg.map(f=>f.name).join(', ')}</div>`;
+    fDiv.innerHTML=h||'<span style="color:var(--dim)">No detected findings</span>';
+  }else{
+    fDiv.innerHTML='<span style="color:var(--dim)">No findings for this span</span>';
+  }
+
+  const meta=s.metadata||{duration_ms:Math.round(s.dur||0),service:s.svc};
+  document.getElementById('detailMeta').textContent=JSON.stringify(meta,null,2);
+
+  document.querySelectorAll('.wf-row').forEach(r=>r.classList.remove('selected'));
+  const row=document.querySelector(`.wf-row[data-idx="${idx}"]`);
+  if(row) row.classList.add('selected');
+}
+
+// Init
+renderCases();
+setTimeout(checkHealth,300);
+
+// ECG testdata 경로 자동 감지 — ecg-svc 또는 orchestrator의 testdata-path
+(async function initEcgPath(){
+  // 오케스트레이터가 ecg-svc 경로를 알려주는 엔드포인트가 없으므로,
+  // 로컬 테스트 환경에서는 절대 경로를 사용
+  try {
+    const r = await fetch('/ecg-testdata-path');
+    const d = await r.json();
+    if (d.path) ECG_TESTDATA = d.path;
+  } catch {
+    // 엔드포인트 없으면 기본값 유지 (/app/testdata)
+  }
+})();
+</script>
+</body>
+</html>

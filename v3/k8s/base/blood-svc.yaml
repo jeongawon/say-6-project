@@ -1,0 +1,98 @@
+# ── blood-svc Deployment ─────────────────────────────────────
+# 혈액 검사 분석 서비스
+# CBC/생화학 검사 수치를 받아 이상 소견을 판별
+# 모델 없이 규칙 기반 로직이므로 리소스가 가장 적음
+# CPU 250m / Memory 512Mi면 충분
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blood-svc
+  namespace: dr-ai
+  labels:
+    app: blood-svc
+    app.kubernetes.io/name: blood-svc
+    app.kubernetes.io/part-of: dr-ai
+    # component: modal-service — 모달(의료데이터) 분석 서비스 그룹
+    app.kubernetes.io/component: modal-service
+spec:
+  # 레플리카 1개 — 가벼워서 필요 시 자유롭게 스케일 가능
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blood-svc
+  template:
+    metadata:
+      labels:
+        app: blood-svc
+        app.kubernetes.io/name: blood-svc
+        app.kubernetes.io/part-of: dr-ai
+    spec:
+      containers:
+        - name: blood-svc
+          # 이미지 태그는 overlay의 kustomization.yaml에서 오버라이드됨
+          image: blood-svc:latest
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          # ── 환경변수 주입 (2개의 ConfigMap) ──────────────
+          # common-config: Bedrock, DB, Redis, RAG 등 공통 설정
+          # dr-ai-config: 환경별(local/eks) 오버라이드 설정
+          envFrom:
+            - configMapRef:
+                name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
+            - configMapRef:
+                name: dr-ai-config         # 환경별 오버라이드 (local/eks)
+            - secretRef:
+                name: aws-credentials
+          # ── 리소스 설정 ──────────────────────────────────
+          # 규칙 기반 서비스이므로 최소 리소스로 운영 가능
+          # requests 125m/256Mi, limits 250m/512Mi
+          resources:
+            requests:
+              cpu: 125m
+              memory: 256Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi
+          # ── Liveness Probe ───────────────────────────────
+          # 모델 로딩 없어 빠르게 시작 — initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # ── Readiness Probe ──────────────────────────────
+          # 서비스 준비 확인 — 3초 후부터 체크 시작
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+# ── blood-svc Service ────────────────────────────────────────
+# ClusterIP 타입 — 클러스터 내부 전용
+# central-orchestrator가 http://blood-svc:8000 으로 호출
+apiVersion: v1
+kind: Service
+metadata:
+  name: blood-svc
+  namespace: dr-ai
+  labels:
+    app: blood-svc
+    app.kubernetes.io/name: blood-svc
+    app.kubernetes.io/part-of: dr-ai
+spec:
+  type: ClusterIP
+  selector:
+    app: blood-svc
+  ports:
+    # 서비스 포트 8000 → 컨테이너 포트 8000 (FastAPI 기본 포트)
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP

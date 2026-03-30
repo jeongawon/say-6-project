@@ -1,0 +1,31 @@
+# 모델 파일 (EFS 마운트로 제공)
+models/
+*.onnx
+*.pt
+
+# 데이터
+*.npy
+*.h5
+test-samples/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# 환경
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# 로그
+*.log
+
+# pytest
+.pytest_cache/

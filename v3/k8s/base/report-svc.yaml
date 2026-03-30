@@ -1,0 +1,98 @@
+# ── report-svc Deployment ────────────────────────────────────
+# 리포트 생성 서비스
+# 분석 결과 + RAG 근거를 종합하여 최종 의료 리포트를 생성
+# Bedrock LLM 호출로 리포트 텍스트를 생성하므로 네트워크 I/O 위주
+# 자체 모델 없이 API 호출만 하므로 리소스가 적음
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-svc
+  namespace: dr-ai
+  labels:
+    app: report-svc
+    app.kubernetes.io/name: report-svc
+    app.kubernetes.io/part-of: dr-ai
+    # component: shared-service — 여러 모달 서비스가 공유하는 공통 서비스
+    app.kubernetes.io/component: shared-service
+spec:
+  # 레플리카 1개 — stateless이므로 부하 시 스케일 가능
+  replicas: 1
+  selector:
+    matchLabels:
+      app: report-svc
+  template:
+    metadata:
+      labels:
+        app: report-svc
+        app.kubernetes.io/name: report-svc
+        app.kubernetes.io/part-of: dr-ai
+    spec:
+      containers:
+        - name: report-svc
+          # 이미지 태그는 overlay의 kustomization.yaml에서 오버라이드됨
+          image: report-svc:latest
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          # ── 환경변수 주입 (2개의 ConfigMap) ──────────────
+          # common-config: Bedrock, DB, Redis 등 공통 설정
+          # dr-ai-config: 환경별(local/eks) 오버라이드 설정
+          envFrom:
+            - configMapRef:
+                name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
+            - configMapRef:
+                name: dr-ai-config         # 환경별 오버라이드 (local/eks)
+            - secretRef:
+                name: aws-credentials
+          # ── 리소스 설정 ──────────────────────────────────
+          # LLM API 호출 위주이므로 최소 리소스로 운영
+          # requests 125m/256Mi, limits 250m/512Mi
+          resources:
+            requests:
+              cpu: 125m
+              memory: 256Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi
+          # ── Liveness Probe ───────────────────────────────
+          # 빠르게 시작하므로 initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # ── Readiness Probe ──────────────────────────────
+          # 서비스 준비 확인 — 3초 후부터 체크 시작
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+# ── report-svc Service ───────────────────────────────────────
+# ClusterIP 타입 — 클러스터 내부 전용
+# central-orchestrator가 http://report-svc:8000 으로 호출
+apiVersion: v1
+kind: Service
+metadata:
+  name: report-svc
+  namespace: dr-ai
+  labels:
+    app: report-svc
+    app.kubernetes.io/name: report-svc
+    app.kubernetes.io/part-of: dr-ai
+spec:
+  type: ClusterIP
+  selector:
+    app: report-svc
+  ports:
+    # 서비스 포트 8000 → 컨테이너 포트 8000 (FastAPI 기본 포트)
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP

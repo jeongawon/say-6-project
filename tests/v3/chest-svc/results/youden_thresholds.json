@@ -1,0 +1,16 @@
+{
+  "Atelectasis": 0.695,
+  "Cardiomegaly": 0.628,
+  "Consolidation": 0.566,
+  "Edema": 0.565,
+  "Enlarged_Cardiomediastinum": 0.422,
+  "Fracture": 0.616,
+  "Lung_Lesion": 0.512,
+  "Lung_Opacity": 0.655,
+  "No_Finding": 0.405,
+  "Pleural_Effusion": 0.639,
+  "Pleural_Other": 0.6,
+  "Pneumonia": 0.482,
+  "Pneumothorax": 0.806,
+  "Support_Devices": 0.408
+}

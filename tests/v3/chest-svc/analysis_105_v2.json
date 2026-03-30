@@ -1,0 +1,3848 @@
+{
+  "summary": {
+    "total": 105,
+    "yolo_rate": "52/105",
+    "densenet_rate": "104/105",
+    "ctr_cardio": "73/105",
+    "yolo_classes": {
+      "Cardiomegaly": 35,
+      "Other_lesion": 25,
+      "Aortic_enlargement": 11,
+      "Pleural_effusion": 3,
+      "ILD": 1,
+      "Pulmonary_fibrosis": 1,
+      "Pneumothorax": 1
+    },
+    "densenet_classes": {
+      "Atelectasis": 63,
+      "Lung_Opacity": 60,
+      "Pneumonia": 59,
+      "Consolidation": 51,
+      "Support_Devices": 48,
+      "Lung_Lesion": 46,
+      "Cardiomegaly": 44,
+      "Pleural_Effusion": 44,
+      "Edema": 43,
+      "Fracture": 36,
+      "Enlarged_Cardiomediastinum": 33,
+      "No_Finding": 30,
+      "Pneumothorax": 25,
+      "Pleural_Other": 19
+    }
+  },
+  "results": [
+    {
+      "file": "096052b7",
+      "source": "real",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.423
+        }
+      ],
+      "ctr": 0.5204,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.832
+        ],
+        [
+          "Cardiomegaly",
+          0.597
+        ],
+        [
+          "Consolidation",
+          0.573
+        ],
+        [
+          "Edema",
+          0.798
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.586
+        ],
+        [
+          "Fracture",
+          0.747
+        ],
+        [
+          "Lung_Lesion",
+          0.515
+        ],
+        [
+          "Lung_Opacity",
+          0.697
+        ],
+        [
+          "Pleural_Effusion",
+          0.716
+        ],
+        [
+          "Pleural_Other",
+          0.765
+        ],
+        [
+          "Pneumonia",
+          0.564
+        ]
+      ]
+    },
+    {
+      "file": "174413ec",
+      "source": "real",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.798,
+      "ctr_status": "cardiomegaly",
+      "densenet": []
+    },
+    {
+      "file": "2a2277a9",
+      "source": "real",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.415,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Fracture",
+          0.519
+        ],
+        [
+          "No_Finding",
+          0.628
+        ]
+      ]
+    },
+    {
+      "file": "68b5c4b1",
+      "source": "real",
+      "size": "2539x2705",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.338
+        }
+      ],
+      "ctr": 0.4194,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Pleural_Effusion",
+          0.517
+        ],
+        [
+          "Pneumothorax",
+          0.526
+        ],
+        [
+          "Support_Devices",
+          0.546
+        ]
+      ]
+    },
+    {
+      "file": "e084de3b",
+      "source": "real",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.7171,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Fracture",
+          0.563
+        ],
+        [
+          "Lung_Lesion",
+          0.507
+        ]
+      ]
+    },
+    {
+      "file": "01275cbe-a2f95d71-0374e495-68b16452-ebdcb789",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.458
+        }
+      ],
+      "ctr": 0.5231,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.7
+        ],
+        [
+          "Cardiomegaly",
+          0.745
+        ],
+        [
+          "Consolidation",
+          0.872
+        ],
+        [
+          "Edema",
+          0.835
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.687
+        ],
+        [
+          "Lung_Lesion",
+          0.503
+        ],
+        [
+          "Lung_Opacity",
+          0.794
+        ],
+        [
+          "Pleural_Effusion",
+          0.722
+        ],
+        [
+          "Pneumonia",
+          0.848
+        ],
+        [
+          "Support_Devices",
+          0.685
+        ]
+      ]
+    },
+    {
+      "file": "014049a7-1fc7cc5b-d9fba786-7ecc26a0-060c147a",
+      "source": "s3",
+      "size": "2539x3035",
+      "yolo": [],
+      "ctr": 0.391,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "No_Finding",
+          0.588
+        ]
+      ]
+    },
+    {
+      "file": "06275b2d-2775330b-b115667a-512c03e6-0b42342b",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.3143,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Lung_Opacity",
+          0.521
+        ],
+        [
+          "No_Finding",
+          0.549
+        ],
+        [
+          "Pneumonia",
+          0.524
+        ]
+      ]
+    },
+    {
+      "file": "0721e3ed-97ad959e-bf1211b0-e924ea48-678458c1",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.5092,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Fracture",
+          0.605
+        ],
+        [
+          "No_Finding",
+          0.576
+        ]
+      ]
+    },
+    {
+      "file": "07538782-4768fa87-dd4f2100-6935d000-7b6c3b8f",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo": [],
+      "ctr": 0.4934,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.844
+        ],
+        [
+          "Fracture",
+          0.797
+        ],
+        [
+          "Lung_Opacity",
+          0.525
+        ],
+        [
+          "Pneumothorax",
+          0.935
+        ],
+        [
+          "Support_Devices",
+          0.737
+        ]
+      ]
+    },
+    {
+      "file": "0a7820a5-9773a76e-f79e31e2-d06bccec-16051f21",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 1.0038,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "No_Finding",
+          0.598
+        ],
+        [
+          "Support_Devices",
+          0.667
+        ]
+      ]
+    },
+    {
+      "file": "0c759487-e5ff61e5-a92e73d3-08506c5b-8ff2b085",
+      "source": "s3",
+      "size": "2539x3050",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.396
+        }
+      ],
+      "ctr": 0.6168,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.85
+        ],
+        [
+          "Cardiomegaly",
+          0.613
+        ],
+        [
+          "Consolidation",
+          0.855
+        ],
+        [
+          "Edema",
+          0.7
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.622
+        ],
+        [
+          "Fracture",
+          0.665
+        ],
+        [
+          "Lung_Lesion",
+          0.753
+        ],
+        [
+          "Lung_Opacity",
+          0.775
+        ],
+        [
+          "Pleural_Effusion",
+          0.938
+        ],
+        [
+          "Pleural_Other",
+          0.97
+        ],
+        [
+          "Pneumonia",
+          0.721
+        ],
+        [
+          "Pneumothorax",
+          0.647
+        ],
+        [
+          "Support_Devices",
+          0.77
+        ]
+      ]
+    },
+    {
+      "file": "0e95cc69-b47dfaf0-96b54022-1878fa11-5f058ecd",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.3973,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.65
+        ],
+        [
+          "Cardiomegaly",
+          0.558
+        ],
+        [
+          "Consolidation",
+          0.875
+        ],
+        [
+          "Edema",
+          0.664
+        ],
+        [
+          "Lung_Lesion",
+          0.762
+        ],
+        [
+          "Lung_Opacity",
+          0.86
+        ],
+        [
+          "Pleural_Effusion",
+          0.933
+        ],
+        [
+          "Pleural_Other",
+          0.877
+        ],
+        [
+          "Pneumonia",
+          0.784
+        ],
+        [
+          "Pneumothorax",
+          0.629
+        ],
+        [
+          "Support_Devices",
+          0.81
+        ]
+      ]
+    },
+    {
+      "file": "0f1acbee-a9046131-a4ed2bb1-e72d4c8c-b06fb50e",
+      "source": "s3",
+      "size": "2520x3056",
+      "yolo": [],
+      "ctr": 0.5138,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.646
+        ],
+        [
+          "Fracture",
+          0.566
+        ],
+        [
+          "No_Finding",
+          0.562
+        ],
+        [
+          "Pneumonia",
+          0.576
+        ]
+      ]
+    },
+    {
+      "file": "1414c751-0b2ec9b2-9e196ad8-c4d02b13-f44ce5cb",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.9812,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Cardiomegaly",
+          0.535
+        ],
+        [
+          "Consolidation",
+          0.555
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.529
+        ],
+        [
+          "Fracture",
+          0.61
+        ],
+        [
+          "Lung_Lesion",
+          0.659
+        ],
+        [
+          "Lung_Opacity",
+          0.523
+        ],
+        [
+          "Pneumonia",
+          0.579
+        ],
+        [
+          "Support_Devices",
+          0.627
+        ]
+      ]
+    },
+    {
+      "file": "17e20942-b55bbe1b-c798d9e6-d16cc82b-e2a6b1b0",
+      "source": "s3",
+      "size": "2906x2539",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.397
+        }
+      ],
+      "ctr": 0.6473,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.876
+        ],
+        [
+          "Cardiomegaly",
+          0.688
+        ],
+        [
+          "Consolidation",
+          0.54
+        ],
+        [
+          "Edema",
+          0.622
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.619
+        ],
+        [
+          "Lung_Opacity",
+          0.599
+        ],
+        [
+          "Pleural_Effusion",
+          0.698
+        ],
+        [
+          "Pneumonia",
+          0.558
+        ],
+        [
+          "Pneumothorax",
+          0.54
+        ],
+        [
+          "Support_Devices",
+          0.727
+        ]
+      ]
+    },
+    {
+      "file": "18b3b77c-82a2c934-c987f058-1642af81-cb7f5374",
+      "source": "s3",
+      "size": "2140x1760",
+      "yolo": [],
+      "ctr": 0.5021,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.951
+        ],
+        [
+          "Cardiomegaly",
+          0.637
+        ],
+        [
+          "Consolidation",
+          0.907
+        ],
+        [
+          "Edema",
+          0.781
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.781
+        ],
+        [
+          "Fracture",
+          0.681
+        ],
+        [
+          "Lung_Lesion",
+          0.694
+        ],
+        [
+          "Lung_Opacity",
+          0.894
+        ],
+        [
+          "Pleural_Effusion",
+          0.982
+        ],
+        [
+          "Pleural_Other",
+          0.886
+        ],
+        [
+          "Pneumonia",
+          0.82
+        ],
+        [
+          "Pneumothorax",
+          0.867
+        ],
+        [
+          "Support_Devices",
+          0.736
+        ]
+      ]
+    },
+    {
+      "file": "18fffbd9-a6ba704e-8c82171e-c3c0b0e1-34f9d053",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.4309,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Fracture",
+          0.532
+        ],
+        [
+          "No_Finding",
+          0.705
+        ]
+      ]
+    },
+    {
+      "file": "1d276292-0963bb20-a1b90dec-412781b9-f86a3c5d",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.6417,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Lung_Lesion",
+          0.632
+        ],
+        [
+          "No_Finding",
+          0.674
+        ]
+      ]
+    },
+    {
+      "file": "23098650-9d2a2dcd-1074de1d-d9d95c8a-75521204",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [],
+      "ctr": 0.5142,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.822
+        ],
+        [
+          "Consolidation",
+          0.634
+        ],
+        [
+          "Lung_Opacity",
+          0.655
+        ],
+        [
+          "Pneumonia",
+          0.787
+        ]
+      ]
+    },
+    {
+      "file": "24e4f359-8ef7a104-d0d5e929-6776ce60-b7e6c2da",
+      "source": "s3",
+      "size": "2021x2021",
+      "yolo": [],
+      "ctr": 0.3734,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Enlarged_Cardiomediastinum",
+          0.548
+        ],
+        [
+          "No_Finding",
+          0.623
+        ],
+        [
+          "Pneumothorax",
+          0.836
+        ],
+        [
+          "Support_Devices",
+          0.868
+        ]
+      ]
+    },
+    {
+      "file": "28cd45b6-c22590ca-af6d8f22-e1893f36-f215e05e",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.6497,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Consolidation",
+          0.791
+        ],
+        [
+          "Edema",
+          0.7
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.548
+        ],
+        [
+          "Lung_Lesion",
+          0.641
+        ],
+        [
+          "Lung_Opacity",
+          0.82
+        ],
+        [
+          "Pneumonia",
+          0.859
+        ]
+      ]
+    },
+    {
+      "file": "2a12f753-8ecd46fa-c7ca8e64-7196ed00-8d0ea894",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.301
+        }
+      ],
+      "ctr": 0.4631,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.624
+        ],
+        [
+          "Cardiomegaly",
+          0.799
+        ],
+        [
+          "Edema",
+          0.778
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.527
+        ],
+        [
+          "Lung_Opacity",
+          0.551
+        ],
+        [
+          "Support_Devices",
+          0.583
+        ]
+      ]
+    },
+    {
+      "file": "2f29f743-c4c4bbc8-9ca6d4a9-d5ff7972-0d4bbcc6",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [],
+      "ctr": 0.4749,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Fracture",
+          0.67
+        ],
+        [
+          "Lung_Lesion",
+          0.597
+        ],
+        [
+          "No_Finding",
+          0.578
+        ]
+      ]
+    },
+    {
+      "file": "3332cf8c-edba75ae-55b3f8c6-3c649171-e82d4154",
+      "source": "s3",
+      "size": "2539x3050",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.546
+        },
+        {
+          "cls": "ILD",
+          "conf": 0.278
+        }
+      ],
+      "ctr": 0.5534,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.757
+        ],
+        [
+          "Consolidation",
+          0.865
+        ],
+        [
+          "Edema",
+          0.868
+        ],
+        [
+          "Lung_Lesion",
+          0.595
+        ],
+        [
+          "Lung_Opacity",
+          0.742
+        ],
+        [
+          "Pleural_Effusion",
+          0.696
+        ],
+        [
+          "Pleural_Other",
+          0.59
+        ],
+        [
+          "Pneumonia",
+          0.769
+        ],
+        [
+          "Support_Devices",
+          0.715
+        ]
+      ]
+    },
+    {
+      "file": "34bf54ba-73cc6263-d2eba44f-ededac28-bde43bc1",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.3295,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "No_Finding",
+          0.825
+        ]
+      ]
+    },
+    {
+      "file": "3685363a-599b1efd-71dc6691-7ee0c304-eed6419b",
+      "source": "s3",
+      "size": "3049x2273",
+      "yolo": [],
+      "ctr": 0.4267,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.93
+        ],
+        [
+          "Cardiomegaly",
+          0.613
+        ],
+        [
+          "Consolidation",
+          0.735
+        ],
+        [
+          "Edema",
+          0.812
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.509
+        ],
+        [
+          "Fracture",
+          0.645
+        ],
+        [
+          "Lung_Opacity",
+          0.771
+        ],
+        [
+          "Pleural_Effusion",
+          0.831
+        ],
+        [
+          "Pneumonia",
+          0.757
+        ],
+        [
+          "Pneumothorax",
+          0.648
+        ],
+        [
+          "Support_Devices",
+          0.684
+        ]
+      ]
+    },
+    {
+      "file": "37213da4-fcc517d0-871ea84f-6c1367f8-e4d5d2b8",
+      "source": "s3",
+      "size": "1910x2022",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.38
+        }
+      ],
+      "ctr": 0.9905,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Cardiomegaly",
+          0.575
+        ],
+        [
+          "Fracture",
+          0.598
+        ],
+        [
+          "No_Finding",
+          0.605
+        ],
+        [
+          "Support_Devices",
+          0.822
+        ]
+      ]
+    },
+    {
+      "file": "380fda55-d2283afd-511dcad7-803d3b6a-ed8c6b64",
+      "source": "s3",
+      "size": "1759x2021",
+      "yolo": [],
+      "ctr": 0.424,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.713
+        ],
+        [
+          "Consolidation",
+          0.759
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.602
+        ],
+        [
+          "Fracture",
+          0.588
+        ],
+        [
+          "Lung_Lesion",
+          0.618
+        ],
+        [
+          "Lung_Opacity",
+          0.787
+        ],
+        [
+          "Pleural_Effusion",
+          0.83
+        ],
+        [
+          "Pleural_Other",
+          0.678
+        ],
+        [
+          "Pneumonia",
+          0.642
+        ],
+        [
+          "Pneumothorax",
+          0.932
+        ],
+        [
+          "Support_Devices",
+          0.803
+        ]
+      ]
+    },
+    {
+      "file": "3d798667-d7079b61-7249960d-06f5da6e-1f51a268",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.37
+        }
+      ],
+      "ctr": 0.5338,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.755
+        ],
+        [
+          "Cardiomegaly",
+          0.597
+        ],
+        [
+          "Consolidation",
+          0.819
+        ],
+        [
+          "Edema",
+          0.649
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.511
+        ],
+        [
+          "Lung_Lesion",
+          0.752
+        ],
+        [
+          "Lung_Opacity",
+          0.789
+        ],
+        [
+          "Pleural_Effusion",
+          0.861
+        ],
+        [
+          "Pneumonia",
+          0.761
+        ],
+        [
+          "Pneumothorax",
+          0.881
+        ],
+        [
+          "Support_Devices",
+          0.828
+        ]
+      ]
+    },
+    {
+      "file": "3f606c42-82177f82-f7ade431-84d74249-a19205ed",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.9545,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.569
+        ],
+        [
+          "Lung_Lesion",
+          0.594
+        ],
+        [
+          "No_Finding",
+          0.612
+        ]
+      ]
+    },
+    {
+      "file": "3fcea49d-024622c5-401a6d21-bca6e95f-58608da7",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.664
+        },
+        {
+          "cls": "Pleural_effusion",
+          "conf": 0.277
+        },
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.258
+        }
+      ],
+      "ctr": 0.5059,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.777
+        ],
+        [
+          "Cardiomegaly",
+          0.639
+        ],
+        [
+          "Consolidation",
+          0.819
+        ],
+        [
+          "Edema",
+          0.782
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.539
+        ],
+        [
+          "Lung_Lesion",
+          0.635
+        ],
+        [
+          "Lung_Opacity",
+          0.7
+        ],
+        [
+          "Pleural_Effusion",
+          0.954
+        ],
+        [
+          "Pleural_Other",
+          0.577
+        ],
+        [
+          "Pneumonia",
+          0.637
+        ],
+        [
+          "Support_Devices",
+          0.589
+        ]
+      ]
+    },
+    {
+      "file": "43131507-3b255489-2120de9a-1f04dcc8-3683c32c",
+      "source": "s3",
+      "size": "2540x3056",
+      "yolo": [],
+      "ctr": 0.9968,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.56
+        ],
+        [
+          "Cardiomegaly",
+          0.538
+        ],
+        [
+          "Pleural_Effusion",
+          0.632
+        ],
+        [
+          "Support_Devices",
+          0.693
+        ]
+      ]
+    },
+    {
+      "file": "4591f316-2489e2ed-7e91fcac-93b3e3f3-933fa947",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.356
+        }
+      ],
+      "ctr": 0.6273,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.837
+        ],
+        [
+          "Cardiomegaly",
+          0.934
+        ],
+        [
+          "Consolidation",
+          0.56
+        ],
+        [
+          "Edema",
+          0.975
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.506
+        ],
+        [
+          "Lung_Opacity",
+          0.654
+        ],
+        [
+          "Pleural_Effusion",
+          0.706
+        ],
+        [
+          "Pneumonia",
+          0.611
+        ]
+      ]
+    },
+    {
+      "file": "468d4d92-41b963f5-1154372d-8e226382-f498de7f",
+      "source": "s3",
+      "size": "1760x2140",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.335
+        }
+      ],
+      "ctr": 1.01,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "No_Finding",
+          0.516
+        ],
+        [
+          "Support_Devices",
+          0.665
+        ]
+      ]
+    },
+    {
+      "file": "47f67214-fd100a4e-25cad8ec-9cabbc9e-8ad27a95",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.436
+        },
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.311
+        }
+      ],
+      "ctr": 0.5761,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Cardiomegaly",
+          0.818
+        ],
+        [
+          "Consolidation",
+          0.663
+        ],
+        [
+          "Edema",
+          0.916
+        ],
+        [
+          "Lung_Opacity",
+          0.509
+        ],
+        [
+          "Pleural_Effusion",
+          0.603
+        ],
+        [
+          "Pneumonia",
+          0.703
+        ],
+        [
+          "Support_Devices",
+          0.762
+        ]
+      ]
+    },
+    {
+      "file": "4aae66f7-d0127598-afc8231c-bea3cadc-2f85469b",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.466
+        }
+      ],
+      "ctr": 0.5463,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.819
+        ],
+        [
+          "Consolidation",
+          0.909
+        ],
+        [
+          "Edema",
+          0.567
+        ],
+        [
+          "Lung_Lesion",
+          0.835
+        ],
+        [
+          "Lung_Opacity",
+          0.798
+        ],
+        [
+          "Pleural_Effusion",
+          0.558
+        ],
+        [
+          "Pneumonia",
+          0.858
+        ]
+      ]
+    },
+    {
+      "file": "4d0c14f5-d5f56e6d-743cf0f3-5f245fc5-a468ac39",
+      "source": "s3",
+      "size": "1786x2021",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.302
+        }
+      ],
+      "ctr": 0.906,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.707
+        ],
+        [
+          "Cardiomegaly",
+          0.687
+        ],
+        [
+          "Consolidation",
+          0.682
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.647
+        ],
+        [
+          "Fracture",
+          0.584
+        ],
+        [
+          "Lung_Lesion",
+          0.657
+        ],
+        [
+          "Lung_Opacity",
+          0.718
+        ],
+        [
+          "Pleural_Effusion",
+          0.57
+        ],
+        [
+          "Pleural_Other",
+          0.545
+        ],
+        [
+          "Pneumonia",
+          0.638
+        ],
+        [
+          "Pneumothorax",
+          0.775
+        ],
+        [
+          "Support_Devices",
+          0.802
+        ]
+      ]
+    },
+    {
+      "file": "4f2d3004-4b58562a-f904aa59-480e84a1-fd3c5133",
+      "source": "s3",
+      "size": "2654x2539",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.496
+        },
+        {
+          "cls": "Pulmonary_fibrosis",
+          "conf": 0.344
+        }
+      ],
+      "ctr": 0.49,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.579
+        ],
+        [
+          "Cardiomegaly",
+          0.601
+        ],
+        [
+          "Consolidation",
+          0.92
+        ],
+        [
+          "Edema",
+          0.937
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.626
+        ],
+        [
+          "Lung_Lesion",
+          0.76
+        ],
+        [
+          "Lung_Opacity",
+          0.9
+        ],
+        [
+          "Pleural_Effusion",
+          0.903
+        ],
+        [
+          "Pleural_Other",
+          0.713
+        ],
+        [
+          "Pneumonia",
+          0.916
+        ],
+        [
+          "Support_Devices",
+          0.665
+        ]
+      ]
+    },
+    {
+      "file": "4f2f3a1a-effcfb47-c32d3dc5-8df764fa-5cb5773b",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.42
+        }
+      ],
+      "ctr": 0.5588,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.942
+        ],
+        [
+          "Cardiomegaly",
+          0.535
+        ],
+        [
+          "Consolidation",
+          0.878
+        ],
+        [
+          "Edema",
+          0.8
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.639
+        ],
+        [
+          "Fracture",
+          0.664
+        ],
+        [
+          "Lung_Lesion",
+          0.763
+        ],
+        [
+          "Lung_Opacity",
+          0.8
+        ],
+        [
+          "Pleural_Effusion",
+          0.995
+        ],
+        [
+          "Pleural_Other",
+          0.971
+        ],
+        [
+          "Pneumonia",
+          0.596
+        ],
+        [
+          "Pneumothorax",
+          0.876
+        ],
+        [
+          "Support_Devices",
+          0.829
+        ]
+      ]
+    },
+    {
+      "file": "54201716-229e2658-1685e23d-65df6d4c-e5ecd2bc",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.33
+        }
+      ],
+      "ctr": 0.404,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.894
+        ],
+        [
+          "Consolidation",
+          0.72
+        ],
+        [
+          "Edema",
+          0.572
+        ],
+        [
+          "Lung_Lesion",
+          0.503
+        ],
+        [
+          "Lung_Opacity",
+          0.705
+        ],
+        [
+          "Pneumonia",
+          0.74
+        ],
+        [
+          "Support_Devices",
+          0.609
+        ]
+      ]
+    },
+    {
+      "file": "5b6889de-1d3cbfd4-a54eb36d-2056dbb5-bcfd6b51",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.297
+        }
+      ],
+      "ctr": 0.444,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Fracture",
+          0.526
+        ],
+        [
+          "No_Finding",
+          0.71
+        ]
+      ]
+    },
+    {
+      "file": "5cec810f-f22d7ccf-352a8949-fcb1963a-f2ea0598",
+      "source": "s3",
+      "size": "2539x3021",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.302
+        },
+        {
+          "cls": "Pleural_effusion",
+          "conf": 0.264
+        }
+      ],
+      "ctr": 0.6037,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.882
+        ],
+        [
+          "Cardiomegaly",
+          0.795
+        ],
+        [
+          "Consolidation",
+          0.883
+        ],
+        [
+          "Edema",
+          0.835
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.657
+        ],
+        [
+          "Lung_Lesion",
+          0.721
+        ],
+        [
+          "Lung_Opacity",
+          0.729
+        ],
+        [
+          "Pleural_Effusion",
+          0.987
+        ],
+        [
+          "Pleural_Other",
+          0.653
+        ],
+        [
+          "Pneumonia",
+          0.637
+        ],
+        [
+          "Pneumothorax",
+          0.585
+        ],
+        [
+          "Support_Devices",
+          0.733
+        ]
+      ]
+    },
+    {
+      "file": "623d6a9d-049d9807-15260b07-e609daed-5f94401a",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.9937,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.577
+        ]
+      ]
+    },
+    {
+      "file": "6eccd432-4e097045-4c0ef38e-e73f49f6-8799da2c",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.259
+        }
+      ],
+      "ctr": 0.5312,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.744
+        ],
+        [
+          "Fracture",
+          0.843
+        ],
+        [
+          "Lung_Lesion",
+          0.692
+        ],
+        [
+          "Lung_Opacity",
+          0.655
+        ],
+        [
+          "Pleural_Effusion",
+          0.701
+        ],
+        [
+          "Pleural_Other",
+          0.916
+        ],
+        [
+          "Pneumonia",
+          0.562
+        ]
+      ]
+    },
+    {
+      "file": "7d9ce65c-67986f11-9fee45dd-6afbbedf-a66ee372",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.4149,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "No_Finding",
+          0.944
+        ]
+      ]
+    },
+    {
+      "file": "86f79923-f7cb3b44-666c7d7d-047dcd37-fff2fb04",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.271
+        }
+      ],
+      "ctr": 0.4783,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.583
+        ],
+        [
+          "Consolidation",
+          0.652
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.715
+        ],
+        [
+          "Lung_Lesion",
+          0.819
+        ],
+        [
+          "Lung_Opacity",
+          0.72
+        ],
+        [
+          "Pleural_Other",
+          0.572
+        ],
+        [
+          "Pneumonia",
+          0.608
+        ],
+        [
+          "Pneumothorax",
+          0.512
+        ],
+        [
+          "Support_Devices",
+          0.507
+        ]
+      ]
+    },
+    {
+      "file": "87c1098e-9c3bb6e3-a61f96b2-ee3edd92-93ac1cdf",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.552
+        },
+        {
+          "cls": "Pneumothorax",
+          "conf": 0.397
+        }
+      ],
+      "ctr": 0.4498,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.757
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.563
+        ],
+        [
+          "Fracture",
+          0.754
+        ],
+        [
+          "Support_Devices",
+          0.85
+        ]
+      ]
+    },
+    {
+      "file": "8a98b7b8-2ef4254c-eeaa7c5a-085b33ba-bc13996d",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.9937,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.561
+        ],
+        [
+          "Cardiomegaly",
+          0.537
+        ],
+        [
+          "Consolidation",
+          0.626
+        ],
+        [
+          "Edema",
+          0.835
+        ],
+        [
+          "Lung_Opacity",
+          0.676
+        ],
+        [
+          "Pneumonia",
+          0.809
+        ]
+      ]
+    },
+    {
+      "file": "8ac339b6-ee33ab44-a3fee9f0-c009fb5d-9bc6023c",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.295
+        }
+      ],
+      "ctr": 0.5259,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.504
+        ],
+        [
+          "Cardiomegaly",
+          0.782
+        ],
+        [
+          "Edema",
+          0.665
+        ]
+      ]
+    },
+    {
+      "file": "8b1d0dd1-0b89368f-7c335f32-6fd8499d-5aeab3ea",
+      "source": "s3",
+      "size": "1986x2022",
+      "yolo": [],
+      "ctr": 0.601,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.649
+        ],
+        [
+          "Cardiomegaly",
+          0.641
+        ],
+        [
+          "Consolidation",
+          0.701
+        ],
+        [
+          "Edema",
+          0.501
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.753
+        ],
+        [
+          "Lung_Lesion",
+          0.765
+        ],
+        [
+          "Lung_Opacity",
+          0.656
+        ],
+        [
+          "Pleural_Effusion",
+          0.695
+        ],
+        [
+          "Pneumonia",
+          0.528
+        ],
+        [
+          "Pneumothorax",
+          0.58
+        ],
+        [
+          "Support_Devices",
+          0.684
+        ]
+      ]
+    },
+    {
+      "file": "90ab0fe4-45b62318-c06a83cc-b86e19c3-1d2fb057",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.414
+        },
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.335
+        }
+      ],
+      "ctr": 0.5667,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.899
+        ],
+        [
+          "Cardiomegaly",
+          0.735
+        ],
+        [
+          "Consolidation",
+          0.855
+        ],
+        [
+          "Edema",
+          0.979
+        ],
+        [
+          "Lung_Lesion",
+          0.669
+        ],
+        [
+          "Lung_Opacity",
+          0.838
+        ],
+        [
+          "Pleural_Effusion",
+          0.818
+        ],
+        [
+          "Pneumonia",
+          0.871
+        ],
+        [
+          "Support_Devices",
+          0.624
+        ]
+      ]
+    },
+    {
+      "file": "98498dc5-b0fddd99-b95675b5-04efe150-c4e1a670",
+      "source": "s3",
+      "size": "2516x3056",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.284
+        }
+      ],
+      "ctr": 0.8553,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Consolidation",
+          0.52
+        ],
+        [
+          "Pneumonia",
+          0.578
+        ]
+      ]
+    },
+    {
+      "file": "9a1d1aad-081d4460-77bc5fac-8b28e0be-912c4998",
+      "source": "s3",
+      "size": "2383x2684",
+      "yolo": [],
+      "ctr": 0.4862,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.932
+        ],
+        [
+          "Consolidation",
+          0.71
+        ],
+        [
+          "Lung_Opacity",
+          0.826
+        ],
+        [
+          "Pleural_Effusion",
+          0.792
+        ],
+        [
+          "Pneumonia",
+          0.86
+        ]
+      ]
+    },
+    {
+      "file": "9b0b1654-d61cf032-47f34c65-756b4cc9-fa46ae29",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.605
+        }
+      ],
+      "ctr": 0.5539,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.578
+        ],
+        [
+          "Fracture",
+          0.601
+        ],
+        [
+          "No_Finding",
+          0.666
+        ]
+      ]
+    },
+    {
+      "file": "9b1a8a51-2b8e4a04-1719059d-aa6bc888-7ace612b",
+      "source": "s3",
+      "size": "2669x2539",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.541
+        }
+      ],
+      "ctr": 0.5365,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.911
+        ],
+        [
+          "Cardiomegaly",
+          0.523
+        ],
+        [
+          "Consolidation",
+          0.793
+        ],
+        [
+          "Edema",
+          0.639
+        ],
+        [
+          "Lung_Lesion",
+          0.515
+        ],
+        [
+          "Lung_Opacity",
+          0.807
+        ],
+        [
+          "Pleural_Effusion",
+          0.752
+        ],
+        [
+          "Pneumonia",
+          0.782
+        ]
+      ]
+    },
+    {
+      "file": "9b379118-83aa2c46-8c881f58-2b85c0d8-3213e16c",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.522
+        },
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.485
+        },
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.36
+        }
+      ],
+      "ctr": 0.5167,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.881
+        ],
+        [
+          "Consolidation",
+          0.613
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.598
+        ],
+        [
+          "Fracture",
+          0.683
+        ],
+        [
+          "Lung_Lesion",
+          0.515
+        ],
+        [
+          "Lung_Opacity",
+          0.698
+        ],
+        [
+          "Pleural_Effusion",
+          0.734
+        ],
+        [
+          "Pleural_Other",
+          0.728
+        ],
+        [
+          "Pneumonia",
+          0.611
+        ],
+        [
+          "Pneumothorax",
+          0.53
+        ]
+      ]
+    },
+    {
+      "file": "9b89f79f-9be40ca7-112ce4fd-768c6454-8041aaae",
+      "source": "s3",
+      "size": "2539x2956",
+      "yolo": [],
+      "ctr": 0.5687,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.758
+        ],
+        [
+          "Cardiomegaly",
+          0.673
+        ],
+        [
+          "Consolidation",
+          0.77
+        ],
+        [
+          "Edema",
+          0.584
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.656
+        ],
+        [
+          "Lung_Lesion",
+          0.682
+        ],
+        [
+          "Lung_Opacity",
+          0.705
+        ],
+        [
+          "Pleural_Effusion",
+          0.919
+        ],
+        [
+          "Pleural_Other",
+          0.768
+        ],
+        [
+          "Pneumonia",
+          0.524
+        ],
+        [
+          "Pneumothorax",
+          0.696
+        ],
+        [
+          "Support_Devices",
+          0.775
+        ]
+      ]
+    },
+    {
+      "file": "9e9f4b1a-1ff28f4f-b886cef1-02ad1caf-58dc62d9",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [],
+      "ctr": 0.469,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "No_Finding",
+          0.872
+        ]
+      ]
+    },
+    {
+      "file": "9ebf8954-84c6b9cd-82996125-f2880212-e359e743",
+      "source": "s3",
+      "size": "1756x1970",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.388
+        },
+        {
+          "cls": "Other_lesion",
+          "conf": 0.303
+        }
+      ],
+      "ctr": 0.722,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Cardiomegaly",
+          0.661
+        ],
+        [
+          "Edema",
+          0.572
+        ],
+        [
+          "Lung_Lesion",
+          0.558
+        ],
+        [
+          "Pneumonia",
+          0.508
+        ]
+      ]
+    },
+    {
+      "file": "9ff48609-785ad7ee-fbcaf94c-3df58890-cb4d48e7",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.352
+        }
+      ],
+      "ctr": 0.5183,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "No_Finding",
+          0.85
+        ]
+      ]
+    },
+    {
+      "file": "a1877853-72688a50-746fb0bf-3018617e-1fee158f",
+      "source": "s3",
+      "size": "2539x3050",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.534
+        },
+        {
+          "cls": "Other_lesion",
+          "conf": 0.319
+        },
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.28
+        }
+      ],
+      "ctr": 0.5105,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.84
+        ],
+        [
+          "Consolidation",
+          0.791
+        ],
+        [
+          "Lung_Lesion",
+          0.607
+        ],
+        [
+          "Lung_Opacity",
+          0.725
+        ],
+        [
+          "Pleural_Effusion",
+          0.598
+        ],
+        [
+          "Pneumonia",
+          0.776
+        ],
+        [
+          "Pneumothorax",
+          0.612
+        ],
+        [
+          "Support_Devices",
+          0.559
+        ]
+      ]
+    },
+    {
+      "file": "a35790a5-35706ebc-6a848c2d-f13b279e-708cdef7",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [],
+      "ctr": 0.4156,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Fracture",
+          0.628
+        ],
+        [
+          "Lung_Lesion",
+          0.53
+        ],
+        [
+          "No_Finding",
+          0.684
+        ]
+      ]
+    },
+    {
+      "file": "a9250859-9d4e15c5-ded03be8-2ed007b9-b5f98bed",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.441
+        },
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.291
+        }
+      ],
+      "ctr": 0.5088,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.911
+        ],
+        [
+          "Fracture",
+          0.681
+        ],
+        [
+          "Lung_Opacity",
+          0.525
+        ]
+      ]
+    },
+    {
+      "file": "aa646a3c-b6da4839-25ba35a5-cfc71661-9af0fdcd",
+      "source": "s3",
+      "size": "1760x2140",
+      "yolo": [],
+      "ctr": 0.2672,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Cardiomegaly",
+          0.657
+        ],
+        [
+          "Fracture",
+          0.583
+        ],
+        [
+          "Lung_Lesion",
+          0.857
+        ],
+        [
+          "Lung_Opacity",
+          0.654
+        ],
+        [
+          "Pleural_Other",
+          0.617
+        ],
+        [
+          "Pneumonia",
+          0.599
+        ]
+      ]
+    },
+    {
+      "file": "ac25f6ba-9a593e79-65f6780a-32205e75-745d188f",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.6162,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Fracture",
+          0.507
+        ],
+        [
+          "No_Finding",
+          0.615
+        ]
+      ]
+    },
+    {
+      "file": "ac4deb55-ad246e57-296a8913-199ddddd-d2bd36e5",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.5038,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "No_Finding",
+          0.651
+        ]
+      ]
+    },
+    {
+      "file": "acb45927-e0c19317-cd3e2be3-1cfeb201-d0bd3ea4",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo": [],
+      "ctr": 0.4385,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.526
+        ],
+        [
+          "Fracture",
+          0.542
+        ],
+        [
+          "Pneumothorax",
+          0.616
+        ],
+        [
+          "Support_Devices",
+          0.789
+        ]
+      ]
+    },
+    {
+      "file": "af6eb9fe-b9376cf4-60df0855-9a91927d-561d0f06",
+      "source": "s3",
+      "size": "2604x2539",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.648
+        }
+      ],
+      "ctr": 0.544,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.874
+        ],
+        [
+          "Cardiomegaly",
+          0.656
+        ],
+        [
+          "Consolidation",
+          0.623
+        ],
+        [
+          "Edema",
+          0.881
+        ],
+        [
+          "Lung_Opacity",
+          0.612
+        ],
+        [
+          "Pneumonia",
+          0.561
+        ]
+      ]
+    },
+    {
+      "file": "b04cec19-c348f0ca-b80088b3-68c2d95c-fc3c60a6",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.701
+        },
+        {
+          "cls": "Other_lesion",
+          "conf": 0.655
+        }
+      ],
+      "ctr": 0.5486,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "No_Finding",
+          0.937
+        ]
+      ]
+    },
+    {
+      "file": "b1ad7312-8331afb8-5fc05c84-72c93ea0-5a579be8",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.347
+        }
+      ],
+      "ctr": 0.4861,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "No_Finding",
+          0.795
+        ]
+      ]
+    },
+    {
+      "file": "b2093612-0ee94341-26838e2f-d6912ecd-14c5aa64",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.359
+        },
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.302
+        },
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.266
+        }
+      ],
+      "ctr": 0.5796,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.696
+        ],
+        [
+          "Cardiomegaly",
+          0.744
+        ],
+        [
+          "Consolidation",
+          0.655
+        ],
+        [
+          "Edema",
+          0.935
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.526
+        ],
+        [
+          "Lung_Opacity",
+          0.741
+        ],
+        [
+          "Pneumonia",
+          0.612
+        ],
+        [
+          "Support_Devices",
+          0.681
+        ]
+      ]
+    },
+    {
+      "file": "b2510c2a-56419980-6af178ab-c13da136-4854adda",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.9076,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.785
+        ],
+        [
+          "Consolidation",
+          0.604
+        ],
+        [
+          "Edema",
+          0.73
+        ],
+        [
+          "Lung_Opacity",
+          0.672
+        ],
+        [
+          "Pleural_Effusion",
+          0.774
+        ],
+        [
+          "Pneumonia",
+          0.682
+        ]
+      ]
+    },
+    {
+      "file": "b3bbc97d-790b738b-9210ac5d-366320fe-c5deaf0e",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.319
+        }
+      ],
+      "ctr": 0.5654,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.834
+        ],
+        [
+          "Cardiomegaly",
+          0.833
+        ],
+        [
+          "Edema",
+          0.695
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.618
+        ],
+        [
+          "Pleural_Effusion",
+          0.693
+        ],
+        [
+          "Support_Devices",
+          0.633
+        ]
+      ]
+    },
+    {
+      "file": "b48f4647-76137743-eef39d2c-bd4532f0-ec4b8964",
+      "source": "s3",
+      "size": "3050x2539",
+      "yolo": [],
+      "ctr": 0.427,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.501
+        ],
+        [
+          "Consolidation",
+          0.953
+        ],
+        [
+          "Edema",
+          0.911
+        ],
+        [
+          "Lung_Lesion",
+          0.83
+        ],
+        [
+          "Lung_Opacity",
+          0.943
+        ],
+        [
+          "Pneumonia",
+          0.981
+        ],
+        [
+          "Support_Devices",
+          0.546
+        ]
+      ]
+    },
+    {
+      "file": "b58fc178-4ab7aba9-e502d79b-a7f2f69c-ccbf0bde",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.354
+        },
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.331
+        }
+      ],
+      "ctr": 0.5734,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.563
+        ],
+        [
+          "Cardiomegaly",
+          0.766
+        ],
+        [
+          "Edema",
+          0.664
+        ],
+        [
+          "Support_Devices",
+          0.653
+        ]
+      ]
+    },
+    {
+      "file": "b6f1e5de-a6a76833-bb8963d0-90e0fc36-29645cf1",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.4926,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Fracture",
+          0.602
+        ],
+        [
+          "No_Finding",
+          0.583
+        ],
+        [
+          "Pneumonia",
+          0.563
+        ]
+      ]
+    },
+    {
+      "file": "b914f3ca-a71b6ec3-521f4afb-4a923094-31eda098",
+      "source": "s3",
+      "size": "1736x2022",
+      "yolo": [],
+      "ctr": 0.554,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.7
+        ],
+        [
+          "Cardiomegaly",
+          0.729
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.754
+        ],
+        [
+          "Lung_Lesion",
+          0.527
+        ],
+        [
+          "Pleural_Effusion",
+          0.565
+        ],
+        [
+          "Pleural_Other",
+          0.746
+        ]
+      ]
+    },
+    {
+      "file": "bcb5e90b-c7d3f928-7bd202ee-4e772a8f-e2240e90",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.499
+        },
+        {
+          "cls": "Other_lesion",
+          "conf": 0.278
+        }
+      ],
+      "ctr": 0.5116,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.872
+        ],
+        [
+          "Cardiomegaly",
+          0.845
+        ],
+        [
+          "Consolidation",
+          0.781
+        ],
+        [
+          "Edema",
+          0.926
+        ],
+        [
+          "Lung_Lesion",
+          0.554
+        ],
+        [
+          "Lung_Opacity",
+          0.818
+        ],
+        [
+          "Pleural_Effusion",
+          0.643
+        ],
+        [
+          "Pneumonia",
+          0.827
+        ]
+      ]
+    },
+    {
+      "file": "bedd217a-418581cb-eaa6a927-cce73ecb-00de2c03",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.416
+        }
+      ],
+      "ctr": 0.7778,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Fracture",
+          0.621
+        ],
+        [
+          "Support_Devices",
+          0.511
+        ]
+      ]
+    },
+    {
+      "file": "c186bfb3-56922e24-5ac39324-5e6125e6-99b77a00",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.6971,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Fracture",
+          0.718
+        ],
+        [
+          "Lung_Lesion",
+          0.57
+        ],
+        [
+          "Lung_Opacity",
+          0.6
+        ],
+        [
+          "Pleural_Other",
+          0.518
+        ],
+        [
+          "Pneumonia",
+          0.513
+        ]
+      ]
+    },
+    {
+      "file": "c52a3ba5-b4e3cee3-f2644da6-6b43246f-654f21a0",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.455
+        }
+      ],
+      "ctr": 0.5714,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.913
+        ],
+        [
+          "Cardiomegaly",
+          0.735
+        ],
+        [
+          "Consolidation",
+          0.729
+        ],
+        [
+          "Edema",
+          0.898
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.581
+        ],
+        [
+          "Lung_Lesion",
+          0.63
+        ],
+        [
+          "Lung_Opacity",
+          0.794
+        ],
+        [
+          "Pleural_Effusion",
+          0.952
+        ],
+        [
+          "Pneumonia",
+          0.656
+        ]
+      ]
+    },
+    {
+      "file": "c584b5c4-b5b1dad6-a6f30167-c0411948-46379f73",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.416
+        }
+      ],
+      "ctr": 0.5044,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.528
+        ],
+        [
+          "Cardiomegaly",
+          0.52
+        ],
+        [
+          "Edema",
+          0.654
+        ],
+        [
+          "Fracture",
+          0.555
+        ],
+        [
+          "Lung_Opacity",
+          0.536
+        ],
+        [
+          "Support_Devices",
+          0.769
+        ]
+      ]
+    },
+    {
+      "file": "c5afcc9d-ba789d3b-23fa6a30-7548ca1d-e293bd75",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.9682,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Lung_Lesion",
+          0.575
+        ],
+        [
+          "Lung_Opacity",
+          0.553
+        ],
+        [
+          "No_Finding",
+          0.556
+        ],
+        [
+          "Pneumonia",
+          0.617
+        ]
+      ]
+    },
+    {
+      "file": "c6c4d43b-763f7cf3-4da37648-dee3d33f-ab8aed19",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.273
+        }
+      ],
+      "ctr": 1.0161,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.649
+        ],
+        [
+          "Consolidation",
+          0.883
+        ],
+        [
+          "Edema",
+          0.752
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.518
+        ],
+        [
+          "Lung_Lesion",
+          0.622
+        ],
+        [
+          "Lung_Opacity",
+          0.845
+        ],
+        [
+          "Pleural_Effusion",
+          0.801
+        ],
+        [
+          "Pneumonia",
+          0.879
+        ]
+      ]
+    },
+    {
+      "file": "c886ee4a-66b59c37-80a41c70-96f5dc33-e842d7b6",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.8698,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.552
+        ],
+        [
+          "Cardiomegaly",
+          0.569
+        ],
+        [
+          "Consolidation",
+          0.612
+        ],
+        [
+          "Edema",
+          0.713
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.542
+        ],
+        [
+          "Lung_Lesion",
+          0.616
+        ],
+        [
+          "Lung_Opacity",
+          0.696
+        ],
+        [
+          "Pleural_Effusion",
+          0.504
+        ],
+        [
+          "Pneumonia",
+          0.699
+        ],
+        [
+          "Support_Devices",
+          0.594
+        ]
+      ]
+    },
+    {
+      "file": "cb1c7c96-6d932e23-d291b3b1-d3178893-95e73c0b",
+      "source": "s3",
+      "size": "2489x2920",
+      "yolo": [],
+      "ctr": 0.5642,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.878
+        ],
+        [
+          "Consolidation",
+          0.709
+        ],
+        [
+          "Lung_Opacity",
+          0.558
+        ],
+        [
+          "Pleural_Effusion",
+          0.825
+        ],
+        [
+          "Pneumonia",
+          0.596
+        ]
+      ]
+    },
+    {
+      "file": "cc984e8b-e916ce5c-6f2e6d32-b9a40eb1-ef4e07cb",
+      "source": "s3",
+      "size": "2539x3050",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.491
+        },
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.474
+        }
+      ],
+      "ctr": 0.6227,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.846
+        ],
+        [
+          "Cardiomegaly",
+          0.756
+        ],
+        [
+          "Consolidation",
+          0.554
+        ],
+        [
+          "Edema",
+          0.795
+        ],
+        [
+          "Lung_Opacity",
+          0.556
+        ],
+        [
+          "Pleural_Effusion",
+          0.771
+        ],
+        [
+          "Pneumonia",
+          0.678
+        ],
+        [
+          "Support_Devices",
+          0.632
+        ]
+      ]
+    },
+    {
+      "file": "cf6471f1-db592bdb-83fc003a-4ec4bfaf-617b3015",
+      "source": "s3",
+      "size": "2424x2906",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.5
+        },
+        {
+          "cls": "Pleural_effusion",
+          "conf": 0.314
+        }
+      ],
+      "ctr": 0.5294,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.895
+        ],
+        [
+          "Cardiomegaly",
+          0.678
+        ],
+        [
+          "Consolidation",
+          0.894
+        ],
+        [
+          "Edema",
+          0.844
+        ],
+        [
+          "Lung_Lesion",
+          0.713
+        ],
+        [
+          "Lung_Opacity",
+          0.713
+        ],
+        [
+          "Pleural_Effusion",
+          0.994
+        ],
+        [
+          "Pneumonia",
+          0.69
+        ],
+        [
+          "Support_Devices",
+          0.616
+        ]
+      ]
+    },
+    {
+      "file": "d3033027-b60beadd-dec6d225-27717511-c75d4c04",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.5217,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "No_Finding",
+          0.799
+        ]
+      ]
+    },
+    {
+      "file": "d3af0df4-2786d100-daa97bd2-fb1283a5-85c17dad",
+      "source": "s3",
+      "size": "2021x2021",
+      "yolo": [],
+      "ctr": 0.9905,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.722
+        ],
+        [
+          "Cardiomegaly",
+          0.702
+        ],
+        [
+          "Consolidation",
+          0.717
+        ],
+        [
+          "Edema",
+          0.824
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.527
+        ],
+        [
+          "Lung_Opacity",
+          0.56
+        ],
+        [
+          "Pleural_Effusion",
+          0.859
+        ],
+        [
+          "Pneumonia",
+          0.652
+        ],
+        [
+          "Pneumothorax",
+          0.518
+        ],
+        [
+          "Support_Devices",
+          0.723
+        ]
+      ]
+    },
+    {
+      "file": "d5ab23e9-31a17975-996185a8-e36bf225-1e8eeb24",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.283
+        }
+      ],
+      "ctr": 0.4917,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "No_Finding",
+          0.514
+        ]
+      ]
+    },
+    {
+      "file": "d80a4e2b-fd801f39-edbf2040-3b8dc43e-1cdca434",
+      "source": "s3",
+      "size": "2439x3056",
+      "yolo": [],
+      "ctr": 0.4625,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Cardiomegaly",
+          0.64
+        ],
+        [
+          "Consolidation",
+          0.735
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.72
+        ],
+        [
+          "Lung_Lesion",
+          0.732
+        ],
+        [
+          "Lung_Opacity",
+          0.658
+        ],
+        [
+          "Pneumonia",
+          0.73
+        ]
+      ]
+    },
+    {
+      "file": "da6190a9-b304e4b9-4a4cab1e-9ad9b290-fec42be9",
+      "source": "s3",
+      "size": "3056x2544",
+      "yolo": [],
+      "ctr": 0.4615,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "No_Finding",
+          0.851
+        ]
+      ]
+    },
+    {
+      "file": "e143fbd5-67d55526-f08160e9-9255351c-1339539c",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.9968,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.568
+        ],
+        [
+          "Consolidation",
+          0.563
+        ],
+        [
+          "Lung_Opacity",
+          0.615
+        ],
+        [
+          "Pneumonia",
+          0.793
+        ]
+      ]
+    },
+    {
+      "file": "e362839f-6ddbc048-63f5869d-db4fbe1b-5526c715",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 1.0064,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.649
+        ],
+        [
+          "Cardiomegaly",
+          0.542
+        ],
+        [
+          "Consolidation",
+          0.565
+        ],
+        [
+          "Edema",
+          0.841
+        ],
+        [
+          "Lung_Opacity",
+          0.641
+        ],
+        [
+          "Pleural_Effusion",
+          0.649
+        ],
+        [
+          "Pneumonia",
+          0.645
+        ]
+      ]
+    },
+    {
+      "file": "e68dca32-5544edfe-d28f740f-9686d21a-e1844494",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.4656,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Fracture",
+          0.863
+        ],
+        [
+          "Support_Devices",
+          0.677
+        ]
+      ]
+    },
+    {
+      "file": "ec5b73fd-646f1749-74747f76-ea5b5dc9-1fcc393a",
+      "source": "s3",
+      "size": "1610x1810",
+      "yolo": [
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.509
+        },
+        {
+          "cls": "Aortic_enlargement",
+          "conf": 0.41
+        },
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.378
+        }
+      ],
+      "ctr": 0.5892,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.731
+        ],
+        [
+          "Cardiomegaly",
+          0.563
+        ],
+        [
+          "Consolidation",
+          0.717
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.857
+        ],
+        [
+          "Fracture",
+          0.737
+        ],
+        [
+          "Lung_Lesion",
+          0.802
+        ],
+        [
+          "Lung_Opacity",
+          0.55
+        ],
+        [
+          "Pleural_Effusion",
+          0.955
+        ],
+        [
+          "Pleural_Other",
+          0.957
+        ],
+        [
+          "Pneumothorax",
+          0.655
+        ]
+      ]
+    },
+    {
+      "file": "ed8dfd0e-86741458-99af0d74-c19e3a9f-dff40026",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.502
+        },
+        {
+          "cls": "Other_lesion",
+          "conf": 0.271
+        }
+      ],
+      "ctr": 0.5435,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.722
+        ],
+        [
+          "Enlarged_Cardiomediastinum",
+          0.706
+        ],
+        [
+          "Lung_Lesion",
+          0.639
+        ],
+        [
+          "Pleural_Effusion",
+          0.557
+        ],
+        [
+          "Pneumothorax",
+          0.873
+        ],
+        [
+          "Support_Devices",
+          0.734
+        ]
+      ]
+    },
+    {
+      "file": "eead3bd3-136ae699-efde5b54-70f5308f-9c4033ba",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [],
+      "ctr": 0.9809,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Fracture",
+          0.55
+        ],
+        [
+          "No_Finding",
+          0.581
+        ],
+        [
+          "Pneumonia",
+          0.523
+        ]
+      ]
+    },
+    {
+      "file": "eec95604-a331cb3e-a2b4951b-7166b34d-854379db",
+      "source": "s3",
+      "size": "2525x3021",
+      "yolo": [],
+      "ctr": 0.4643,
+      "ctr_status": "normal",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.67
+        ],
+        [
+          "Cardiomegaly",
+          0.797
+        ],
+        [
+          "Consolidation",
+          0.564
+        ],
+        [
+          "Edema",
+          0.912
+        ],
+        [
+          "Fracture",
+          0.563
+        ],
+        [
+          "Lung_Opacity",
+          0.673
+        ],
+        [
+          "Pneumonia",
+          0.627
+        ],
+        [
+          "Support_Devices",
+          0.825
+        ]
+      ]
+    },
+    {
+      "file": "f0c39d29-e88800ce-fafb4e9e-55a1e4a0-5dd66382",
+      "source": "s3",
+      "size": "1560x2022",
+      "yolo": [],
+      "ctr": 0.6171,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Fracture",
+          0.537
+        ],
+        [
+          "Pneumothorax",
+          0.603
+        ],
+        [
+          "Support_Devices",
+          0.534
+        ]
+      ]
+    },
+    {
+      "file": "f29cb136-14141b8b-eaeee338-00b93ca8-c7b61578",
+      "source": "s3",
+      "size": "2539x2920",
+      "yolo": [
+        {
+          "cls": "Cardiomegaly",
+          "conf": 0.605
+        },
+        {
+          "cls": "Other_lesion",
+          "conf": 0.251
+        }
+      ],
+      "ctr": 0.5044,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.845
+        ],
+        [
+          "Cardiomegaly",
+          0.587
+        ],
+        [
+          "Consolidation",
+          0.91
+        ],
+        [
+          "Edema",
+          0.761
+        ],
+        [
+          "Lung_Lesion",
+          0.568
+        ],
+        [
+          "Lung_Opacity",
+          0.839
+        ],
+        [
+          "Pleural_Effusion",
+          0.789
+        ],
+        [
+          "Pneumonia",
+          0.806
+        ],
+        [
+          "Pneumothorax",
+          0.689
+        ],
+        [
+          "Support_Devices",
+          0.868
+        ]
+      ]
+    },
+    {
+      "file": "f3ea945d-4938568d-287a1523-139e8e4b-9697fe71",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.263
+        }
+      ],
+      "ctr": 0.9647,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Fracture",
+          0.698
+        ],
+        [
+          "Lung_Opacity",
+          0.562
+        ],
+        [
+          "Pneumothorax",
+          0.66
+        ],
+        [
+          "Support_Devices",
+          0.511
+        ]
+      ]
+    },
+    {
+      "file": "ff7e98f9-9c5fc5f1-79ace407-cc8c7b02-cf9ea3df",
+      "source": "s3",
+      "size": "2544x3056",
+      "yolo": [
+        {
+          "cls": "Other_lesion",
+          "conf": 0.31
+        }
+      ],
+      "ctr": 0.9121,
+      "ctr_status": "cardiomegaly",
+      "densenet": [
+        [
+          "Atelectasis",
+          0.677
+        ],
+        [
+          "Consolidation",
+          0.888
+        ],
+        [
+          "Lung_Lesion",
+          0.841
+        ],
+        [
+          "Lung_Opacity",
+          0.898
+        ],
+        [
+          "Pleural_Effusion",
+          0.519
+        ],
+        [
+          "Pneumonia",
+          0.921
+        ]
+      ]
+    }
+  ]
+}

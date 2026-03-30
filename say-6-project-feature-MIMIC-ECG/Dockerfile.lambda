@@ -1,0 +1,13 @@
+FROM public.ecr.aws/lambda/python:3.11
+
+# 시스템 의존성
+RUN yum install -y libgomp && yum clean all
+
+# Python 의존성
+COPY requirements-lambda.txt .
+RUN pip install --no-cache-dir -r requirements-lambda.txt
+
+# 앱 코드
+COPY app/ ./app/
+
+CMD ["app.main.handler"]

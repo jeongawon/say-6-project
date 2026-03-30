@@ -1,0 +1,111 @@
+# ── ecg-svc Deployment ───────────────────────────────────────
+# 심전도(ECG) 분석 서비스
+# 12-lead ECG 데이터를 받아 부정맥 등 이상 소견을 분류
+# chest-svc보다 가벼움 — CPU 500m / Memory 1Gi로 충분
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecg-svc
+  namespace: dr-ai
+  labels:
+    app: ecg-svc
+    app.kubernetes.io/name: ecg-svc
+    app.kubernetes.io/part-of: dr-ai
+    # component: modal-service — 모달(의료데이터) 분석 서비스 그룹
+    app.kubernetes.io/component: modal-service
+spec:
+  # 레플리카 1개 — 경량 서비스이므로 필요 시 2~3개로 스케일 가능
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ecg-svc
+  template:
+    metadata:
+      labels:
+        app: ecg-svc
+        app.kubernetes.io/name: ecg-svc
+        app.kubernetes.io/part-of: dr-ai
+    spec:
+      containers:
+        - name: ecg-svc
+          # 이미지 태그는 overlay의 kustomization.yaml에서 오버라이드됨
+          image: ecg-svc:latest
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          # ── 환경변수 주입 (2개의 ConfigMap) ──────────────
+          # common-config: Bedrock, DB, Redis, RAG 등 공통 설정
+          # dr-ai-config: 환경별(local/eks) 오버라이드 설정
+          envFrom:
+            - configMapRef:
+                name: common-config        # 공통 설정 (Bedrock, DB, Redis, RAG)
+            - configMapRef:
+                name: dr-ai-config         # 환경별 오버라이드 (local/eks)
+            - secretRef:
+                name: aws-credentials
+          # ── 리소스 설정 ──────────────────────────────────
+          # ONNX 추론 도입으로 CPU 상향: 500m/1000m
+          # 메모리는 유지: 512Mi/1Gi
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          # ── 모델 볼륨 마운트 ─────────────────────────────
+          # /models 경로에 ONNX 모델 파일이 마운트됨 (읽기 전용)
+          # local: hostPath via PVC, EKS: EFS로 제공
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              subPath: ecg-svc
+              readOnly: true
+          # ── Liveness Probe ───────────────────────────────
+          # 모델 로딩이 빠르므로 initialDelaySeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # ── Readiness Probe ──────────────────────────────
+          # 서비스 준비 확인 — 트래픽 수신 전 모델 로드 완료 보장
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      # ── 볼륨 정의 ─────────────────────────────────────
+      # models-pvc: 로컬에서는 storage.yaml, EKS에서는 storageclass.yaml에서 정의
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: models-pvc
+---
+# ── ecg-svc Service ──────────────────────────────────────────
+# ClusterIP 타입 — 클러스터 내부 전용
+# central-orchestrator가 http://ecg-svc:8000 으로 호출
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecg-svc
+  namespace: dr-ai
+  labels:
+    app: ecg-svc
+    app.kubernetes.io/name: ecg-svc
+    app.kubernetes.io/part-of: dr-ai
+spec:
+  type: ClusterIP
+  selector:
+    app: ecg-svc
+  ports:
+    # 서비스 포트 8000 → 컨테이너 포트 8000 (FastAPI 기본 포트)
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP

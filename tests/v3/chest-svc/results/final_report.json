@@ -1,0 +1,63 @@
+{
+  "date": "2026-03-26",
+  "total_images": 85,
+  "valid_cases": 74,
+  "lateral_rejected": 11,
+  "avg_findings_per_case": 4.0,
+  "processing_time_sec": 49.1,
+  "detection_counts": {
+    "Atelectasis": 45,
+    "Cardiomegaly": 38,
+    "Consolidation": 27,
+    "Edema": 23,
+    "Enlarged_Cardiomediastinum": 7,
+    "Fracture": 5,
+    "Lung_Lesion": 12,
+    "Lung_Opacity": 45,
+    "No_Finding": 5,
+    "Pleural_Effusion": 30,
+    "Pleural_Other": 8,
+    "Pneumonia": 20,
+    "Pneumothorax": 8,
+    "Support_Devices": 21
+  },
+  "gt_counts": {
+    "Atelectasis": 20,
+    "Cardiomegaly": 14,
+    "Consolidation": 6,
+    "Edema": 7,
+    "Enlarged_Cardiomediastinum": 8,
+    "Lung_Opacity": 22,
+    "Pleural_Effusion": 20,
+    "Pneumonia": 8,
+    "Pneumothorax": 4,
+    "Fracture": 5,
+    "Support_Devices": 18,
+    "Lung_Lesion": 2,
+    "No_Finding": 31,
+    "Pleural_Other": 1
+  },
+  "original_counts": {
+    "Atelectasis": 38,
+    "Cardiomegaly": 31,
+    "Consolidation": 33,
+    "Edema": 30,
+    "Enlarged_Cardiomediastinum": 12,
+    "Fracture": 8,
+    "Lung_Lesion": 5,
+    "Lung_Opacity": 34,
+    "No_Finding": 31,
+    "Pleural_Effusion": 29,
+    "Pleural_Other": 3,
+    "Pneumonia": 13,
+    "Pneumothorax": 22,
+    "Support_Devices": 20
+  },
+  "grades": {
+    "ok": 5,
+    "warn": 4,
+    "bad": 5
+  },
+  "improvements": 5,
+  "degradations": 9
+}
