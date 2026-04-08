@@ -281,6 +281,28 @@ Batch size: 64
 | Tier 2 | 0.40 | 어느 정도 확신할 때 |
 | Tier 3 | 0.45 | 확실할 때만 |
 
+### Tier 1 — val set 기반 실제 threshold 값
+
+Tier 1은 희귀 질환 특성상 모델 출력 확률이 전반적으로 낮아 (0.001~0.06 범위),  
+val set PR curve에서 recall ≥ 0.90을 만족하는 최적 threshold를 탐색하여 적용.
+
+| 질환 | Threshold | val Recall | val Precision | AUROC | 양성 샘플 |
+|------|-----------|-----------|--------------|-------|---------|
+| cardiac_arrest | 0.001 | 0.923 ✅ | 0.010 | 0.831 | 78 |
+| acute_mi | 0.010 | 0.901 ✅ | 0.066 | 0.859 | 548 |
+| pulmonary_embolism | 0.005 | 0.928 ✅ | 0.015 | 0.693 | 207 |
+| paroxysmal_tachycardia | 0.008 | 0.908 ✅ | 0.036 | 0.818 | 325 |
+| hyperkalemia | 0.012 | 0.905 ✅ | 0.068 | 0.823 | 629 |
+| respiratory_failure | 0.014 | 0.903 ✅ | 0.089 | 0.817 | 731 |
+| sepsis | 0.011 | 0.906 ✅ | 0.063 | 0.856 | 405 |
+| pericardial_disease | 0.002 | 0.886 ⚠️ | 0.012 | 0.822 | 114 |
+| av_block_lbbb | 0.021 | 0.806 ✅ | 0.106 | 0.923 | 283 |
+| calcium_disorder | 0.004 | 0.895 ⚠️ | 0.017 | 0.705 | 190 |
+| acute_kidney_failure | 0.057 | 0.899 ⚠️ | 0.192 | 0.788 | 1,902 |
+
+> Precision이 낮은 것은 오검출을 감수하더라도 **놓치지 않는 것을 최우선**으로 설계했기 때문.  
+> Bedrock Agent는 Tier 1 findings의 confidence가 낮을 경우 "의심 수준"으로 처리.
+
 ---
 
 ## 서비스 아키텍처 (ecg-svc)
