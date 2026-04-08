@@ -1,7 +1,7 @@
 #!/bin/bash
-# ECG 모달 EKS 배포 스크립트
+set -e
 
-ACCOUNT_ID=905418313170
+ACCOUNT_ID=666803869796
 REGION=ap-northeast-2
 ECR_REPO=ecg-modal
 IMAGE_TAG=latest
@@ -21,13 +21,5 @@ echo "=== 4. ECR 푸시 ==="
 docker tag $ECR_REPO:$IMAGE_TAG $ECR_URI
 docker push $ECR_URI
 
-echo "=== 5. EKS 배포 ==="
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/ingress.yaml
-
-echo "=== 6. 배포 상태 확인 ==="
-kubectl rollout status deployment/ecg-modal
-
-echo "=== 완료 ==="
-kubectl get pods -l app=ecg-modal
-kubectl get service ecg-modal-service
+echo ""
+echo "✅ 완료: $ECR_URI"
