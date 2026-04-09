@@ -27,6 +27,10 @@ build/
 .venv/
 venv/
 
+# Node
+node_modules/
+frontend/dist/
+
 # IDE
 .idea/
 .vscode/
