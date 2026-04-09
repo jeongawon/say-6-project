@@ -86,6 +86,7 @@ class ECGPipeline:
                 summary=result.summary,
                 risk_level=result.risk_level,
                 ecg_vitals=result.ecg_vitals,
+                all_probs={k: round(v, 4) for k, v in probs.items()},
                 metadata={
                     "patient_id":   req.patient_id,
                     "latency_ms":   elapsed_ms,

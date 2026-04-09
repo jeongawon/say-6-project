@@ -51,5 +51,6 @@ class PredictResponse(BaseModel):
     summary: str = ""
     risk_level: str = "routine"          # routine / urgent / critical
     ecg_vitals: Optional[ECGVitals] = None
+    all_probs: dict[str, float] = {}     # 24개 전체 질환 확률 (Bedrock Agent 라우팅용)
     metadata: dict = {}
     error: Optional[str] = None
