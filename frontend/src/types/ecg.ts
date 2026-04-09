@@ -99,11 +99,14 @@ export const NONCARDIAC_LABELS = [
 ];
 
 export const NEXT_MODAL_HINT: Record<string, { modal: string; action: string }> = {
-  acute_mi:           { modal: "Blood", action: "Troponin I/T" },
-  heart_failure:      { modal: "Blood", action: "BNP/NT-proBNP" },
-  hf_detail:          { modal: "Blood", action: "BNP/NT-proBNP" },
-  sepsis:             { modal: "Blood", action: "혈액배양 + 젖산" },
-  hyperkalemia:       { modal: "Blood", action: "K+ 확인" },
-  hypokalemia:        { modal: "Blood", action: "K+ 확인" },
-  pulmonary_embolism: { modal: "Chest", action: "CTPA 영상" },
+  acute_mi:            { modal: "Blood", action: "Troponin I/T" },
+  heart_failure:       { modal: "Blood", action: "BNP/NT-proBNP" },
+  hf_detail:           { modal: "Blood", action: "BNP/NT-proBNP" },
+  sepsis:              { modal: "Blood", action: "혈액배양 + 젖산" },
+  hyperkalemia:        { modal: "Blood", action: "K+ 확인" },
+  hypokalemia:         { modal: "Blood", action: "K+ 확인" },
+  acute_kidney_failure:{ modal: "Blood", action: "Creatinine / BUN" },
+  pulmonary_embolism:  { modal: "Chest", action: "CTPA 영상" },
+  respiratory_failure: { modal: "Chest", action: "흉부 X-ray" },
+  copd:                { modal: "Chest", action: "흉부 X-ray" },
 };
