@@ -1,0 +1,103 @@
+import type { DemoPatient } from "../types/ecg";
+
+/**
+ * 데모용 환자 샘플 — Golden Dataset (200건) + S3 ECG 데이터 존재 확인 완료.
+ */
+export const DEMO_PATIENTS: DemoPatient[] = [
+  {
+    subject_id: "11807789",
+    study_id: "48863034",
+    age: 57,
+    sex: "M",
+    chief_complaint: "Exertional arm pain and chest discomfort, known CAD",
+    golden_dx: "Coronary artery disease s/p CABG x2",
+  },
+  {
+    subject_id: "18224196",
+    study_id: "48686529",
+    age: 85,
+    sex: "F",
+    chief_complaint: "Confusion, altered mental status, UTI, atrial fibrillation",
+    golden_dx: "Hypothyroidism, Respiratory Failure, UTI, CHF, Afib",
+  },
+  {
+    subject_id: "12220452",
+    study_id: "48664065",
+    age: 91,
+    sex: "F",
+    chief_complaint: "Shortness of breath, CAD, COPD, CHF, CKD, DVT",
+    golden_dx: "Acute on Chronic Heart Failure, Afib, AKI, CKD",
+  },
+  {
+    subject_id: "19454978",
+    study_id: "49824981",
+    age: 90,
+    sex: "F",
+    chief_complaint: "Recurrent cholangitis, T2DM, gout, fever",
+    golden_dx: "Sepsis, UTI, Cholangitis",
+  },
+  {
+    subject_id: "14846327",
+    study_id: "46937463",
+    age: 86,
+    sex: "F",
+    chief_complaint: "Abdominal pain, hypothyroidism, hypertension, diverticulitis",
+    golden_dx: "Gastroenteritis",
+  },
+  {
+    subject_id: "11002607",
+    study_id: "40129320",
+    age: 81,
+    sex: "F",
+    chief_complaint: "Intraparenchymal hemorrhage with intraventricular extension",
+    golden_dx: "Intraparenchymal Hemorrhage",
+  },
+  {
+    subject_id: "18664844",
+    study_id: "49666808",
+    age: 63,
+    sex: "F",
+    chief_complaint: "Bipolar disorder, diabetes insipidus, recurrent falls",
+    golden_dx: "Falls",
+  },
+  {
+    subject_id: "16174132",
+    study_id: "49304938",
+    age: 33,
+    sex: "M",
+    chief_complaint: "Chest pain, shortness of breath, lower extremity swelling",
+    golden_dx: "Pulmonary embolism, Heart failure exacerbation",
+  },
+  {
+    subject_id: "14562290",
+    study_id: "47927310",
+    age: 80,
+    sex: "M",
+    chief_complaint: "Afib, recent embolic R MCA stroke, hemorrhagic conversion",
+    golden_dx: "Hypotension",
+  },
+  {
+    subject_id: "15782217",
+    study_id: "48989739",
+    age: 72,
+    sex: "F",
+    chief_complaint: "Weakness, lethargy, high grade follicular lymphoma",
+    golden_dx: "Neutropenia, Hypokalemia",
+  },
+  {
+    subject_id: "16308259",
+    study_id: "48436255",
+    age: 91,
+    sex: "M",
+    chief_complaint: "Atrial fibrillation on warfarin, hypotension",
+    golden_dx: "Hypotension, Acute blood loss anemia",
+  },
+  {
+    subject_id: "15588383",
+    study_id: "41778378",
+    age: 64,
+    sex: "F",
+    chief_complaint: "Severe chronic bilateral lymphedema, morbid obesity",
+    golden_dx: "Deep vein thrombosis",
+  },
+];

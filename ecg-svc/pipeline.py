@@ -58,7 +58,7 @@ class ECGPipeline:
             age = req.patient_info.age  if req.patient_info else 60.0
             sex = req.patient_info.sex  if req.patient_info else "unknown"
 
-            ecg_signal, demographics, vitals = self.preprocessor.run(
+            ecg_signal, demographics, vitals, raw_signal = self.preprocessor.run(
                 record_path=req.data.record_path,
                 age=age,
                 sex=sex,
@@ -80,6 +80,12 @@ class ECGPipeline:
                 req.patient_id, result.risk_level, elapsed_ms,
             )
 
+            # 원본 파형 → JSON 직렬화 (소수점 4자리로 압축)
+            waveform_list = [
+                [round(float(v), 4) for v in row]
+                for row in raw_signal.tolist()
+            ]
+
             return PredictResponse(
                 status="ok",
                 findings=result.findings,
@@ -87,6 +93,7 @@ class ECGPipeline:
                 risk_level=result.risk_level,
                 ecg_vitals=result.ecg_vitals,
                 all_probs={k: round(v, 4) for k, v in probs.items()},
+                waveform=waveform_list,
                 metadata={
                     "patient_id":   req.patient_id,
                     "latency_ms":   elapsed_ms,

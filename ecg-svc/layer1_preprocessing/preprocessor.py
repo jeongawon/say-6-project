@@ -68,12 +68,13 @@ class ECGPreprocessor:
         record_path: str,   # WFDB 레코드 경로 (확장자 없이)
         age: float,
         sex: str,
-    ) -> tuple[np.ndarray, np.ndarray, dict]:
+    ) -> tuple[np.ndarray, np.ndarray, dict, np.ndarray]:
         """
         Returns:
             ecg_signal:   (1, 12, 1000) float32
             demographics: (1, 2)        float32
             vitals:       dict  — HR, bradycardia, tachycardia, irregular_rhythm
+            raw_signal:   (1000, 12) float32  — 정규화 전 원본 (프론트엔드 시각화용)
         """
         sig, fs, sig_names = self._load_wfdb(record_path)   # (T, 12), Hz, [채널명...]
         sig = self._clean(sig)                               # NaN 보간 + ±3mV 클리핑
@@ -81,12 +82,13 @@ class ECGPreprocessor:
         sig = self._align_channels(sig, sig_names)           # 채널 고정 순서
 
         vitals = self._measure_vitals(sig)                   # 정규화 전 원본에서 측정
+        raw_signal = sig.copy()                              # 시각화용 원본 보존
 
         sig = self._normalize(sig)                           # Z-score + ±5σ
         ecg = sig.T[np.newaxis].astype(np.float32)          # (1, 12, 1000)
 
         demo = self._encode_demographics(age, sex)           # (1, 2)
-        return ecg, demo, vitals
+        return ecg, demo, vitals, raw_signal
 
     # ------------------------------------------------------------------
     # WFDB 로딩
