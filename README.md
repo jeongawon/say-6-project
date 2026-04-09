@@ -404,6 +404,10 @@ PredictResponse (JSON)
     "tachycardia": false,
     "irregular_rhythm": true
   },
+  "all_probs": {
+    "afib_flutter": 0.8708, "heart_failure": 0.4543, "hypertension": 0.3976,
+    "dm2": 0.1106, "copd": 0.0243, "hypothyroidism": 0.0408, "...": "..."
+  },
   "metadata": {
     "patient_id": "TEST-001",
     "latency_ms": 550.3,
@@ -412,6 +416,24 @@ PredictResponse (JSON)
   }
 }
 ```
+
+### all_probs — 24개 전체 질환 확률
+
+`findings`는 threshold를 넘은 질환만 포함하지만, `all_probs`는 24개 전체 질환의 모델 출력 확률을 포함합니다.
+
+**Bedrock Agent 라우팅에 핵심적인 필드:**
+
+```
+ECG 결과: findings=[], all_probs={dm2: 0.11, hypertension: 0.40, ...}
+
+Bedrock Agent 판단:
+  - dm2: 0.11 → threshold(0.45) 미달이지만 0이 아님
+    → 환자 나이 65세 + 고혈압 소견 → 혈액검사(HbA1c)로 확인
+  - hypertension: 0.40 → threshold(0.45) 미달이지만 경계값
+    → 혈압 측정 권고
+```
+
+ECG가 확신하지 못하는 질환도 Bedrock Agent가 다른 모달로 보완 판단할 수 있는 근거를 제공합니다.
 
 ---
 
@@ -458,6 +480,70 @@ MIMIC-IV 퇴원요약 200명 중 ECG 파형 데이터가 존재하는 108명 대
 1. **Metabolic 질환 탐지 불가** — dm2, copd, hypothyroidism 등은 ICD 코드 기반 레이블이지만 ECG 파형에 특이 소견이 없어 모델이 학습 불가. 혈액검사 모달로 위임 설계.
 2. **Hypertension FP 과다** — 비특이 ST-T 변화를 고혈압으로 오인. threshold 상향 또는 인구통계 보정 필요.
 3. **만성 질환 Recall 부족** — chronic_kidney FN 16건, chronic_ihd FN 16건. ECG 변화가 서서히 진행되어 threshold 미달.
+
+### 108건 전체 검증 결과
+
+| 검증 항목 | 결과 |
+|---|---|
+| all_probs 24개 완전 출력 | 108/108 (100%) |
+| 확률 범위 (0~1) | 0.0001 ~ 0.9295 (정상) |
+| findings ↔ all_probs 일치 | 불일치 0건 |
+| threshold 초과 ↔ findings 일치 | 누락 0건 |
+| Afib 감지 + irregular=false 모순 | 0건 (보정 완료) |
+| HR 비현실적 (< 25 or > 220) | 0건 |
+| risk_level ↔ findings 불일치 | 0건 |
+
+---
+
+## 모달 평가 — 멀티모달 시스템 내 ECG의 역할과 근거
+
+### 학습 품질
+
+| 구분 | 판단 | 근거 |
+|---|---|---|
+| ECG 특이 질환 (afib, MI, 전도장애) | 잘 학습됨 | AUROC 0.85~0.90, F1 66~71% |
+| 만성 심혈관 (heart_failure, chronic_ihd) | 보통 | AUROC 0.84~0.89, Recall 33~50% |
+| 비심혈관 대사질환 (dm2, copd, 갑상선) | 학습 불가 | F1 0% — ECG 파형에 특이 신호 없음 |
+
+> AUROC가 높은데 F1이 낮은 이유: AUROC는 "순위를 매기는 능력", F1은 "실제 분류 정확도".  
+> 모델이 질환자를 비질환자보다 높은 확률로 출력하지만(AUROC 높음), threshold를 넘을 만큼 확신 있게 출력하지 못함(F1 낮음).
+
+### 설계 차별화와 근거
+
+| 차별화 | 근거 |
+|---|---|
+| **인구통계 결합 (나이+성별)** | Afib 유병률이 나이에 따라 7배 차이 (50대 2% → 80대 15%). 같은 파형도 context에 따라 의미가 다름 |
+| **긴급도 가중 Loss** | MIMIC-IV 실제 사망 데이터 기반. 심정지 60.1%, 패혈증 28.1% vs 고혈압 4.0% — 치명 질환 우선 학습 |
+| **ED 첫 ECG만 사용** | 논문은 800K 전체(반복 촬영 포함) → data leakage 위험. 본 모델은 158K ED 첫 ECG로 실사용 시나리오 최적화 |
+
+### ECG가 못 보는 질환 → 다른 모달 위임 구조
+
+| ECG 미감지 질환 | 원인 | 담당 모달 | 라우팅 근거 |
+|---|---|---|---|
+| dm2 (당뇨) | ECG 파형에 혈당 반영 안 됨 | 혈액검사 (HbA1c) | all_probs로 확률 전달 |
+| copd | 폐질환은 ECG 간접 소견만 | 흉부 X-ray + 폐기능검사 | all_probs로 확률 전달 |
+| hypothyroidism | 서맥·QT연장 가능하나 비특이적 | 혈액검사 (TSH) | ecg_vitals.bradycardia + all_probs |
+
+> **핵심**: ECG 모달은 `findings`(확진 수준) + `ecg_vitals`(파형 측정) + `all_probs`(24개 전체 확률)을 모두 반환.  
+> Bedrock Agent는 이 세 가지를 종합하여:
+> 1. `findings` → 확진된 질환 기반 즉시 조치
+> 2. `ecg_vitals` → HR/리듬 이상 기반 간접 라우팅
+> 3. `all_probs` → threshold 미달이지만 0이 아닌 질환 → 다른 모달로 보완 확인
+
+### Bedrock Agent 라우팅 예시
+
+```
+환자 A: 65세 남성
+  ECG findings: [heart_failure(47%)]
+  ecg_vitals: HR=42, bradycardia=true
+  all_probs: dm2=0.11, hypothyroidism=0.15
+
+  → Bedrock 판단:
+    1. heart_failure 확인 → BNP 혈액검사 호출
+    2. bradycardia + hypothyroidism=0.15 → TSH 혈액검사 호출
+    3. dm2=0.11 + 고령 → HbA1c 혈액검사 호출
+    4. 심부전 → CXR 모달 호출 (폐부종 확인)
+```
 
 ---
 
