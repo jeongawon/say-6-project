@@ -408,6 +408,7 @@ PredictResponse (JSON)
     "afib_flutter": 0.8708, "heart_failure": 0.4543, "hypertension": 0.3976,
     "dm2": 0.1106, "copd": 0.0243, "hypothyroidism": 0.0408, "...": "..."
   },
+  "waveform": [[0.0012, -0.0034, ...], ...],  // (1000, 12) 정규화 전 원본 파형 — 프론트엔드 시각화용
   "metadata": {
     "patient_id": "TEST-001",
     "latency_ms": 550.3,
@@ -579,7 +580,31 @@ python main.py
 # → http://localhost:8000
 ```
 
-### Streamlit 데모
+### React 프론트엔드 (임상 대시보드)
+
+```bash
+cd frontend
+npm install
+npm run dev
+# → http://localhost:3000
+```
+
+| 구성 | 기술 |
+|------|------|
+| 프레임워크 | React 18 + TypeScript |
+| 스타일 | Tailwind CSS |
+| 차트 | Recharts |
+| 번들러 | Vite (→ :8000 프록시) |
+
+**주요 화면:**
+- 12-Lead ECG 파형 모니터 (검정 배경 + 녹색 파형 + 밀리미터 격자)
+- 이상 소견 발견 리드 빨간색 하이라이트 + 질환명 표시
+- Vital Signs 패널 (HR, 리듬, 서맥/빈맥 경고)
+- 24개 질환 확률 차트 (심혈관/비심혈관 탭 전환)
+- Risk Level 배너 (CRITICAL 펄스 애니메이션)
+- Bedrock Agent 다음 모달 라우팅 힌트
+
+### Streamlit 데모 (레거시)
 
 ```bash
 pip install streamlit plotly
@@ -620,8 +645,213 @@ ecg-svc/
 └── layer3_clinical_logic/
     └── engine.py                # 임상 해석 + Vitals 보정
 
-streamlit_demo.py                # EMR 스타일 데모 UI (12리드 파형 + AI 분석)
+frontend/                        # React 임상 대시보드
+├── src/
+│   ├── App.tsx                  # 메인 레이아웃
+│   ├── components/
+│   │   ├── ECGWaveform.tsx      # 12-Lead 파형 + 이상 리드 하이라이트
+│   │   ├── VitalsPanel.tsx      # HR/리듬/검출수/지연시간
+│   │   ├── FindingsPanel.tsx    # 검출 소견 카드
+│   │   ├── ProbabilityChart.tsx # 24개 질환 확률 차트
+│   │   ├── RiskBanner.tsx       # CRITICAL/URGENT/ROUTINE 배너
+│   │   └── NextModalHint.tsx    # Bedrock 라우팅 힌트
+│   ├── types/ecg.ts             # 타입 + 라벨 + 모달 매핑
+│   └── lib/
+│       ├── api.ts               # /predict API 호출
+│       └── demo-patients.ts     # 5개 시연 케이스
+├── package.json                 # React 18 + Recharts + Tailwind
+└── vite.config.ts               # :3000 → :8000 프록시
+
+streamlit_demo.py                # EMR 스타일 데모 UI (레거시)
 test_golden.py                   # 200명 골든셋 벤치마크
 train_ecg_s6.py                  # S6 모델 학습
 export_onnx.py                   # PyTorch → ONNX 변환
+```
+
+---
+
+## 발표 시연 시나리오 (5개 케이스)
+
+### 시나리오 구성 의도
+
+| 유형 | 케이스 | 시연 포인트 |
+|------|--------|-----------|
+| ECG 단독 확정 | Case 1, 3, 4 | ECG 파형만으로 질환 확진 가능 |
+| Tier-1 임계값 작동 | Case 2 | 30% 신뢰도에서도 치명적 질환 놓치지 않는 설계 |
+| ECG 감지 → 다른 모달 확정 | Case 5 | ECG가 이상 감지 → Blood + Chest 모달 호출 근거 |
+
+---
+
+### Case 1: ECG 단독 확정 — 심방세동 94.0%
+
+> **"ECG 파형에 f파와 불규칙 RR 간격이 명확합니다. 모델이 94% 신뢰도로 심방세동을 검출했습니다."**
+
+| 항목 | 내용 |
+|------|------|
+| 환자 | 78세 남성 (18161880) |
+| 주소 | 대동맥 협착, Afib, CAD, CKD, DM |
+| Golden Dx | Aortic Stenosis, **Atrial Fibrillation**, CAD, CKD, DM |
+
+**AI 결과:**
+
+| 검출 질환 | 신뢰도 | 중증도 |
+|----------|--------|--------|
+| **심방세동/조동** | **94.0%** | MODERATE |
+| 심부전 | 70.4% | MODERATE |
+| 심방세동(세부) | 89.5% | MODERATE |
+| 심부전(세부) | 68.4% | MODERATE |
+
+- ECG Vitals: **irregular_rhythm=true** → Afib 파형과 일치
+- Risk Level: **URGENT**
+- Golden Dx에 Afib 포함 → **True Positive 확인**
+
+**발표 포인트:**
+1. ECG 파형에서 12-Lead 중 **II, V1 리드가 빨간색으로 하이라이트** → Afib 특이 파형 위치
+2. irregular_rhythm=true가 모델 검출과 독립적으로 일치 → **이중 검증**
+3. 심방세동은 ECG만으로 확정 가능한 대표적 질환
+
+---
+
+### Case 2: Tier-1 임계값 작동 — 급성 심근경색 30.2% → CRITICAL
+
+> **"급성MI 신뢰도가 30.2%로 낮아 보이지만, Tier-1 임계값(0.30)에 의해 검출됩니다. 사망률 12.7%인 질환을 놓치면 안 되기 때문입니다."**
+
+| 항목 | 내용 |
+|------|------|
+| 환자 | 79세 여성 (15238548) |
+| 주소 | NSTEMI, 불안정 협심증, 심부전 |
+| Golden Dx | **NSTEMI**, Heart Failure, Hypothyroidism, DM |
+
+**AI 결과:**
+
+| 검출 질환 | 신뢰도 | 중증도 |
+|----------|--------|--------|
+| 심부전 | 73.3% | MODERATE |
+| 만성 신장질환 | 63.5% | MILD |
+| **급성 심근경색** | **30.2%** | **CRITICAL** |
+| 심방세동/조동 | 56.1% | MODERATE |
+| 호흡부전 | 52.9% | SEVERE |
+| 급성 신부전 | 52.4% | MILD |
+| 고칼륨혈증 | 35.8% | SEVERE |
+| 만성 IHD | 46.4% | MILD |
+
+- ECG Vitals: **HR=100.1 (빈맥)**, irregular_rhythm=true
+- Risk Level: **CRITICAL** (8건 동시 검출)
+- Golden Dx NSTEMI와 일치 → **True Positive**
+
+**발표 포인트:**
+1. **Tier-1 임계값 설계 의도**: 30.2%는 50%가 안 되지만, 사망률 12.7% 질환은 놓치면 안 됨
+2. 일반 threshold(0.45)였다면 **급성MI를 놓쳤을 것** → 사망률 기반 임계값의 필요성
+3. Risk Level이 **CRITICAL**로 최상위 → 즉시 심장내과 협진 + PCI 팀 호출 권고
+4. 8건 동시 검출 → 79세 심부전 환자의 복합 위험 상황을 한눈에 파악
+
+---
+
+### Case 3: ECG 단독 확정 — 심부전 88.7% + 심방세동 89.3% 동시
+
+> **"ECG 하나로 심부전과 심방세동 두 가지 주요 심장질환을 동시에 고신뢰도로 검출했습니다."**
+
+| 항목 | 내용 |
+|------|------|
+| 환자 | 88세 남성 (14112944) |
+| 주소 | 어깨 통증, 다수 심장 동반질환 |
+| Golden Dx | 좌측 어깨 골관절염 (Afib, HF, CKD 동반) |
+
+**AI 결과:**
+
+| 검출 질환 | 신뢰도 | 중증도 |
+|----------|--------|--------|
+| **심방세동/조동** | **89.3%** | MODERATE |
+| **심부전** | **88.7%** | MODERATE |
+| 만성 IHD | 57.9% | MILD |
+| 심방세동(세부) | 61.6% | MODERATE |
+| 급성 신부전 | 57.9% | MILD |
+| 만성 신장질환 | 62.0% | MILD |
+
+- ECG Vitals: HR=79.0, **irregular_rhythm=true**
+- Risk Level: **URGENT** (6건 검출)
+
+**발표 포인트:**
+1. 주소는 **어깨 통증**이지만 ECG가 **숨겨진 심장질환 2개를 발견**
+2. Afib 89.3% + HF 88.7% → 두 질환 모두 **매우 높은 신뢰도로 동시 검출**
+3. 88세 고령 환자의 복합 심장 동반질환을 ECG 한 장으로 파악
+4. CKD 62.0% 검출 → **Blood 모달에서 Creatinine/BUN으로 확정** 가능
+
+---
+
+### Case 4: ECG 단독 확정 — 고칼륨혈증 58.8% (Golden Dx 일치)
+
+> **"ECG에서 뾰족한 T파와 QRS 변화를 감지하여 고칼륨혈증을 58.8%로 검출했습니다. 이 환자의 실제 진단에도 고칼륨혈증이 포함되어 있습니다."**
+
+| 항목 | 내용 |
+|------|------|
+| 환자 | 41세 여성 (14866589) |
+| 주소 | T1DM, NSTEMI 이력, AKI, 고칼륨혈증, 저나트륨혈증 |
+| Golden Dx | **AKI, Hyperkalemia**, Hyponatremia, DM1 |
+
+**AI 결과:**
+
+| 검출 질환 | 신뢰도 | 중증도 |
+|----------|--------|--------|
+| 만성 신장질환 | 89.4% | MILD |
+| 심부전 | 66.8% | MODERATE |
+| **고칼륨혈증** | **58.8%** | **SEVERE** |
+| 심부전(세부) | 51.6% | MODERATE |
+| 급성 신부전 | 31.2% | MILD |
+
+- ECG Vitals: HR=78.3, regular rhythm
+- Risk Level: **URGENT**
+- Golden Dx에 Hyperkalemia + AKI 모두 포함 → **True Positive**
+
+**발표 포인트:**
+1. **ECG에서 전해질 이상까지 감지** — 뾰족한 T파, QRS 확장은 고칼륨혈증의 ECG 특이 소견
+2. 고칼륨혈증은 **SEVERE** → "혈액 K+ 즉시 확인, 심전도 모니터링" 권고
+3. CKD 89.4% + AKI 31.2% → 신장질환이 고칼륨혈증의 원인임을 시사
+4. **Blood 모달에서 K+ 수치로 이중 확인** → ECG 감지 + 혈액검사 확정의 연계
+
+---
+
+### Case 5: ECG 감지 → Blood + Chest 모달 확정 필요 — 패혈증 30.1%
+
+> **"ECG에서 빈맥(HR=124.9)과 불규칙 리듬을 보이며, 패혈증 30.1%, 호흡부전 36.1%를 감지했습니다. ECG만으로는 확정할 수 없지만 이 수치를 보고 Bedrock Agent가 Blood 모달(혈액배양)과 Chest 모달(흉부 X-ray)을 호출합니다."**
+
+| 항목 | 내용 |
+|------|------|
+| 환자 | 83세 남성 (15968916) |
+| 주소 | 고위급 소장 폐색, 감돈 탈장, 발열 |
+| Golden Dx | 소장 폐색 (패혈증 합병) |
+
+**AI 결과:**
+
+| 검출 질환 | 신뢰도 | 중증도 | 다음 모달 |
+|----------|--------|--------|----------|
+| 급성 신부전 | 42.8% | MILD | **Blood** (Creatinine/BUN) |
+| 심방세동/조동 | 42.6% | MODERATE | — |
+| **호흡부전** | **36.1%** | **SEVERE** | **Chest** (흉부 X-ray) |
+| **패혈증** | **30.1%** | **SEVERE** | **Blood** (혈액배양+젖산) |
+
+- ECG Vitals: **HR=124.9 (빈맥)**, **irregular_rhythm=true**
+- Risk Level: **URGENT**
+
+**발표 포인트:**
+1. **패혈증 30.1%는 Tier-1 임계값(0.30)에서 딱 걸림** — 사망률 28.1% 질환을 놓치지 않음
+2. ECG만으로는 패혈증을 확정할 수 없지만 **"뭔가 심각한 상황"이라는 신호를 잡아냄**
+3. Bedrock Agent가 이 수치를 보고:
+   - 패혈증 30.1% → **Blood 모달** 호출 (혈액배양 + 젖산 검사)
+   - 호흡부전 36.1% → **Chest 모달** 호출 (흉부 X-ray)
+   - 급성 신부전 42.8% → **Blood 모달** 호출 (Creatinine/BUN)
+4. **멀티모달 시스템의 핵심 가치**: ECG가 감지 → 중앙이 판단 → 다른 모달이 확정
+5. HR=124.9 빈맥은 패혈증의 교감신경 항진 반응과 일치 → ECG Vitals도 보조 근거
+
+---
+
+### 시연 흐름 요약
+
+```
+Case 1~4: ECG 파형 → AI 분석 → 질환 확정
+  "심전도만으로 이 질환을 정확하게 잡아냅니다"
+
+Case 5:   ECG 파형 → AI 감지 → 확정 불가 → Blood/Chest 호출
+  "심전도만으로는 한계가 있지만, 이 수치를 중앙이 보고
+   혈액검사와 흉부 X-ray를 추가로 호출합니다"
 ```
