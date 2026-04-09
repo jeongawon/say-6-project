@@ -73,37 +73,27 @@ class ClinicalEngine:
     @staticmethod
     def _build_vitals(raw: dict, findings: list[Finding]) -> ECGVitals:
         """
-        측정 수치 + findings 기반 Bedrock Agent 라우팅 힌트 생성.
-        힌트 예) bradycardia → thyroid_panel (갑상선 저하 의심)
-                 tachycardia → fever_sepsis_workup
-                 irregular_rhythm → anticoagulation_review
-                 hyperkalemia detected → renal_panel
+        ECG 파형 측정 수치 반환.
+        - irregular_rhythm: R-peak 기반 측정값 + 모델 findings 보정
+          (Afib 계열 감지 시 측정 오류를 모델 결과로 덮어씀)
         """
-        hints: list[str] = []
         finding_names = {f.name for f in findings}
 
         bradycardia = raw.get("bradycardia", False)
         tachycardia = raw.get("tachycardia", False)
         irregular   = raw.get("irregular_rhythm", False)
 
-        if bradycardia:
-            hints.append("thyroid_panel")          # 갑상선 기능 저하 의심
-            hints.append("electrolyte_panel")      # 고칼륨·저칼슘 의심
-        if tachycardia and "sepsis" not in finding_names:
-            hints.append("fever_infection_workup") # 발열·빈혈·갑상선 항진 의심
-        if irregular and "afib_flutter" not in finding_names:
-            hints.append("holter_monitoring")      # 간헐적 Afib 의심
-        if "hyperkalemia" in finding_names or "hypokalemia" in finding_names:
-            hints.append("renal_panel")
-        if "calcium_disorder" in finding_names:
-            hints.append("calcium_pth_panel")
+        # 리듬 이상 질환 감지 시 vitals 보정 (파형 패턴 인식이 단순 RR 측정보다 신뢰도 높음)
+        _IRREGULAR_LABELS = {"afib_flutter", "afib_detail", "paroxysmal_tachycardia",
+                             "av_block_lbbb", "other_conduction"}
+        if finding_names & _IRREGULAR_LABELS:
+            irregular = True
 
         return ECGVitals(
-            heart_rate      = raw.get("heart_rate"),
-            bradycardia     = bool(bradycardia),
-            tachycardia     = bool(tachycardia),
-            irregular_rhythm= bool(irregular),
-            routing_hints   = hints,
+            heart_rate       = raw.get("heart_rate"),
+            bradycardia      = bool(bradycardia),
+            tachycardia      = bool(tachycardia),
+            irregular_rhythm = bool(irregular),
         )
 
     @staticmethod

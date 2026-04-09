@@ -127,7 +127,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── 상수 ─────────────────────────────────────────────────────
-ECG_SVC_URL   = "http://localhost:8000"
+ECG_SVC_URL   = "http://13.124.117.190:8000"
 GOLDEN_PATH   = "sampled_200_goldendataset.jsonl"
 MANIFEST_PATH = "processed/manifest.csv"
 S3_WAVEFORM   = "s3://say2-6team/mimic/ecg/waveforms/files"
@@ -185,7 +185,7 @@ def load_patients():
             'age':             age,
             'sex':             sex,
             'chief_complaint': ml.get('1_symptoms_and_history', '')[:150],
-            'golden_dx':       ml.get('3_diagnosis', {}).get('primary', ''),
+            'golden_dx':       (ml.get('3_diagnosis', {}) or {}).get('primary', '') if isinstance(ml.get('3_diagnosis'), dict) else str(ml.get('3_diagnosis', '') or ''),
             'npy_file':        r['npy_file'],
             **{k: int(r[k]) for k in TARGET_LABELS},
         })
@@ -468,6 +468,35 @@ with result_col:
               {'<div style="font-size:0.82em;color:#90a4ae;margin-top:4px">💊 ' + rec + '</div>' if rec else ''}
             </div>
             """, unsafe_allow_html=True)
+
+    # ── ECG Vitals ────────────────────────────────────────
+    vitals = result.get('ecg_vitals')
+    if vitals:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div class="section-title">ECG 바이탈</div>', unsafe_allow_html=True)
+
+        hr    = vitals.get('heart_rate')
+        brady = vitals.get('bradycardia', False)
+        tachy = vitals.get('tachycardia', False)
+        irreg = vitals.get('irregular_rhythm', False)
+        hints = vitals.get('routing_hints', [])
+
+        hr_color  = '#ef5350' if (brady or tachy) else '#00e676'
+        hr_label  = f"{hr:.0f} bpm" if hr else "—"
+        hr_flag   = ' ⚠️ 빈맥' if tachy else (' ⚠️ 서맥' if brady else '')
+
+        irr_color = '#ffa726' if irreg else '#00e676'
+        irr_label = '불규칙 (Afib 의심)' if irreg else '규칙적'
+
+        v1, v2, v3 = st.columns(3)
+        v1.markdown(f'<div class="metric-card"><div class="metric-value" style="color:{hr_color}">{hr_label}</div><div class="metric-label">심박수{hr_flag}</div></div>', unsafe_allow_html=True)
+        v2.markdown(f'<div class="metric-card"><div class="metric-value" style="color:{irr_color}">{irr_label}</div><div class="metric-label">리듬</div></div>', unsafe_allow_html=True)
+
+        if hints:
+            hints_str = ' &nbsp;|&nbsp; '.join(f'<code>{h}</code>' for h in hints)
+            v3.markdown(f'<div class="metric-card"><div style="font-size:0.78em;color:#90a4ae;line-height:1.8">{hints_str}</div><div class="metric-label">다음 모달 라우팅 힌트</div></div>', unsafe_allow_html=True)
+        else:
+            v3.markdown('<div class="metric-card"><div class="metric-value">—</div><div class="metric-label">라우팅 힌트</div></div>', unsafe_allow_html=True)
 
     # ── 확률 전체 차트 ────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)

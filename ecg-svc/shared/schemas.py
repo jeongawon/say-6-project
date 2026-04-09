@@ -36,14 +36,12 @@ class Finding(BaseModel):
 class ECGVitals(BaseModel):
     """
     ECG 파형에서 직접 측정된 바이탈 수치.
-    Bedrock Agent가 다음 모달 라우팅 판단에 활용.
-    예) bradycardia + irregular_rhythm → 갑상선/전해질 패널 호출
+    다음 모달 라우팅 결정은 Bedrock Agent가 전담.
     """
     heart_rate: Optional[float] = None       # bpm (None = 측정 불가)
     bradycardia: bool = False                # HR < 50 bpm
     tachycardia: bool = False                # HR > 100 bpm
-    irregular_rhythm: bool = False           # RR 변동계수 > 0.15 (Afib 의심)
-    routing_hints: List[str] = []            # Bedrock Agent 라우팅 힌트
+    irregular_rhythm: bool = False           # RR 변동계수 > 0.15 또는 Afib 계열 감지
 
 
 class PredictResponse(BaseModel):
