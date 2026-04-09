@@ -64,8 +64,8 @@ st.markdown("""
     padding: 12px 18px; border-radius: 4px; margin: 8px 0;
   }
   .alert-routine {
-    background: #0a1f0a; border: 1px solid #66bb6a;
-    border-left: 5px solid #66bb6a;
+    background: #141820; border: 1px solid #546e7a;
+    border-left: 5px solid #546e7a;
     padding: 12px 18px; border-radius: 4px; margin: 8px 0;
   }
   @keyframes pulse {
@@ -416,7 +416,7 @@ with result_col:
 
     # 위험도 알림 배너
     risk_cls  = {'critical': 'alert-critical', 'urgent': 'alert-urgent', 'routine': 'alert-routine'}
-    risk_icon = {'critical': '🚨 CRITICAL', 'urgent': '⚠️ URGENT', 'routine': '✅ ROUTINE'}
+    risk_icon = {'critical': '🚨 CRITICAL', 'urgent': '⚠️ URGENT', 'routine': '— ROUTINE'}
     st.markdown(f"""
     <div class="{risk_cls.get(risk, 'alert-routine')}">
       <b style="font-size:1.05em">{risk_icon.get(risk, risk.upper())}</b>
@@ -425,11 +425,15 @@ with result_col:
     """, unsafe_allow_html=True)
 
     # 지표 4개
+    n_det = meta.get("num_detected", len(findings))
+    lat   = meta.get("latency_ms", "—")
+    det_color = '#ef5350' if n_det >= 3 else ('#ffa726' if n_det >= 1 else '#90a4ae')
+
     m1, m2, m3, m4 = st.columns(4)
-    m1.markdown(f'<div class="metric-card"><div class="metric-value">{meta.get("num_detected", len(findings))}</div><div class="metric-label">검출 질환</div></div>', unsafe_allow_html=True)
-    m2.markdown(f'<div class="metric-card"><div class="metric-value">{meta.get("latency_ms","—")}</div><div class="metric-label">분석 시간 (ms)</div></div>', unsafe_allow_html=True)
-    m3.markdown(f'<div class="metric-card"><div class="metric-value">{patient["age"]:.0f}</div><div class="metric-label">나이 (세)</div></div>', unsafe_allow_html=True)
-    m4.markdown(f'<div class="metric-card"><div class="metric-value">{patient["sex"]}</div><div class="metric-label">성별</div></div>', unsafe_allow_html=True)
+    m1.markdown(f'<div class="metric-card"><div class="metric-value" style="color:{det_color}">{n_det}</div><div class="metric-label">검출 질환</div></div>', unsafe_allow_html=True)
+    m2.markdown(f'<div class="metric-card"><div class="metric-value">{lat}</div><div class="metric-label">Latency (ms)</div></div>', unsafe_allow_html=True)
+    m3.markdown(f'<div class="metric-card"><div class="metric-value">{patient["age"]:.0f}</div><div class="metric-label">Age</div></div>', unsafe_allow_html=True)
+    m4.markdown(f'<div class="metric-card"><div class="metric-value">{patient["sex"]}</div><div class="metric-label">Sex</div></div>', unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -473,30 +477,53 @@ with result_col:
     vitals = result.get('ecg_vitals')
     if vitals:
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown('<div class="section-title">ECG 바이탈</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">ECG Vital Signs</div>', unsafe_allow_html=True)
 
         hr    = vitals.get('heart_rate')
         brady = vitals.get('bradycardia', False)
         tachy = vitals.get('tachycardia', False)
         irreg = vitals.get('irregular_rhythm', False)
-        hints = vitals.get('routing_hints', [])
 
-        hr_color  = '#ef5350' if (brady or tachy) else '#00e676'
-        hr_label  = f"{hr:.0f} bpm" if hr else "—"
-        hr_flag   = ' ⚠️ 빈맥' if tachy else (' ⚠️ 서맥' if brady else '')
-
-        irr_color = '#ffa726' if irreg else '#00e676'
-        irr_label = '불규칙 (Afib 의심)' if irreg else '규칙적'
-
-        v1, v2, v3 = st.columns(3)
-        v1.markdown(f'<div class="metric-card"><div class="metric-value" style="color:{hr_color}">{hr_label}</div><div class="metric-label">심박수{hr_flag}</div></div>', unsafe_allow_html=True)
-        v2.markdown(f'<div class="metric-card"><div class="metric-value" style="color:{irr_color}">{irr_label}</div><div class="metric-label">리듬</div></div>', unsafe_allow_html=True)
-
-        if hints:
-            hints_str = ' &nbsp;|&nbsp; '.join(f'<code>{h}</code>' for h in hints)
-            v3.markdown(f'<div class="metric-card"><div style="font-size:0.78em;color:#90a4ae;line-height:1.8">{hints_str}</div><div class="metric-label">다음 모달 라우팅 힌트</div></div>', unsafe_allow_html=True)
+        # HR 게이지 색상 로직
+        if hr is None:
+            hr_display = "N/A"
+            hr_color   = '#546e7a'
+            hr_status  = '측정 불가'
+        elif brady:
+            hr_display = f"{hr:.0f}"
+            hr_color   = '#42a5f5'
+            hr_status  = 'Bradycardia (< 50 bpm)'
+        elif tachy:
+            hr_display = f"{hr:.0f}"
+            hr_color   = '#ef5350'
+            hr_status  = 'Tachycardia (> 100 bpm)'
         else:
-            v3.markdown('<div class="metric-card"><div class="metric-value">—</div><div class="metric-label">라우팅 힌트</div></div>', unsafe_allow_html=True)
+            hr_display = f"{hr:.0f}"
+            hr_color   = '#90a4ae'
+            hr_status  = '50 – 100 bpm 범위'
+
+        irr_color  = '#ffa726' if irreg else '#90a4ae'
+        irr_label  = 'Irregular' if irreg else 'Regular'
+
+        v1, v2 = st.columns(2)
+        v1.markdown(f"""
+        <div class="metric-card" style="position:relative;overflow:hidden">
+          <div style="font-size:0.7em;color:#546e7a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Heart Rate</div>
+          <div style="display:flex;align-items:baseline;justify-content:center;gap:6px">
+            <span style="font-size:2.8em;font-weight:800;color:{hr_color};line-height:1">{hr_display}</span>
+            <span style="font-size:0.9em;color:#78909c">bpm</span>
+          </div>
+          <div style="font-size:0.75em;color:{hr_color};margin-top:4px;font-weight:600">{hr_status}</div>
+          {'<div style="position:absolute;top:6px;right:10px;font-size:0.65em;background:'+hr_color+';color:#000;padding:1px 6px;border-radius:3px;font-weight:700">⚠</div>' if (brady or tachy) else ''}
+        </div>
+        """, unsafe_allow_html=True)
+
+        v2.markdown(f"""
+        <div class="metric-card">
+          <div style="font-size:0.7em;color:#546e7a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Rhythm</div>
+          <div style="font-size:1.1em;font-weight:700;color:{irr_color};margin-top:12px">{irr_label}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
     # ── 확률 전체 차트 ────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)

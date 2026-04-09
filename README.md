@@ -305,33 +305,14 @@ Batch size: 64
 
 모델 출력 확률이 threshold 이상이면 해당 질환 detected로 판정.
 
-| Tier | Threshold 전략 | 의미 |
-|------|---------------|------|
-| Tier 1 | val set PR curve 기반 (recall ≥ 0.90 목표) | 놓치지 않는 것 최우선 |
-| Tier 2 | 0.40 | 어느 정도 확신할 때 |
-| Tier 3 | 0.45 | 확실할 때만 |
+| Tier | 기준 | Threshold | 의미 |
+|------|------|-----------|------|
+| Tier 1 | 사망률 ≥ 10% | **0.30** | 30% 이상이면 의심 → 놓치지 않는 것 최우선 |
+| Tier 2 | 사망률 5~10% | **0.40** | 어느 정도 확신할 때 |
+| Tier 3 | 사망률 2~5% | **0.45** | 확실할 때만 |
 
-### Tier 1 — val set 기반 실제 threshold 값
-
-Tier 1은 희귀 질환 특성상 모델 출력 확률이 전반적으로 낮아 (0.001~0.06 범위),  
-val set PR curve에서 recall ≥ 0.90을 만족하는 최적 threshold를 탐색하여 적용.
-
-| 질환 | Threshold | val Recall | val Precision | AUROC | 양성 샘플 |
-|------|-----------|-----------|--------------|-------|---------|
-| cardiac_arrest | 0.001 | 0.923 ✅ | 0.010 | 0.831 | 78 |
-| acute_mi | 0.010 | 0.901 ✅ | 0.066 | 0.859 | 548 |
-| pulmonary_embolism | 0.005 | 0.928 ✅ | 0.015 | 0.693 | 207 |
-| paroxysmal_tachycardia | 0.008 | 0.908 ✅ | 0.036 | 0.818 | 325 |
-| hyperkalemia | 0.012 | 0.905 ✅ | 0.068 | 0.823 | 629 |
-| respiratory_failure | 0.014 | 0.903 ✅ | 0.089 | 0.817 | 731 |
-| sepsis | 0.011 | 0.906 ✅ | 0.063 | 0.856 | 405 |
-| pericardial_disease | 0.002 | 0.886 ⚠️ | 0.012 | 0.822 | 114 |
-| av_block_lbbb | 0.021 | 0.806 ✅ | 0.106 | 0.923 | 283 |
-| calcium_disorder | 0.004 | 0.895 ⚠️ | 0.017 | 0.705 | 190 |
-| acute_kidney_failure | 0.057 | 0.899 ⚠️ | 0.192 | 0.788 | 1,902 |
-
-> Precision이 낮은 것은 오검출을 감수하더라도 **놓치지 않는 것을 최우선**으로 설계했기 때문.  
-> Bedrock Agent는 Tier 1 findings의 confidence가 낮을 경우 "의심 수준"으로 처리.
+> 초기에 val set PR curve 기반 최적값(0.001~0.06)을 사용했으나, 실서비스에서 confidence 2~3%에도  
+> alert가 발생하는 오탐 문제가 확인되어 임상적으로 의미 있는 고정값(0.30/0.40/0.45)으로 전환.
 
 ---
 
@@ -342,10 +323,12 @@ POST /predict
       │
       ▼
 Layer 1: ECGPreprocessor
-  - S3/로컬 .npy 로드
-  - NaN 보간 + 리샘플링
-  - PTB-XL 정규화
-  → (1, 12, 1000), (1, 2)
+  - S3/로컬 WFDB (.hea + .dat) 로딩
+  - NaN 보간 + ±3mV 클리핑
+  - 500Hz → 100Hz 리샘플링
+  - 12채널 정렬 + PTB-XL 정규화
+  - ECG Vitals 측정 (정규화 전 원본 신호에서 HR·리듬 계산)
+  → (1, 12, 1000), (1, 2), vitals
       │
       ▼
 Layer 2: ECGInferenceEngine
@@ -358,11 +341,27 @@ Layer 3: ClinicalEngine
   - Threshold 적용 → detected 판정
   - severity / recommendation 매핑
   - risk_level 산출
-  → findings (detected만), summary, risk_level
+  - ECG Vitals 보정 (Afib 계열 감지 시 irregular_rhythm 강제 true)
+  → findings, summary, risk_level, ecg_vitals
       │
       ▼
 PredictResponse (JSON)
 ```
+
+### ECG Vitals 측정
+
+정규화 전 원본 신호(100Hz)에서 Pan-Tompkins 간이 R-peak 검출로 심박수와 리듬 측정.  
+모델 추론과 독립적으로 동작하며, 모델 findings와 교차 검증하여 신뢰도를 높임.
+
+| 수치 | 측정 방법 | 보정 |
+|------|----------|------|
+| heart_rate | Lead II R-R 간격 평균 → 60/RR | — |
+| bradycardia | HR < 50 bpm | — |
+| tachycardia | HR > 100 bpm | — |
+| irregular_rhythm | RR 변동계수 > 0.15 | Afib/전도이상 감지 시 true 강제 |
+
+> Bedrock Agent는 ecg_vitals + findings를 종합하여 다음 모달(혈액검사, 흉부 X-ray) 호출 판단.  
+> 라우팅 결정은 ECG 모달이 아닌 중앙 오케스트레이터가 전담.
 
 ### API
 
@@ -371,6 +370,7 @@ PredictResponse (JSON)
 | `POST /predict` | ECG 분석 |
 | `GET /health` | 헬스체크 |
 | `GET /ready` | 모델 로드 완료 여부 (readiness probe) |
+| `GET /docs` | Swagger UI |
 
 ### Request / Response
 
@@ -379,7 +379,7 @@ PredictResponse (JSON)
 {
   "patient_id": "TEST-001",
   "patient_info": {"age": 72, "sex": "F", "chief_complaint": "흉통"},
-  "data": {"signal_path": "s3://say2-6team/mimic/ecg/signals/40689238.npy"},
+  "data": {"record_path": "s3://say2-6team/mimic/ecg/waveforms/files/p1000/p10000032/s40689238/40689238"},
   "context": {}
 }
 
@@ -398,9 +398,15 @@ PredictResponse (JSON)
   ],
   "summary": "[주의] 심방세동/조동, 심부전 이상 소견 감지",
   "risk_level": "urgent",
+  "ecg_vitals": {
+    "heart_rate": 90.6,
+    "bradycardia": false,
+    "tachycardia": false,
+    "irregular_rhythm": true
+  },
   "metadata": {
     "patient_id": "TEST-001",
-    "latency_ms": 85.3,
+    "latency_ms": 550.3,
     "model": "ecg_s6.onnx",
     "num_detected": 2
   }
@@ -424,7 +430,59 @@ PredictResponse (JSON)
 
 ---
 
+## 벤치마크 (108건 MIMIC-IV ECG, 골든셋 레이블 대조)
+
+MIMIC-IV 퇴원요약 200명 중 ECG 파형 데이터가 존재하는 108명 대상.
+
+### Tier별 성능
+
+| Tier | PPV | Recall | F1 |
+|------|-----|--------|-----|
+| Tier 1 (사망률≥10%) | 60.9% | 29.2% | 39.4% |
+| Tier 2 (사망률5~10%) | 62.1% | 38.3% | 47.4% |
+| Tier 3 (사망률2~5%) | 52.5% | 42.1% | 46.7% |
+| **전체** | **58.7%** | **37.8%** | **46.0%** |
+
+### 질환별 하이라이트
+
+| 질환 | F1 | 비고 |
+|------|-----|------|
+| afib_flutter | 71.4% | ECG 특이 패턴, 최고 성능 |
+| afib_detail | 70.6% | |
+| acute_mi | 66.7% | Recall 100% |
+| hypertension | 58.7% | FP 29건 (비특이 ST 변화 오인) |
+| dm2, copd, hypothyroidism | 0% | ECG 파형에 특이 신호 없음 → 혈액검사 모달 위임 |
+
+### 한계 및 원인
+
+1. **Metabolic 질환 탐지 불가** — dm2, copd, hypothyroidism 등은 ICD 코드 기반 레이블이지만 ECG 파형에 특이 소견이 없어 모델이 학습 불가. 혈액검사 모달로 위임 설계.
+2. **Hypertension FP 과다** — 비특이 ST-T 변화를 고혈압으로 오인. threshold 상향 또는 인구통계 보정 필요.
+3. **만성 질환 Recall 부족** — chronic_kidney FN 16건, chronic_ihd FN 16건. ECG 변화가 서서히 진행되어 threshold 미달.
+
+---
+
 ## 배포
+
+### EC2 배포 (현재)
+
+| 항목 | 값 |
+|------|-----|
+| Instance | t3.large (i-008fbaebbadbc0dee) |
+| IP | 13.124.117.190:8000 |
+| AMI | Amazon Linux 2023 |
+| 컨테이너 | Docker (ECR: ecg-modal:latest) |
+| IAM Role | say-2-ec2-s3-api-role |
+
+```bash
+# ECR 빌드 & 푸시 (Mac ARM64 → x86_64 크로스빌드)
+docker buildx build --platform linux/amd64 -t ecg-modal:latest ./ecg-svc --load
+bash deploy.sh
+
+# EC2 배포
+ssh ec2-user@13.124.117.190
+sudo docker pull <ECR_URI>
+sudo docker run -d --name ecg-svc -p 8000:8000 ...
+```
 
 ### 로컬 실행
 
@@ -435,13 +493,15 @@ python main.py
 # → http://localhost:8000
 ```
 
-### EKS 배포
+### Streamlit 데모
 
 ```bash
-bash deploy.sh
+pip install streamlit plotly
+streamlit run streamlit_demo.py
+# → http://localhost:8501
 ```
 
-### 환경 변수 (.env)
+### 환경 변수
 
 ```
 S3_BUCKET=say2-6team
@@ -468,16 +528,14 @@ ecg-svc/
 │   ├── labels.py                # 24개 질환 메타데이터
 │   └── schemas.py               # Pydantic 스키마
 ├── layer1_preprocessing/
-│   └── preprocessor.py          # 신호 전처리
+│   └── preprocessor.py          # WFDB 전처리 + ECG Vitals 측정
 ├── layer2_inference/
 │   └── mamba_s6.py              # ONNX 추론 엔진
 └── layer3_clinical_logic/
-    └── engine.py                # 임상 해석 엔진
+    └── engine.py                # 임상 해석 + Vitals 보정
 
-k8s/
-├── deployment.yaml
-└── ingress.yaml
-
+streamlit_demo.py                # EMR 스타일 데모 UI (12리드 파형 + AI 분석)
+test_golden.py                   # 200명 골든셋 벤치마크
 train_ecg_s6.py                  # S6 모델 학습
 export_onnx.py                   # PyTorch → ONNX 변환
 ```

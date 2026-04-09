@@ -87,7 +87,8 @@ for i, row in enumerate(test_cases, 1):
     # 골든셋에서 임상 정보 가져오기
     g = golden[row['subject_id']]
     symptoms = g['ml_features'].get('1_symptoms_and_history', '')
-    dx       = g['ml_features'].get('3_diagnosis', {}).get('primary', '')
+    _dx_raw  = g['ml_features'].get('3_diagnosis', {})
+    dx       = _dx_raw.get('primary', '') if isinstance(_dx_raw, dict) else str(_dx_raw or '')
 
     payload = {
         "patient_id": study_id,
