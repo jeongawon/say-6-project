@@ -527,21 +527,26 @@ with result_col:
 
     # ── 확률 전체 차트 ────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown('<div class="section-title">24개 질환 전체 확률</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">24개 질환 전체 확률 (all_probs)</div>', unsafe_allow_html=True)
 
     finding_map = {f['name']: f for f in findings}
-    all_probs = []
+    raw_probs   = result.get('all_probs', {})
+
+    all_probs_list = []
     for lbl in TARGET_LABELS:
-        f = finding_map.get(lbl)
-        all_probs.append({
-            'label':      LABEL_KO.get(lbl, lbl),
-            'name':       lbl,
-            'prob':       f['confidence'] if f else 0.0,
-            'detected':   lbl in finding_map,
+        prob = raw_probs.get(lbl, 0.0)
+        # findings에 있으면 confidence 우선 (threshold 넘은 것)
+        if lbl in finding_map:
+            prob = finding_map[lbl]['confidence']
+        all_probs_list.append({
+            'label':    LABEL_KO.get(lbl, lbl),
+            'name':     lbl,
+            'prob':     prob,
+            'detected': lbl in finding_map,
         })
 
-    prob_df = pd.DataFrame(all_probs).sort_values('prob', ascending=True)
-    colors  = ['#ef5350' if r['detected'] else '#37474f' for _, r in prob_df.iterrows()]
+    prob_df = pd.DataFrame(all_probs_list).sort_values('prob', ascending=True)
+    colors  = ['#ef5350' if r['detected'] else ('#ffa726' if r['prob'] >= 0.15 else '#37474f') for _, r in prob_df.iterrows()]
 
     fig_bar = go.Figure(go.Bar(
         x=prob_df['prob'],
