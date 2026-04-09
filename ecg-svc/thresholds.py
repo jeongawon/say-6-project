@@ -1,26 +1,26 @@
 """
 질환별 분류 임계값
 
-Tier 1 (사망률 ≥10%): val set PR curve 기반 최적값 (recall ≥ 0.90 목표)
-Tier 2 (사망률 5~10%): 경험값 0.40
-Tier 3 (사망률 2~5%):  경험값 0.45
+Tier 1 (사망률 ≥10%): 0.30 — 30% 이상 = 의심
+Tier 2 (사망률 5~10%): 0.40
+Tier 3 (사망률 2~5%):  0.45
 """
 
 THRESHOLDS: dict[str, float] = {
-    # Tier 1 — val set 기반 (recall ≥ 0.90)
-    'cardiac_arrest':         0.001,
-    'acute_mi':               0.010,
-    'pulmonary_embolism':     0.005,
-    'paroxysmal_tachycardia': 0.008,
-    'hyperkalemia':           0.012,
-    'respiratory_failure':    0.014,
-    'sepsis':                 0.011,
-    'pericardial_disease':    0.002,
-    'av_block_lbbb':          0.021,
-    'calcium_disorder':       0.004,
-    'acute_kidney_failure':   0.057,
+    # Tier 1 — 사망률 ≥10%, 놓치면 안 됨
+    'cardiac_arrest':         0.30,
+    'acute_mi':               0.30,
+    'pulmonary_embolism':     0.30,
+    'paroxysmal_tachycardia': 0.30,
+    'hyperkalemia':           0.30,
+    'respiratory_failure':    0.30,
+    'sepsis':                 0.30,
+    'pericardial_disease':    0.30,
+    'av_block_lbbb':          0.30,
+    'calcium_disorder':       0.30,
+    'acute_kidney_failure':   0.30,
 
-    # Tier 2 — 경험값
+    # Tier 2 — 사망률 5~10%
     'afib_flutter':           0.40,
     'heart_failure':          0.40,
     'afib_detail':            0.40,
@@ -32,7 +32,7 @@ THRESHOLDS: dict[str, float] = {
     'hypothyroidism':         0.40,
     'other_conduction':       0.40,
 
-    # Tier 3 — 경험값
+    # Tier 3 — 사망률 2~5%
     'dm2':                    0.45,
     'hypertension':           0.45,
     'angina':                 0.45,

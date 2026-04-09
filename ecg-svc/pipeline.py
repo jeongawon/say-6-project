@@ -90,7 +90,7 @@ class ECGPipeline:
                     "latency_ms":   elapsed_ms,
                     "model":        "ecg_s6.onnx",
                     "timestamp":    datetime.now(timezone.utc).isoformat(),
-                    "num_detected": sum(1 for f in result.findings if f.detected),
+                    "num_detected": len(result.findings),
                 },
             )
 
