@@ -690,7 +690,7 @@ export_onnx.py                   # PyTorch → ONNX 변환
 |------|------|
 | 환자 | 78세 남성 (18161880) |
 | 주소 | 대동맥 협착, Afib, CAD, CKD, DM |
-| Golden Dx | Aortic Stenosis, **Atrial Fibrillation**, CAD, CKD, DM |
+| 실제 진단 (MIMIC-IV 퇴원요약) | Aortic Stenosis, **Atrial Fibrillation**, CAD, CKD, DM |
 
 **AI 결과:**
 
@@ -703,7 +703,7 @@ export_onnx.py                   # PyTorch → ONNX 변환
 
 - ECG Vitals: **irregular_rhythm=true** → Afib 파형과 일치
 - Risk Level: **URGENT**
-- Golden Dx에 Afib 포함 → **True Positive 확인**
+- 실제 진단에 Afib 포함 → **True Positive 확인**
 
 **발표 포인트:**
 1. ECG 파형에서 12-Lead 중 **II, V1 리드가 빨간색으로 하이라이트** → Afib 특이 파형 위치
@@ -720,7 +720,7 @@ export_onnx.py                   # PyTorch → ONNX 변환
 |------|------|
 | 환자 | 79세 여성 (15238548) |
 | 주소 | NSTEMI, 불안정 협심증, 심부전 |
-| Golden Dx | **NSTEMI**, Heart Failure, Hypothyroidism, DM |
+| 실제 진단 (MIMIC-IV 퇴원요약) | **NSTEMI**, Heart Failure, Hypothyroidism, DM |
 
 **AI 결과:**
 
@@ -737,7 +737,7 @@ export_onnx.py                   # PyTorch → ONNX 변환
 
 - ECG Vitals: **HR=100.1 (빈맥)**, irregular_rhythm=true
 - Risk Level: **CRITICAL** (8건 동시 검출)
-- Golden Dx NSTEMI와 일치 → **True Positive**
+- 실제 진단 NSTEMI와 일치 → **True Positive**
 
 **발표 포인트:**
 1. **Tier-1 임계값 설계 의도**: 30.2%는 50%가 안 되지만, 사망률 12.7% 질환은 놓치면 안 됨
@@ -755,7 +755,7 @@ export_onnx.py                   # PyTorch → ONNX 변환
 |------|------|
 | 환자 | 88세 남성 (14112944) |
 | 주소 | 어깨 통증, 다수 심장 동반질환 |
-| Golden Dx | 좌측 어깨 골관절염 (Afib, HF, CKD 동반) |
+| 실제 진단 (MIMIC-IV 퇴원요약) | 좌측 어깨 골관절염 (Afib, HF, CKD 동반) |
 
 **AI 결과:**
 
@@ -779,7 +779,7 @@ export_onnx.py                   # PyTorch → ONNX 변환
 
 ---
 
-### Case 4: ECG 단독 확정 — 고칼륨혈증 58.8% (Golden Dx 일치)
+### Case 4: ECG 단독 확정 — 고칼륨혈증 58.8% (실제 진단 일치)
 
 > **"ECG에서 뾰족한 T파와 QRS 변화를 감지하여 고칼륨혈증을 58.8%로 검출했습니다. 이 환자의 실제 진단에도 고칼륨혈증이 포함되어 있습니다."**
 
@@ -787,7 +787,7 @@ export_onnx.py                   # PyTorch → ONNX 변환
 |------|------|
 | 환자 | 41세 여성 (14866589) |
 | 주소 | T1DM, NSTEMI 이력, AKI, 고칼륨혈증, 저나트륨혈증 |
-| Golden Dx | **AKI, Hyperkalemia**, Hyponatremia, DM1 |
+| 실제 진단 (MIMIC-IV 퇴원요약) | **AKI, Hyperkalemia**, Hyponatremia, DM1 |
 
 **AI 결과:**
 
@@ -801,7 +801,7 @@ export_onnx.py                   # PyTorch → ONNX 변환
 
 - ECG Vitals: HR=78.3, regular rhythm
 - Risk Level: **URGENT**
-- Golden Dx에 Hyperkalemia + AKI 모두 포함 → **True Positive**
+- 실제 진단에 Hyperkalemia + AKI 모두 포함 → **True Positive**
 
 **발표 포인트:**
 1. **ECG에서 전해질 이상까지 감지** — 뾰족한 T파, QRS 확장은 고칼륨혈증의 ECG 특이 소견
@@ -819,7 +819,7 @@ export_onnx.py                   # PyTorch → ONNX 변환
 |------|------|
 | 환자 | 83세 남성 (15968916) |
 | 주소 | 고위급 소장 폐색, 감돈 탈장, 발열 |
-| Golden Dx | 소장 폐색 (패혈증 합병) |
+| 실제 진단 (MIMIC-IV 퇴원요약) | 소장 폐색 (패혈증 합병) |
 
 **AI 결과:**
 
