@@ -58,7 +58,7 @@ class ECGPipeline:
             age = req.patient_info.age  if req.patient_info else 60.0
             sex = req.patient_info.sex  if req.patient_info else "unknown"
 
-            ecg_signal, demographics = self.preprocessor.run(
+            ecg_signal, demographics, vitals = self.preprocessor.run(
                 record_path=req.data.record_path,
                 age=age,
                 sex=sex,
@@ -72,7 +72,7 @@ class ECGPipeline:
             # ----------------------------------------------------------
             # Layer 3: 임상 해석
             # ----------------------------------------------------------
-            result = self.clinical.run(probs)
+            result = self.clinical.run(probs, vitals)
 
             elapsed_ms = round((time.perf_counter() - t0) * 1000, 1)
             logger.info(
@@ -85,6 +85,7 @@ class ECGPipeline:
                 findings=result.findings,
                 summary=result.summary,
                 risk_level=result.risk_level,
+                ecg_vitals=result.ecg_vitals,
                 metadata={
                     "patient_id":   req.patient_id,
                     "latency_ms":   elapsed_ms,

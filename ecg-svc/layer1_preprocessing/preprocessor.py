@@ -68,21 +68,25 @@ class ECGPreprocessor:
         record_path: str,   # WFDB 레코드 경로 (확장자 없이)
         age: float,
         sex: str,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, dict]:
         """
         Returns:
             ecg_signal:   (1, 12, 1000) float32
             demographics: (1, 2)        float32
+            vitals:       dict  — HR, bradycardia, tachycardia, irregular_rhythm
         """
         sig, fs, sig_names = self._load_wfdb(record_path)   # (T, 12), Hz, [채널명...]
         sig = self._clean(sig)                               # NaN 보간 + ±3mV 클리핑
         sig = self._resample(sig, fs)                        # → (1000, 12)
         sig = self._align_channels(sig, sig_names)           # 채널 고정 순서
+
+        vitals = self._measure_vitals(sig)                   # 정규화 전 원본에서 측정
+
         sig = self._normalize(sig)                           # Z-score + ±5σ
         ecg = sig.T[np.newaxis].astype(np.float32)          # (1, 12, 1000)
 
         demo = self._encode_demographics(age, sex)           # (1, 2)
-        return ecg, demo
+        return ecg, demo, vitals
 
     # ------------------------------------------------------------------
     # WFDB 로딩
@@ -157,6 +161,65 @@ class ECGPreprocessor:
         """PTB-XL 채널별 Z-score 정규화 + ±5σ 클리핑"""
         sig = (sig - PTB_XL_MEAN) / PTB_XL_STD
         return np.clip(sig, -5.0, 5.0).astype(np.float32)
+
+    # ------------------------------------------------------------------
+    # ECG 바이탈 측정 (정규화 전 원본 신호)
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _measure_vitals(sig: np.ndarray, fs: int = 100) -> dict:
+        """
+        100Hz, (1000, 12) 신호에서 HR·부정맥 지표 계산.
+        Lead II (index 1) 사용. Pan-Tompkins 간이 구현.
+        """
+        lead2 = sig[:, 1].copy()
+
+        # ── R-peak 검출 (미분 제곱 + moving average) ──────────────
+        diff_sq = np.diff(lead2) ** 2
+        win     = max(1, int(0.15 * fs))          # 150ms
+        kernel  = np.ones(win) / win
+        mwi     = np.convolve(diff_sq, kernel, mode='same')
+
+        threshold = 0.3 * float(np.max(mwi)) if np.max(mwi) > 0 else 1e-9
+        above = mwi > threshold
+
+        r_peaks: list[int] = []
+        in_peak, p_start = False, 0
+        for i in range(len(above)):
+            if above[i] and not in_peak:
+                in_peak, p_start = True, i
+            elif not above[i] and in_peak:
+                in_peak = False
+                seg = lead2[p_start: min(i + 1, len(lead2))]
+                if len(seg) > 0:
+                    r_peaks.append(p_start + int(np.argmax(seg)))
+
+        # 불응기 필터 (최소 300ms)
+        filtered: list[int] = []
+        last = -9999
+        for p in sorted(r_peaks):
+            if p - last >= int(0.3 * fs):
+                filtered.append(p)
+                last = p
+        r_peaks = filtered
+
+        # ── HR & RR 변동성 ────────────────────────────────────────
+        hr: float | None = None
+        irregular = False
+        if len(r_peaks) >= 2:
+            rr = np.diff(r_peaks) / fs                       # seconds
+            rr = rr[(rr >= 0.3) & (rr <= 2.0)]              # 생리학적 필터
+            if len(rr) >= 2:
+                mean_rr = float(np.mean(rr))
+                hr      = round(60.0 / mean_rr, 1)
+                cv      = float(np.std(rr) / mean_rr)        # 변동계수
+                irregular = cv > 0.15                         # Afib 의심 기준
+
+        return {
+            "heart_rate":      hr,
+            "bradycardia":     hr is not None and hr < 50,
+            "tachycardia":     hr is not None and hr > 100,
+            "irregular_rhythm": irregular,
+        }
 
     # ------------------------------------------------------------------
     # 인구통계 인코딩
