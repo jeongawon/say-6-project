@@ -59,7 +59,7 @@ class ECGPipeline:
             sex = req.patient_info.sex  if req.patient_info else "unknown"
 
             ecg_signal, demographics = self.preprocessor.run(
-                signal_path=req.data.signal_path,
+                record_path=req.data.record_path,
                 age=age,
                 sex=sex,
             )

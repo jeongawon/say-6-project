@@ -14,7 +14,7 @@ class PatientInfo(BaseModel):
 
 
 class ECGData(BaseModel):
-    signal_path: Optional[str] = None    # S3 URI 또는 로컬 경로
+    record_path: str                     # WFDB 레코드 경로 (확장자 없이, S3 URI 또는 로컬)
     leads: int = 12
 
 
