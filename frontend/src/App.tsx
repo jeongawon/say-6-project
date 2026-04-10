@@ -61,12 +61,12 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0b1120]">
+    <div className="min-h-screen flex flex-col bg-gray-100">
       <Header />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* ── 좌측 사이드바: 환자 목록 ── */}
-        <aside className="w-64 shrink-0 border-r border-[#1e2d3d] bg-[#0d1117] p-4 overflow-y-auto">
+        {/* ── 좌측 사이드바 ── */}
+        <aside className="w-56 shrink-0 border-r border-gray-200 bg-white p-3 overflow-y-auto">
           <PatientSelector
             patients={DEMO_PATIENTS}
             selected={patient}
@@ -75,15 +75,15 @@ export default function App() {
         </aside>
 
         {/* ── 메인 영역 ── */}
-        <main className="flex-1 overflow-y-auto p-5 space-y-4">
+        <main className="flex-1 overflow-y-auto p-4 space-y-3">
           {!patient ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center text-slate-600">
-                <svg viewBox="0 0 120 40" className="h-10 w-auto mx-auto mb-3 opacity-20">
+              <div className="text-center text-gray-400">
+                <svg viewBox="0 0 120 40" className="h-10 w-auto mx-auto mb-3 opacity-30">
                   <polyline
                     points="0,20 20,20 30,5 40,35 50,10 60,30 70,20 120,20"
                     fill="none"
-                    stroke="#4b5563"
+                    stroke="#9ca3af"
                     strokeWidth="2"
                   />
                 </svg>
@@ -99,10 +99,10 @@ export default function App() {
               <button
                 onClick={runAnalysis}
                 disabled={loading}
-                className={`w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-all ${
+                className={`w-full py-2.5 rounded font-bold text-sm tracking-wide transition-all shadow-sm ${
                   loading
-                    ? "bg-slate-700 text-slate-400 cursor-wait"
-                    : "bg-blue-600 hover:bg-blue-500 text-white"
+                    ? "bg-gray-300 text-gray-500 cursor-wait"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
                 }`}
               >
                 {loading ? (
@@ -123,7 +123,7 @@ export default function App() {
 
               {/* 에러 */}
               {error && (
-                <div className="bg-red-950/40 border border-red-500/50 rounded-lg px-4 py-3 text-sm text-red-300">
+                <div className="bg-red-50 border border-red-300 rounded px-4 py-3 text-sm text-red-700">
                   {error}
                 </div>
               )}
@@ -134,14 +134,11 @@ export default function App() {
                   {/* 리스크 배너 */}
                   <RiskBanner level={result.risk_level} summary={result.summary} />
 
-                  {/* 2컬럼: ECG 파형 | 바이탈 + 소견 */}
-                  <div className="grid grid-cols-3 gap-4">
-                    {/* 좌측: 12-Lead ECG */}
+                  {/* 2컬럼: ECG 파형 | 바이탈 */}
+                  <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-2">
                       <ECGWaveform signal={result.waveform} findings={result.findings} />
                     </div>
-
-                    {/* 우측: 바이탈 패널 */}
                     <div>
                       <VitalsPanel
                         vitals={result.ecg_vitals}
@@ -158,21 +155,21 @@ export default function App() {
                     irregular={result.ecg_vitals?.irregular_rhythm ?? false}
                   />
 
-                  {/* 검출 소견 */}
-                  <div>
-                    <p className="text-[10px] font-semibold tracking-widest text-slate-500 uppercase mb-2">
-                      Detected Findings
-                    </p>
-                    <FindingsPanel findings={result.findings} />
+                  {/* 검출 소견 + 확률 차트 2컬럼 */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase mb-2">
+                        Detected Findings
+                      </p>
+                      <FindingsPanel findings={result.findings} />
+                    </div>
+                    <ProbabilityChart
+                      allProbs={result.all_probs}
+                      findings={result.findings}
+                    />
                   </div>
 
-                  {/* 24개 질환 확률 차트 */}
-                  <ProbabilityChart
-                    allProbs={result.all_probs}
-                    findings={result.findings}
-                  />
-
-                  {/* 다음 모달 힌트 (간단 표시) */}
+                  {/* 다음 모달 힌트 */}
                   <NextModalHint findings={result.findings} />
                 </>
               )}

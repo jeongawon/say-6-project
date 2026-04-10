@@ -4,17 +4,17 @@
 
 @layer base {
   body {
-    @apply bg-[#0b1120] text-gray-200;
-    font-family: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+    @apply bg-gray-100 text-gray-800;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
   ::-webkit-scrollbar {
     width: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #111827;
+    background: #f1f5f9;
   }
   ::-webkit-scrollbar-thumb {
-    background: #374151;
+    background: #cbd5e1;
     border-radius: 3px;
   }
 }
