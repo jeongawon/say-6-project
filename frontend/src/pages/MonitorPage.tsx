@@ -29,32 +29,32 @@ export default function MonitorPage() {
     <div className="space-y-8">
       {/* Title */}
       <div>
-        <h2 className="text-2xl font-extrabold tracking-tight text-on-surface">Live Patient Monitor</h2>
+        <h2 className="text-2xl font-extrabold tracking-tight text-on-surface">실시간 환자 모니터</h2>
         <p className="text-sm text-on-surface-variant mt-1">
-          실시간 환자 큐 — 환자를 선택하면 ECG AI 분석 대시보드로 이동합니다
+          환자를 선택하면 ECG AI 분석 대시보드로 이동합니다
         </p>
       </div>
 
       {/* Summary Cards */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-2 border-primary">
-          <p className="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase mb-1">Total Queue</p>
+          <p className="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase mb-1">대기 환자</p>
           <span className="text-4xl font-black text-on-surface">{DEMO_PATIENTS.length}</span>
-          <span className="text-xs text-on-surface-variant font-bold ml-2">Patients</span>
+          <span className="text-xs text-on-surface-variant font-bold ml-2">명</span>
         </div>
         <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-2 border-tertiary">
-          <p className="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase mb-1">Critical</p>
+          <p className="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase mb-1">위험 환자</p>
           <span className="text-4xl font-black text-tertiary">2</span>
-          <span className="text-xs text-on-surface-variant font-bold ml-2">Cases</span>
+          <span className="text-xs text-on-surface-variant font-bold ml-2">건</span>
         </div>
         <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-2 border-secondary">
-          <p className="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase mb-1">Analyzed</p>
+          <p className="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase mb-1">분석 완료</p>
           <span className="text-4xl font-black text-secondary">0</span>
-          <span className="text-xs text-on-surface-variant font-bold ml-2">Complete</span>
+          <span className="text-xs text-on-surface-variant font-bold ml-2">건</span>
         </div>
         <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-2 border-primary">
-          <p className="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase mb-1">System</p>
-          <span className="text-2xl font-black text-on-surface">Ready</span>
+          <p className="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase mb-1">시스템</p>
+          <span className="text-2xl font-black text-on-surface">정상</span>
         </div>
       </section>
 
@@ -110,18 +110,18 @@ export default function MonitorPage() {
       {/* Patient Table */}
       <section className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 bg-surface-container-high border-b border-outline-variant/30">
-          <h3 className="font-bold text-on-surface tracking-tight">Patient Registry</h3>
+          <h3 className="font-bold text-on-surface tracking-tight">환자 등록 목록</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant border-b border-surface-container">
-                <th className="px-6 py-4">Case</th>
+                <th className="px-6 py-4">케이스</th>
                 <th className="px-6 py-4">Study ID</th>
-                <th className="px-6 py-4">Age/Sex</th>
-                <th className="px-6 py-4">Chief Complaint</th>
-                <th className="px-6 py-4">Golden Dx</th>
-                <th className="px-6 py-4">Action</th>
+                <th className="px-6 py-4">나이/성별</th>
+                <th className="px-6 py-4">주 증상</th>
+                <th className="px-6 py-4">실제 진단</th>
+                <th className="px-6 py-4">분석</th>
               </tr>
             </thead>
             <tbody className="text-sm">
@@ -137,7 +137,7 @@ export default function MonitorPage() {
                   <td className="px-6 py-4 text-on-surface-variant text-xs max-w-[200px] truncate">{p.chief_complaint}</td>
                   <td className="px-6 py-4 text-on-surface-variant text-xs max-w-[180px] truncate">{p.golden_dx}</td>
                   <td className="px-6 py-4">
-                    <span className="text-primary text-xs font-bold hover:underline">Analyze →</span>
+                    <span className="text-primary text-xs font-bold hover:underline">분석 시작 →</span>
                   </td>
                 </tr>
               ))}

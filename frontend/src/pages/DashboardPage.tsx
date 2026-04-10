@@ -85,7 +85,7 @@ export default function DashboardPage() {
               onClick={() => navigate("/")}
               className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-blue-800 transition-colors"
             >
-              Live Monitor로 이동
+              실시간 모니터로 이동
             </button>
           </div>
         </div>
@@ -111,19 +111,19 @@ export default function DashboardPage() {
             <svg className="animate-spin h-6 w-6" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="62" strokeDashoffset="15" />
             </svg>
-            <span className="text-sm font-bold">AI 분석 중...</span>
+            <span className="text-sm font-bold">ECG AI 분석 중...</span>
           </div>
         </div>
       )}
 
       {error && (
         <div className="bg-error-container border border-error/20 rounded-xl px-6 py-4 text-sm text-on-surface">
-          <span className="font-bold text-error">Error:</span> {error}
+          <span className="font-bold text-error">오류:</span> {error}
           <button
             onClick={() => runAnalysis()}
             className="ml-4 text-primary font-bold text-xs hover:underline"
           >
-            Retry
+            재시도
           </button>
         </div>
       )}
@@ -211,16 +211,13 @@ export default function DashboardPage() {
               </div>
               <div className="flex flex-wrap justify-center gap-3">
                 <button className="px-5 py-2.5 bg-surface-container text-on-surface font-bold text-xs rounded-md hover:bg-surface-container-high transition-colors flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">science</span>
-                  검사 추가 주문
+                  추가 검사 주문
                 </button>
                 <button className="px-5 py-2.5 bg-surface-container text-on-surface font-bold text-xs rounded-md hover:bg-surface-container-high transition-colors flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">description</span>
-                  보고서 생성
+                  임상 보고서 생성
                 </button>
                 <button className="px-6 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-md shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">medical_services</span>
-                  협진 요청
+                  전문의 협진 요청
                 </button>
               </div>
             </div>
