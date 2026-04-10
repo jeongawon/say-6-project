@@ -89,8 +89,11 @@ export const CARDIAC_LABELS = [
   "afib_flutter", "heart_failure", "hypertension", "chronic_ihd",
   "acute_mi", "paroxysmal_tachycardia", "av_block_lbbb",
   "other_conduction", "pulmonary_embolism", "cardiac_arrest",
-  "angina", "pericardial_disease", "afib_detail", "hf_detail",
+  "angina", "pericardial_disease",
 ];
+
+/** 세부 라벨 — 상위 코드와 중복이므로 차트/소견에서 숨김 */
+export const DETAIL_LABELS = ["afib_detail", "hf_detail"];
 
 export const NONCARDIAC_LABELS = [
   "dm2", "acute_kidney_failure", "hypothyroidism", "copd",

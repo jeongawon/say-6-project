@@ -13,6 +13,7 @@ import {
   LABEL_KO,
   CARDIAC_LABELS,
   NONCARDIAC_LABELS,
+  DETAIL_LABELS,
 } from "../types/ecg";
 import type { Finding } from "../types/ecg";
 
@@ -28,12 +29,14 @@ export default function ProbabilityChart({ allProbs, findings }: Props) {
 
   const detectedSet = new Set(findings.map((f) => f.name));
 
-  const filterLabels =
+  const detailSet = new Set(DETAIL_LABELS);
+  const filterLabels = (
     tab === "cardiac"
       ? CARDIAC_LABELS
       : tab === "noncardiac"
       ? NONCARDIAC_LABELS
-      : [...CARDIAC_LABELS, ...NONCARDIAC_LABELS];
+      : [...CARDIAC_LABELS, ...NONCARDIAC_LABELS]
+  ).filter((l) => !detailSet.has(l));
 
   const data = filterLabels
     .map((key) => ({
@@ -45,8 +48,8 @@ export default function ProbabilityChart({ allProbs, findings }: Props) {
     .sort((a, b) => b.prob - a.prob);
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "all", label: "전체 24" },
-    { key: "cardiac", label: "심혈관 14" },
+    { key: "all", label: "전체 22" },
+    { key: "cardiac", label: "심혈관 12" },
     { key: "noncardiac", label: "비심혈관 10" },
   ];
 

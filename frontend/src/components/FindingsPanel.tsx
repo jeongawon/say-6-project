@@ -45,8 +45,19 @@ export default function FindingsPanel({ findings }: Props) {
     );
   }
 
+  // 상위 코드가 있으면 세부 라벨(detail) 숨김
+  const DETAIL_PARENT: Record<string, string> = {
+    afib_detail: "afib_flutter",
+    hf_detail: "heart_failure",
+  };
+  const nameSet = new Set(findings.map((f) => f.name));
+  const deduped = findings.filter((f) => {
+    const parent = DETAIL_PARENT[f.name];
+    return !parent || !nameSet.has(parent);
+  });
+
   const sevOrder = { critical: 0, severe: 1, moderate: 2, mild: 3 };
-  const sorted = [...findings].sort(
+  const sorted = [...deduped].sort(
     (a, b) =>
       (sevOrder[a.severity] ?? 4) - (sevOrder[b.severity] ?? 4) ||
       b.confidence - a.confidence
