@@ -25,6 +25,11 @@ export default function VitalsPanel({ vitals, latencyMs, numDetected }: Props) {
       hrColor = "text-emerald-400";
       hrStatus = "Normal Sinus";
     }
+  } else if (irreg) {
+    hrColor = "text-amber-400";
+    hrStatus = "측정 불가 — 불규칙 리듬(Afib)";
+  } else {
+    hrStatus = "측정 불가";
   }
 
   return (

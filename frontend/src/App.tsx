@@ -8,6 +8,7 @@ import PatientSelector from "./components/PatientSelector";
 import PatientBanner from "./components/PatientBanner";
 import RiskBanner from "./components/RiskBanner";
 import ECGWaveform from "./components/ECGWaveform";
+import RhythmStrip from "./components/RhythmStrip";
 import VitalsPanel from "./components/VitalsPanel";
 import FindingsPanel from "./components/FindingsPanel";
 import ProbabilityChart from "./components/ProbabilityChart";
@@ -149,6 +150,13 @@ export default function App() {
                       />
                     </div>
                   </div>
+
+                  {/* Lead II 리듬 스트립 */}
+                  <RhythmStrip
+                    signal={result.waveform}
+                    heartRate={result.ecg_vitals?.heart_rate ?? null}
+                    irregular={result.ecg_vitals?.irregular_rhythm ?? false}
+                  />
 
                   {/* 검출 소견 */}
                   <div>
