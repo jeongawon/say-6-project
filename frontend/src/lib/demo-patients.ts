@@ -37,7 +37,7 @@ export const DEMO_PATIENTS: DemoPatient[] = [
   // ── Case 3: ECG 한계 → Lab 필수 — acute_mi 45.1% → Troponin 확정 필요 ──
   {
     subject_id: "15238548",
-    study_id: "49452415",
+    study_id: "48738546",
     age: 79,
     sex: "F",
     chief_complaint: "NSTEMI, unstable angina, heart failure, hypothyroidism, COPD",
