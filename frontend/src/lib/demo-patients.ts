@@ -28,7 +28,7 @@ export const DEMO_PATIENTS: DemoPatient[] = [
   // ── Case 2: ECG 확정 — HF 74.1% (Golden Dx Primary = Heart Failure) ──
   {
     subject_id: "10299107",
-    study_id: "41498883",
+    study_id: "42536764",
     age: 88,
     sex: "M",
     chief_complaint: "HFpEF (TTR amyloidosis), paroxysmal atrial fibrillation, hypertension, dyspnea",
