@@ -318,6 +318,19 @@ Batch size: 64
 
 ## 서비스 아키텍처 (ecg-svc)
 
+### 기술 스택
+
+| 구분 | 기술 | 선택 이유 |
+|------|------|----------|
+| 웹 프레임워크 | **FastAPI** | 비동기 처리, Pydantic 기반 request/response 자동 검증, `/docs` Swagger UI 자동 생성 |
+| ASGI 서버 | **Uvicorn** | FastAPI 표준 프로덕션 서버, 고성능 비동기 처리 |
+| 추론 엔진 | **ONNX Runtime** | PyTorch 대비 경량, CPU 추론 최적화, 멀티플랫폼 |
+| 데이터 검증 | **Pydantic v2** | 타입 안전성, 자동 문서화 |
+| 컨테이너 | **Docker** (python:3.11-slim) | ECR 배포, K8s readiness/liveness probe 지원 |
+| 신호 처리 | **wfdb, resampy, numpy** | WFDB 포맷 파싱, 500→100Hz 리샘플링, 벡터 연산 |
+
+### 파이프라인 구조
+
 ```
 POST /predict
       │
