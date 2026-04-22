@@ -1,0 +1,245 @@
+{
+  "Comment": "Emergency Multimodal Diagnostic Orchestrator - Dynamic workflow with iterative modal calling",
+  "StartAt": "InitializeWorkflow",
+  "States": {
+    "InitializeWorkflow": {
+      "Type": "Pass",
+      "Parameters": {
+        "case_id.$": "$.case_id",
+        "patient.$": "$.patient",
+        "modalities_completed": [],
+        "inference_results": [],
+        "iteration": 1,
+        "workflow_history": []
+      },
+      "Next": "FusionDecision"
+    },
+    
+    "FusionDecision": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${FusionDecisionFunctionArn}",
+        "Payload.$": "$"
+      },
+      "ResultSelector": {
+        "body.$": "$.Payload"
+      },
+      "ResultPath": "$.fusion",
+      "Next": "UpdateWorkflowHistory",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "HandleError"
+        }
+      ]
+    },
+    
+    "UpdateWorkflowHistory": {
+      "Type": "Pass",
+      "Parameters": {
+        "case_id.$": "$.case_id",
+        "patient.$": "$.patient",
+        "modalities_completed.$": "$.modalities_completed",
+        "inference_results.$": "$.inference_results",
+        "iteration.$": "$.iteration",
+        "fusion.$": "$.fusion.body",
+        "workflow_history.$": "States.Array($.workflow_history[*], $.fusion.body)"
+      },
+      "Next": "CheckDecision"
+    },
+    
+    "CheckDecision": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.fusion.decision",
+          "StringEquals": "CALL_NEXT_MODALITY",
+          "Next": "CallModalities"
+        },
+        {
+          "Variable": "$.fusion.decision",
+          "StringEquals": "NEED_REASONING",
+          "Next": "BedrockReasoning"
+        },
+        {
+          "Variable": "$.fusion.decision",
+          "StringEquals": "GENERATE_REPORT",
+          "Next": "GenerateReport"
+        }
+      ],
+      "Default": "GenerateReport"
+    },
+    
+    "CallModalities": {
+      "Type": "Map",
+      "ItemsPath": "$.fusion.next_modalities",
+      "MaxConcurrency": 3,
+      "Parameters": {
+        "modality.$": "$$.Map.Item.Value",
+        "case_id.$": "$.case_id",
+        "patient.$": "$.patient"
+      },
+      "Iterator": {
+        "StartAt": "RouteModality",
+        "States": {
+          "RouteModality": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.modality",
+                "StringEquals": "CXR",
+                "Next": "CallCXR"
+              },
+              {
+                "Variable": "$.modality",
+                "StringEquals": "ECG",
+                "Next": "CallECG"
+              },
+              {
+                "Variable": "$.modality",
+                "StringEquals": "LAB",
+                "Next": "CallLAB"
+              }
+            ],
+            "Default": "UnsupportedModality"
+          },
+          
+          "CallCXR": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+              "FunctionName": "${CxrConnectorFunctionArn}",
+              "Payload.$": "$"
+            },
+            "ResultSelector": {
+              "body.$": "$.Payload"
+            },
+            "OutputPath": "$.body",
+            "End": true
+          },
+          
+          "CallECG": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+              "FunctionName": "${EcgConnectorFunctionArn}",
+              "Payload.$": "$"
+            },
+            "ResultSelector": {
+              "body.$": "$.Payload"
+            },
+            "OutputPath": "$.body",
+            "End": true
+          },
+          
+          "CallLAB": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+              "FunctionName": "${LabConnectorFunctionArn}",
+              "Payload.$": "$"
+            },
+            "ResultSelector": {
+              "body.$": "$.Payload"
+            },
+            "OutputPath": "$.body",
+            "End": true
+          },
+          
+          "UnsupportedModality": {
+            "Type": "Fail",
+            "Error": "UnsupportedModality",
+            "Cause": "The requested modality is not supported"
+          }
+        }
+      },
+      "ResultPath": "$.new_results",
+      "Next": "MergeResults"
+    },
+    
+    "MergeResults": {
+      "Type": "Pass",
+      "Parameters": {
+        "case_id.$": "$.case_id",
+        "patient.$": "$.patient",
+        "modalities_completed.$": "States.Array($.modalities_completed[*], $.fusion.next_modalities[*])",
+        "inference_results.$": "States.Array($.inference_results[*], $.new_results[*])",
+        "iteration.$": "States.MathAdd($.iteration, 1)",
+        "workflow_history.$": "$.workflow_history"
+      },
+      "Next": "CheckMaxIterations"
+    },
+    
+    "CheckMaxIterations": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.iteration",
+          "NumericGreaterThan": 3,
+          "Next": "GenerateReport"
+        }
+      ],
+      "Default": "FusionDecision"
+    },
+    
+    "BedrockReasoning": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${BedrockReasoningFunctionArn}",
+        "Payload": {
+          "case_id.$": "$.case_id",
+          "patient.$": "$.patient",
+          "inference_results.$": "$.inference_results",
+          "fusion.$": "$.fusion"
+        }
+      },
+      "ResultSelector": {
+        "body.$": "$.Payload"
+      },
+      "ResultPath": "$.reasoning",
+      "Next": "GenerateReport",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.reasoning_error",
+          "Next": "GenerateReport"
+        }
+      ]
+    },
+    
+    "GenerateReport": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${ReportGeneratorFunctionArn}",
+        "Payload.$": "$"
+      },
+      "ResultSelector": {
+        "body.$": "$.Payload"
+      },
+      "OutputPath": "$.body",
+      "End": true,
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "HandleError"
+        }
+      ]
+    },
+    
+    "HandleError": {
+      "Type": "Pass",
+      "Parameters": {
+        "case_id.$": "$.case_id",
+        "status": "error",
+        "error.$": "$.error",
+        "message": "An error occurred during orchestration"
+      },
+      "End": true
+    }
+  }
+}
