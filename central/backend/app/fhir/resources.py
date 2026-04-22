@@ -1,4 +1,29 @@
-"""§6.2 빌더 함수 — 폼 → FHIR 리소스 변환."""
+"""
+§6.2 빌더 함수 — 폼 → FHIR 리소스 변환.
+
+[이 파일이 하는 일 — 가장 핵심 파일]
+우리 데이터를 FHIR 규격 JSON으로 변환하는 함수 모음.
+FHIR 서버는 FHIR 규격 JSON만 받기 때문에 이 변환이 필수.
+
+[빌더 함수 목록]
+- build_patient()           → 환자 정보 → FHIR Patient
+- build_encounter()         → ED 방문 → FHIR Encounter
+- build_vitals_bundle()     → 바이탈(HR,BP 등) → FHIR Observation 묶음
+- build_chief_complaint()   → 주호소 → FHIR Condition
+- build_past_history()      → 과거력 → FHIR Condition 묶음
+- build_service_request()   → AI 검사 제안 → FHIR ServiceRequest
+- build_diagnostic_report() → 최종 리포트 → FHIR DiagnosticReport
+- build_document_reference()→ 원본 파일 URL → FHIR DocumentReference
+
+[모달 결과 변환 함수]
+- convert_ecg_to_observations() → ECG 서비스 아웃풋 → FHIR Observation 리스트
+- convert_cxr_to_observations() → CXR 서비스 아웃풋 → FHIR Observation 리스트
+
+[FHIR 설명]
+예: build_patient({"age": 65, "gender": "male"})
+→ {"resourceType": "Patient", "gender": "male", "birthDate": "1961-01-01", ...}
+이 JSON이 FHIR 서버에 저장되는 형태.
+"""
 from __future__ import annotations
 
 import uuid
@@ -491,3 +516,29 @@ def convert_cxr_to_observations(
     observations.append(summary_obs)
 
     return observations
+
+
+# ── DocumentReference (원본 파일 포인터) ─────────────────
+def build_document_reference(
+    patient_id: str,
+    encounter_id: str,
+    content_type: str,
+    url: str,
+    loinc_code: str,
+    display: str,
+) -> dict:
+    """외부 파일(CXR PNG, ECG WFDB 등)의 위치를 FHIR에 등록."""
+    return {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "type": {"coding": [{"system": "http://loinc.org", "code": loinc_code, "display": display}]},
+        "subject": {"reference": f"Patient/{patient_id}"},
+        "context": {"encounter": [{"reference": f"Encounter/{encounter_id}"}]},
+        "date": _now_iso(),
+        "content": [{
+            "attachment": {
+                "contentType": content_type,
+                "url": url,
+            }
+        }],
+    }

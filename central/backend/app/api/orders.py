@@ -1,4 +1,30 @@
-"""POST /orders/{id}/approve | reject — ServiceRequest 상태 전이."""
+"""
+POST /orders/{id}/approve | reject — ServiceRequest 상태 전이.
+
+[이 파일이 하는 일]
+AI가 "CXR 찍자"고 제안(ServiceRequest)하면, 의사가 승인 or 기각하는 API.
+
+승인 흐름:
+  1. ServiceRequest 상태: draft → active (FHIR PATCH)
+  2. DocumentReference 등록 (원본 파일 URL을 FHIR에 기록)
+  3. 모달 서비스(ECG/CXR) 호출 (백그라운드)
+  4. 결과를 FHIR Observation으로 변환 후 저장
+  5. ServiceRequest 상태: active → completed
+  6. WebSocket으로 프론트에 결과 푸시
+
+기각 흐름:
+  1. ServiceRequest 상태: draft → revoked (FHIR PATCH)
+  2. 기각 사유를 note에 기록
+  3. AI Agent가 대안 모달 제안 (새 ServiceRequest 생성)
+  4. WebSocket으로 프론트에 새 제안 푸시
+
+[호출하는 곳]
+프론트엔드 대시보드에서 승인/기각 버튼 클릭 시
+
+[FHIR 설명]
+ServiceRequest = "검사 오더". AI가 제안하면 draft, 의사가 승인하면 active,
+모달 실행 완료하면 completed. 이 상태 전이가 FHIR 표준 방식이에요.
+"""
 from __future__ import annotations
 
 import asyncio
@@ -14,6 +40,7 @@ from app.fhir.state_machine import (
 )
 from app.fhir.resources import (
     build_diagnostic_report,
+    build_document_reference,
     convert_ecg_to_observations,
     convert_cxr_to_observations,
 )
@@ -53,6 +80,16 @@ async def _execute_modal_and_complete(sr_id: str, sr: dict):
     try:
         # SageMaker / 외부 서비스 호출 (endpoint 없으면 mock)
         endpoint = MODALITY_ENDPOINTS.get(modality, "")
+
+        # DocumentReference 등록 (원본 파일 URL → FHIR)
+        docref_id = None
+        docref_info = _get_docref_info(modality)
+        if docref_info:
+            docref_res = await fhir.create("DocumentReference", build_document_reference(
+                patient_id, encounter_id, **docref_info
+            ))
+            docref_id = docref_res["id"]
+
         if endpoint:
             modal_result = invoke_endpoint(endpoint, {
                 "patient_id": patient_id,
@@ -64,11 +101,11 @@ async def _execute_modal_and_complete(sr_id: str, sr: dict):
         # 모달별 변환 함수로 FHIR Observation 리스트 생성
         if modality == "ECG":
             obs_list = convert_ecg_to_observations(
-                patient_id, encounter_id, modal_result
+                patient_id, encounter_id, modal_result, docref_id=docref_id
             )
         elif modality == "CXR":
             obs_list = convert_cxr_to_observations(
-                patient_id, encounter_id, modal_result
+                patient_id, encounter_id, modal_result, docref_id=docref_id
             )
         else:
             obs_list = [{
@@ -116,6 +153,25 @@ async def _execute_modal_and_complete(sr_id: str, sr: dict):
             })
         except Exception:
             logger.exception("Failed to update SR after modal error")
+
+
+def _get_docref_info(modality: str) -> dict | None:
+    """모달별 DocumentReference 정보 반환."""
+    if modality == "CXR":
+        return {
+            "content_type": "image/png",
+            "url": "s3://dr-ai-assets/sample/cxr.png",
+            "loinc_code": "36643-5",
+            "display": "Chest X-ray",
+        }
+    if modality == "ECG":
+        return {
+            "content_type": "application/x-wfdb",
+            "url": "s3://dr-ai-assets/sample/ecg",
+            "loinc_code": "11524-6",
+            "display": "EKG study",
+        }
+    return None
 
 
 def _detect_modality(code_coding: dict) -> str:

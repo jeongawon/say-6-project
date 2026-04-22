@@ -1,4 +1,23 @@
-"""HAPI FHIR httpx 래퍼 — read, create, patch, transaction."""
+"""
+HAPI FHIR httpx 래퍼 — read, create, patch, transaction.
+
+[이 파일이 하는 일]
+HAPI FHIR 서버(=DB)와 HTTP로 통신하는 코드.
+다른 파일들이 FHIR 서버에 데이터 넣고 뺄 때 이 파일을 통해서 함.
+
+[함수 설명]
+- create(resource_type, body) → FHIR 서버에 새 리소스 저장 (POST)
+- read(resource_type, id)     → FHIR 서버에서 리소스 조회 (GET)
+- patch(resource_type, id, body) → FHIR 서버에서 리소스 수정 (PATCH)
+- transaction(bundle)         → 여러 리소스를 한 번에 저장 (POST Bundle)
+- search(resource_type, params) → 조건으로 리소스 검색 (GET ?params)
+
+[FHIR 설명]
+HAPI FHIR 서버는 REST API를 제공하는 DB 서버.
+POST /fhir/Patient {JSON} → 환자 저장
+GET /fhir/Observation?encounter=xxx → 해당 방문의 검사 결과 조회
+이 파일이 그 HTTP 호출을 감싸주는 래퍼.
+"""
 from __future__ import annotations
 
 import httpx

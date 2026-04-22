@@ -1,24 +1,18 @@
-"""FHIR ↔ central 포맷 변환 어댑터.
+"""
+FHIR ↔ central 포맷 변환 어댑터.
 
-central FusionDecisionEngine이 기대하는 포맷:
-{
-    "patient": {
-        "age": 65,
-        "sex": "Male",
-        "chief_complaint": "chest pain",
-        "vitals": {"HR": "112 bpm", "BP": "148/92 mmHg", ...},
-        "history": "...",
-    }
-}
+[이 파일이 하는 일]
+FHIR 서버에 저장된 데이터와 central의 FusionDecisionEngine이 쓰는 포맷이 달라서,
+양방향 변환을 해주는 어댑터.
 
-central 모달 결과 포맷:
-{
-    "modality": "CXR",
-    "finding": "Cardiomegaly ...",
-    "confidence": 0.82,
-    "details": {...},
-    "rationale": "...",
-}
+[왜 필요한가]
+- FHIR: {"resourceType": "Patient", "gender": "male", "birthDate": "1961-01-01"}
+- central: {"age": 65, "sex": "Male", "chief_complaint": "chest pain"}
+FusionDecisionEngine은 central 포맷만 알아서, FHIR 데이터를 변환해줘야 함.
+
+[함수 목록]
+- fhir_to_central_patient()              → FHIR 리소스 → central patient 포맷
+- fhir_observations_to_central_results() → FHIR Observation → central 모달 결과 포맷
 """
 from __future__ import annotations
 

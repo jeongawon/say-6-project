@@ -1,4 +1,20 @@
-"""§4 상태 기계 — ServiceRequest / DiagnosticReport 라이프사이클."""
+"""
+§4 상태 기계 — ServiceRequest / DiagnosticReport 라이프사이클.
+
+[이 파일이 하는 일]
+FHIR 리소스의 상태(status)가 올바른 순서로만 바뀌게 검증.
+잘못된 전이를 시도하면 에러 발생.
+
+[ServiceRequest 상태 전이]
+draft(AI 제안) → active(의사 승인) → completed(모달 완료)
+draft → revoked(의사 기각)
+active → revoked(모달 실패)
+completed, revoked → 더 이상 변경 불가
+
+[DiagnosticReport 상태 전이]
+preliminary(AI 생성) → final(의사 서명)
+final → amended(서명 후 수정)
+"""
 from __future__ import annotations
 
 from app.fhir import client as fhir_client

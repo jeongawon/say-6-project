@@ -1,4 +1,18 @@
-"""Agent tool 4종 — Bedrock Agent가 호출하는 함수들."""
+"""
+Agent tool 4종 — AI Agent가 FHIR 서버에 데이터를 쓰고 읽는 도구.
+
+[이 파일이 하는 일]
+AI Agent(FusionDecisionEngine)가 판단한 결과를 실제 행동으로 옮기는 함수들.
+
+[함수 목록]
+- propose_order(): AI가 "CXR 찍자"고 판단 → ServiceRequest(draft) 생성해서 FHIR에 저장
+- get_encounter_context(): AI가 현재 환자 상태를 FHIR에서 읽어옴
+  (어떤 검사가 완료됐는지, 결과가 뭔지 등)
+
+[호출하는 곳]
+- triage.py: 트리아지 후 초기 모달 제안 시 propose_order() 호출
+- orders.py: 기각 후 대안 제안 시 propose_order() + get_encounter_context() 호출
+"""
 from __future__ import annotations
 
 import logging

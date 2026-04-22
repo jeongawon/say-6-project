@@ -1,4 +1,13 @@
-"""Bedrock Agent 클라이언트 — Claude 호출 래퍼."""
+"""
+Bedrock Agent 클라이언트 — Claude 호출 래퍼.
+
+[이 파일이 하는 일]
+AWS Bedrock의 Claude AI를 호출하는 코드.
+code_mapper.py에서 한글→ICD-10 매핑 실패 시 Claude한테 물어볼 때 씀.
+
+[사용처]
+- code_mapper.py: "가슴 답답함" 같은 사전에 없는 텍스트 → Claude가 ICD-10 코드 찾아줌
+"""
 from __future__ import annotations
 
 import json

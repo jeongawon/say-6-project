@@ -1,4 +1,19 @@
-"""GET /encounters/* — Encounter 조회."""
+"""
+GET /encounters/* — Encounter 조회.
+
+[이 파일이 하는 일]
+프론트엔드에서 환자 데이터를 가져올 때 쓰는 조회 API.
+FHIR 서버에서 해당 Encounter에 속한 데이터를 검색해서 반환.
+
+[엔드포인트]
+GET /encounters/{id}                  → Encounter 자체 정보
+GET /encounters/{id}/observations     → 바이탈 + 모달 결과 (ECG/CXR)
+GET /encounters/{id}/conditions       → 주호소 + 과거력
+GET /encounters/{id}/service-requests → AI 제안 목록 (승인/기각 대기 중인 것)
+
+[호출하는 곳]
+프론트엔드 대시보드에서 환자 선택 시
+"""
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException

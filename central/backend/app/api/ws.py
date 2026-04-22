@@ -1,4 +1,19 @@
-"""WebSocket /ws/encounter/{id} — 실시간 상태 푸시."""
+"""
+WebSocket /ws/encounter/{id} — 실시간 상태 푸시.
+
+[이 파일이 하는 일]
+프론트엔드가 WebSocket으로 연결하면, 백엔드에서 이벤트 발생 시 즉시 알림.
+
+[푸시되는 이벤트]
+- initial_proposals: 트리아지 후 AI가 초기 모달 제안
+- modal_completed: 모달 실행 완료 (결과 나옴)
+- modal_failed: 모달 실행 실패
+- new_proposal: AI가 새 모달 제안 (기각 후 대안)
+- ready_for_report: 모든 모달 완료, 리포트 생성 가능
+
+[호출하는 곳]
+프론트엔드 대시보드에서 WS /ws/encounter/{id}로 연결
+"""
 from __future__ import annotations
 
 import logging
