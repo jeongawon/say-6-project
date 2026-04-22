@@ -55,37 +55,88 @@ def handler(event, context):
 
 
 def call_cxr_api(case_id, image_url, cxr_data):
-    """Call external CXR inference API."""
+    """Call chest-svc-pre API (/predict endpoint)."""
     
+    # chest-svc-pre 요청 형식에 맞게 변환
     payload = {
-        "case_id": case_id,
-        "image_url": image_url,
-        "metadata": cxr_data
+        "patient_id": case_id,
+        "patient_info": {
+            "age": cxr_data.get('age', 50),
+            "sex": cxr_data.get('sex', 'M'),
+            "chief_complaint": cxr_data.get('chief_complaint', 'Chest X-ray analysis'),
+            "history": []
+        },
+        "data": {
+            "image_base64": image_url  # Base64 encoded image data
+        },
+        "context": {}
     }
     
-    logger.info(f"Calling CXR API: {CXR_API_ENDPOINT}")
+    logger.info(f"Calling chest-svc-pre API: {CXR_API_ENDPOINT}/predict")
     
     response = requests.post(
-        CXR_API_ENDPOINT,
+        f"{CXR_API_ENDPOINT}/predict",
         json=payload,
-        timeout=300  # 5 minutes for inference
+        timeout=300,  # 5 minutes for inference
+        headers={'Content-Type': 'application/json'}
     )
     
     response.raise_for_status()
     result = response.json()
     
-    # Transform to standardized format
+    # Transform chest-svc-pre response to standardized format
+    return transform_cxr_response(result)
+
+
+def transform_cxr_response(cxr_result):
+    """Transform chest-svc-pre response to orchestrator standard format."""
+    
+    findings = cxr_result.get('findings', [])
+    
+    # 가장 높은 confidence의 detected 질환 찾기
+    detected_findings = [f for f in findings if f.get('detected', False)]
+    primary_finding = max(detected_findings, key=lambda x: x.get('confidence', 0)) if detected_findings else None
+    
+    if primary_finding:
+        finding = primary_finding['name']
+        confidence = primary_finding['confidence']
+    else:
+        finding = "No significant abnormality detected"
+        confidence = 0.9
+    
+    # 상세 정보 구성
+    details = {
+        "diseases": [
+            {
+                "name": f['name'],
+                "probability": f['confidence'],
+                "severity": f.get('severity'),
+                "detected": f.get('detected', False),
+                "verification": f.get('verification', {}),
+                "evidence": f.get('evidence', []),
+                "location": f.get('location'),
+                "recommendation": f.get('recommendation')
+            }
+            for f in findings
+        ],
+        "measurements": cxr_result.get('measurements', {}),
+        "severity": cxr_result.get('risk_level', 'routine'),
+        "key_findings": [
+            f"{f['name']} (confidence: {f['confidence']:.2f})" 
+            for f in detected_findings[:3]  # Top 3
+        ]
+    }
+    
     return {
         "modality": "CXR",
-        "finding": result.get('diagnosis', 'Unknown'),
-        "confidence": result.get('confidence', 0.0),
-        "details": {
-            "diseases": result.get('diseases', []),
-            "lesions": result.get('lesions', []),
-            "severity": result.get('severity', 'unknown'),
-            "key_findings": result.get('key_findings', [])
-        },
-        "rationale": result.get('rationale', 'CXR analysis completed'),
+        "finding": finding,
+        "confidence": confidence,
+        "details": details,
+        "rationale": cxr_result.get('impression', cxr_result.get('summary', 'CXR analysis completed')),
+        "findings_text": cxr_result.get('findings_text', ''),
+        "impression": cxr_result.get('impression', ''),
+        "rag_query_hints": cxr_result.get('rag_query_hints', []),
+        "risk_level": cxr_result.get('risk_level', 'routine'),
         "timestamp": datetime.utcnow().isoformat()
     }
 
