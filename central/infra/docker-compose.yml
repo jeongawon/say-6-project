@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  hapi-fhir:
+    image: hapiproject/hapi:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - spring.datasource.url=jdbc:h2:file:/data/h2
+      - hapi.fhir.fhir_version=R4
+      - hapi.fhir.validation.requests_enabled=false
+    volumes:
+      - hapi-data:/data
+
+  backend:
+    build: ../backend
+    ports:
+      - "8000:8000"
+    environment:
+      - FHIR_BASE_URL=http://hapi-fhir:8080/fhir
+      - AWS_REGION=us-east-1
+    depends_on:
+      - hapi-fhir
+
+volumes:
+  hapi-data:
