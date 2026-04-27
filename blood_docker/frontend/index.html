@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>혈액검사 AI 분석 시스템</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #f5f7fa;
+  --surface:   #ffffff;
+  --surface2:  #eef2f7;
+  --border:    #dde3ec;
+  --border2:   #c8d2e0;
+  --accent:    #1a6fd4;
+  --accent2:   #1558b0;
+  --green:     #0e9e5a;
+  --yellow:    #d97706;
+  --red:       #dc2626;
+  --text:      #1e2a3a;
+  --muted:     #6b7f99;
+  --muted2:    #a0b0c4;
+  --mono:      'JetBrains Mono', monospace;
+  --sans:      'Noto Sans KR', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; font-size: 13px; }
+
+/* ─── 헤더 ─── */
+.header {
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex; align-items: center; gap: 14px;
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 var(--border);
+}
+.header-icon { width: 30px; height: 30px; border: 1.5px solid var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.header-icon svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; }
+.header-title h1 { font-family: var(--mono); font-size: 14px; font-weight: 500; color: #0f1f35; letter-spacing: 0.5px; }
+.header-title p  { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 2px; letter-spacing: 1.5px; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.badge-online { font-family: var(--mono); font-size: 9px; padding: 3px 8px; border: 1px solid rgba(0,230,118,0.4); color: var(--green); display: flex; align-items: center; gap: 5px; }
+.online-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.elapsed-badge { font-family: var(--mono); font-size: 9px; padding: 3px 8px; border: 1px solid var(--border2); color: var(--muted); display: none; align-items: center; gap: 5px; }
+.elapsed-badge.show { display: flex; }
+.badge-routine { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 2px; padding: 3px 10px; background: var(--green); color: #ffffff; }
+
+/* ─── 파이프라인 바 ─── */
+.pipeline-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 24px; display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.5px; flex-wrap: wrap; }
+.pipe-label { color: var(--muted); }
+.pipe-name  { color: var(--accent); font-weight: 500; }
+.pipe-time  { color: var(--green); margin-left: 3px; }
+.pipe-arrow { color: var(--border2); margin: 0 4px; }
+.pipe-sep   { width: 1px; height: 14px; background: var(--border2); margin: 0 10px; }
+.pipe-meta  { display: flex; align-items: center; gap: 5px; }
+.pipe-meta .k { color: var(--muted); }
+.pipe-meta .v { color: var(--text); }
+.pipe-meta .v.warn { color: var(--yellow); }
+.pipe-meta .v.ok   { color: var(--green); }
+
+/* ─── 메인 그리드 ─── */
+.main { display: grid; grid-template-columns: 400px 1fr; min-height: calc(100vh - 94px); }
+
+/* ─── 입력 패널 ─── */
+.input-panel { border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+.panel-hdr { padding: 10px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+.phdr-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.input-scroll { padding: 14px 18px; flex: 1; overflow-y: auto; }
+.sec-label { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin: 12px 0 6px; display: flex; align-items: center; gap: 8px; }
+.sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.opt-tag { font-family: var(--mono); font-size: 7px; padding: 1px 5px; border: 1px solid var(--border2); color: var(--muted); }
+.input-row { display: grid; grid-template-columns: 1fr 80px 56px; border: 1px solid var(--border); background: var(--surface); margin-bottom: 5px; transition: border-color 0.15s; }
+.input-row:focus-within { border-color: var(--accent); background: var(--surface2); }
+.ilabel { padding: 0 10px; border-right: 1px solid var(--border); height: 34px; display: flex; align-items: center; }
+.ilabel .ln { font-family: var(--mono); font-size: 10px; color: #1e2a3a; }
+.ilabel .lk { font-family: var(--sans); font-size: 9px; color: var(--muted); margin-left: 5px; }
+.ifield { height: 34px; background: transparent; border: none; color: var(--text); font-family: var(--mono); font-size: 11px; padding: 0 8px; outline: none; width: 100%; }
+.ifield::placeholder { color: var(--muted2); font-size: 9px; }
+.iunit { font-family: var(--mono); font-size: 8px; color: var(--muted); border-left: 1px solid var(--border); height: 34px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 5px; text-align: center; line-height: 1.4; }
+.iunit .ref { font-size: 7px; color: var(--muted2); margin-top: 1px; }
+
+/* 버튼 */
+.analyze-btn { margin: 12px 18px 16px; background: transparent; border: none; cursor: pointer; }
+.analyze-inner { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border: 1px solid var(--accent); background: linear-gradient(135deg, rgba(26,111,212,0.06) 0%, transparent 60%); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; transition: all 0.2s; position: relative; overflow: hidden; }
+.analyze-inner::before { content: ''; position: absolute; left: -100%; top: 0; bottom: 0; width: 100%; background: linear-gradient(90deg, transparent, rgba(26,111,212,0.08), transparent); transition: left 0.4s; }
+.analyze-btn:hover .analyze-inner::before { left: 100%; }
+.analyze-btn:hover .analyze-inner { box-shadow: 0 0 18px rgba(26,111,212,0.12); }
+.analyze-btn:disabled .analyze-inner { opacity: 0.4; cursor: not-allowed; }
+.anim-arrow { font-size: 13px; transition: transform 0.2s; }
+.analyze-btn:hover .anim-arrow { transform: translateX(4px); }
+
+/* ─── 결과 패널 ─── */
+.result-panel { display: flex; flex-direction: column; position: relative; }
+.report-box { border-bottom: 1px solid var(--border); padding: 14px 22px; min-height: 130px; display: flex; flex-direction: column; justify-content: center; }
+.report-row { display: flex; gap: 14px; margin-bottom: 8px; }
+.rtag { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 1.5px; color: var(--accent); min-width: 74px; padding-top: 2px; }
+.rtext { font-size: 11.5px; color: var(--text); line-height: 1.75; }
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; height: 100%; font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--muted2); }
+.cross { width: 28px; height: 28px; border: 1px solid var(--muted2); border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; }
+.cross::before, .cross::after { content: ''; position: absolute; background: var(--muted2); }
+.cross::before { width: 1px; height: 16px; }
+.cross::after  { width: 16px; height: 1px; }
+.warn-banner { margin: 10px 22px 0; padding: 8px 12px; border: 1px solid rgba(220,38,38,0.3); background: rgba(220,38,38,0.04); display: none; gap: 8px; align-items: flex-start; }
+.warn-banner.show { display: flex; }
+.warn-icon { font-family: var(--mono); font-size: 10px; color: var(--red); flex-shrink: 0; margin-top: 1px; }
+.warn-head { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--red); margin-bottom: 4px; }
+.warn-items { font-family: var(--mono); font-size: 10px; color: rgba(255,80,100,0.85); line-height: 1.9; }
+.tropo-note { margin: 8px 22px 0; padding: 6px 12px; border-left: 2px solid var(--yellow); font-family: var(--mono); font-size: 9px; color: var(--yellow); display: none; }
+.tropo-note.show { display: block; }
+.loading { position: absolute; inset: 0; background: rgba(245,247,250,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 20; font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 3px; }
+.loading.show { display: flex; }
+.spinner { width: 26px; height: 26px; border: 1.5px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── 게이지 ─── */
+.gi { margin-bottom: 14px; }
+.gi-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.gi-name { font-family: var(--mono); font-size: 10px; color: var(--text); }
+.gi-val  { font-family: var(--mono); font-size: 10px; font-weight: 500; }
+.gi-track { height: 4px; background: var(--border); position: relative; overflow: visible; margin-bottom: 3px; }
+.gi-norm { position: absolute; top: -1px; bottom: -1px; background: rgba(14,158,90,0.1); border-left: 1px solid rgba(14,158,90,0.35); border-right: 1px solid rgba(14,158,90,0.35); }
+.gi-fill { height: 100%; width: 0%; transition: width 0.9s cubic-bezier(.4,0,.2,1); }
+.gi-ref  { font-family: var(--mono); font-size: 7.5px; color: var(--muted2); text-align: right; }
+.gi-pred { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
+.gi-pred-label { font-family: var(--mono); font-size: 8px; color: var(--muted2); white-space: nowrap; }
+.gi-pred-bar-wrap { flex: 1; height: 3px; background: var(--border); position: relative; }
+.gi-pred-bar { height: 100%; width: 0%; transition: width 0.9s cubic-bezier(.4,0,.2,1) 0.1s; border-radius: 1px; }
+.gi-pred-pct { font-family: var(--mono); font-size: 9px; font-weight: 500; min-width: 36px; text-align: right; }
+.gi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+.gi-placeholder { color: var(--muted2); font-family: var(--mono); font-size: 9px; letter-spacing: 1px; text-align: center; margin: 20px 0; line-height: 2; }
+
+/* ─── 결과 바디 ─── */
+.result-body { display: grid; grid-template-columns: 1fr 1fr; gap: 0; flex: 1; }
+.gauge-area, .interp-area { padding: 16px 22px; overflow-y: auto; }
+.gauge-area { border-right: 1px solid var(--border); }
+.area-title { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+/* ─── 해석 카드 ─── */
+.interp-card { border: 1px solid var(--border); margin-bottom: 10px; background: var(--surface); }
+.interp-card.ic-danger { border-color: rgba(220,38,38,0.3); background: rgba(220,38,38,0.02); }
+.interp-card.ic-mild   { border-color: rgba(217,119,6,0.3);  background: rgba(217,119,6,0.02); }
+.interp-card.ic-low    { border-color: rgba(26,111,212,0.25); }
+.ic-head { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.ic-left { display: flex; align-items: center; gap: 7px; }
+.ic-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--muted2); }
+.ic-dot.r { background: var(--red); }
+.ic-dot.y { background: var(--yellow); }
+.ic-dot.b { background: var(--accent); }
+.ic-dot.g { background: var(--green); }
+.ic-name  { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--text); }
+.ic-right { display: flex; align-items: center; gap: 8px; }
+.ic-pct   { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+.ic-badge { font-family: var(--mono); font-size: 8px; font-weight: 600; letter-spacing: 1px; padding: 2px 7px; }
+.ib-h { background: rgba(220,38,38,0.1);  color: var(--red);    border: 1px solid rgba(220,38,38,0.3); }
+.ib-m { background: rgba(217,119,6,0.1);  color: var(--yellow); border: 1px solid rgba(217,119,6,0.3); }
+.ib-l { background: rgba(26,111,212,0.1); color: var(--accent); border: 1px solid rgba(26,111,212,0.3); }
+.ib-n { background: rgba(14,158,90,0.1);  color: var(--green);  border: 1px solid rgba(14,158,90,0.3); }
+.ic-body { padding: 10px 12px; }
+.ic-bar-track { height: 3px; background: var(--border); margin-bottom: 6px; }
+.ic-bar-fill  { height: 100%; width: 0%; transition: width 0.9s cubic-bezier(.4,0,.2,1); }
+.ic-thresholds { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 7px; color: var(--muted2); margin-bottom: 8px; }
+.ic-interp { font-size: 10.5px; color: var(--text); line-height: 1.7; }
+.ic-action { margin-top: 5px; font-family: var(--mono); font-size: 9px; color: var(--muted); }
+.ic-action-tag { color: var(--accent); margin-right: 4px; }
+.interp-empty { font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 1px; text-align: center; margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-icon">
+    <svg viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round">
+      <polyline points="1,8 4,4 6,10 8,6 10,10 12,5 15,8"/>
+    </svg>
+  </div>
+  <div class="header-title">
+    <h1>혈액검사 AI 분석 시스템</h1>
+    <p>blood-svc-v1 — XGBoost 5모델 앙상블 · 6시간 후 악화 예측</p>
+  </div>
+  <div class="header-right">
+    <div class="badge-online"><span class="online-dot"></span>ONLINE</div>
+    <div class="elapsed-badge" id="elapsed-badge">⏱ <span id="elapsed-txt">—</span></div>
+    <div class="badge-routine">ROUTINE</div>
+  </div>
+</header>
+
+<div class="pipeline-bar">
+  <span class="pipe-label">3-Stage:</span>
+  <span class="pipe-name">Preprocess</span><span class="pipe-time" id="t0">—</span>
+  <span class="pipe-arrow">→</span>
+  <span class="pipe-name">XGBoost</span><span class="pipe-time" id="t1">—</span>
+  <span class="pipe-arrow">→</span>
+  <span class="pipe-name">Logic</span><span class="pipe-time" id="t2">—</span>
+  <div class="pipe-sep"></div>
+  <div class="pipe-meta"><span class="k">모델</span><span class="v ok">5개</span></div>
+  <div class="pipe-sep" style="margin:0 8px"></div>
+  <div class="pipe-meta"><span class="k">탐지</span><span class="v" id="pm-count">—</span></div>
+  <div class="pipe-sep" style="margin:0 8px"></div>
+  <div class="pipe-meta"><span class="k">최고위험</span><span class="v warn" id="pm-top">—</span></div>
+</div>
+
+<div class="main">
+  <!-- 입력 패널 -->
+  <div class="input-panel">
+    <div class="panel-hdr"><span class="phdr-dot"></span>초기 혈액검사 수치 입력 (0~3h)</div>
+    <div class="input-scroll">
+      <div class="sec-label">기본 CBC / Chemistry</div>
+      <div class="input-row">
+        <div class="ilabel"><span class="ln">WBC</span><span class="lk">백혈구</span></div>
+        <input class="ifield" type="number" id="wbc_0h" placeholder="예: 8.5" step="0.1">
+        <div class="iunit">K/uL<div class="ref">4–11</div></div>
+      </div>
+      <div class="input-row">
+        <div class="ilabel"><span class="ln">Hemoglobin</span><span class="lk">헤모글로빈</span></div>
+        <input class="ifield" type="number" id="hemoglobin_0h" placeholder="예: 13.5" step="0.1">
+        <div class="iunit">g/dL<div class="ref">12–17</div></div>
+      </div>
+      <div class="input-row">
+        <div class="ilabel"><span class="ln">Platelet</span><span class="lk">혈소판</span></div>
+        <input class="ifield" type="number" id="platelet_0h" placeholder="예: 220" step="1">
+        <div class="iunit">K/uL<div class="ref">150–400</div></div>
+      </div>
+      <div class="input-row">
+        <div class="ilabel"><span class="ln">Creatinine</span><span class="lk">크레아티닌</span></div>
+        <input class="ifield" type="number" id="creatinine_0h" placeholder="예: 1.0" step="0.01">
+        <div class="iunit">mg/dL<div class="ref">0.6–1.2</div></div>
+      </div>
+      <div class="input-row">
+        <div class="ilabel"><span class="ln">Sodium</span><span class="lk">나트륨</span></div>
+        <input class="ifield" type="number" id="sodium_0h" placeholder="예: 140" step="1">
+        <div class="iunit">mEq/L<div class="ref">136–145</div></div>
+      </div>
+      <div class="input-row">
+        <div class="ilabel"><span class="ln">Potassium</span><span class="lk">포타슘</span></div>
+        <input class="ifield" type="number" id="potassium_0h" placeholder="예: 4.0" step="0.1">
+        <div class="iunit">mEq/L<div class="ref">3.5–5.0</div></div>
+      </div>
+      <div class="input-row">
+        <div class="ilabel"><span class="ln">Glucose</span><span class="lk">혈당</span></div>
+        <input class="ifield" type="number" id="glucose_0h" placeholder="예: 95" step="1">
+        <div class="iunit">mg/dL<div class="ref">70–100</div></div>
+      </div>
+      <div class="sec-label">선택 검사 <span class="opt-tag">OPTIONAL</span></div>
+      <div class="input-row">
+        <div class="ilabel"><span class="ln">Lactate</span><span class="lk">젖산</span></div>
+        <input class="ifield" type="number" id="lactate_0h" placeholder="미측정 시 공란" step="0.1">
+        <div class="iunit">mmol/L<div class="ref">0.5–2.0</div></div>
+      </div>
+      <div class="input-row">
+        <div class="ilabel"><span class="ln">Troponin T</span><span class="lk">트로포닌</span></div>
+        <input class="ifield" type="number" id="troponin_t_0h" placeholder="미측정 시 공란" step="0.001">
+        <div class="iunit">ng/mL<div class="ref">&lt;0.014</div></div>
+      </div>
+      <div class="input-row">
+        <div class="ilabel"><span class="ln">BNP</span><span class="lk">심부전마커</span></div>
+        <input class="ifield" type="number" id="bnp_0h" placeholder="미측정 시 공란" step="1">
+        <div class="iunit">pg/mL<div class="ref">&lt;100</div></div>
+      </div>
+    </div>
+    <button class="analyze-btn" id="abtn" onclick="run()">
+      <div class="analyze-inner">
+        <span>ANALYZE</span>
+        <span class="anim-arrow">→</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- 결과 패널 -->
+  <div class="result-panel" id="rpanel">
+    <div class="loading" id="loading"><div class="spinner"></div>ANALYZING</div>
+    <div class="report-box" id="report-box">
+      <div class="empty-state" id="empty-st">
+        <div class="cross"></div>
+        <span>수치 입력 후 ANALYZE 실행</span>
+      </div>
+      <div id="report-content" style="display:none">
+        <div class="report-row">
+          <div class="rtag">FINDINGS</div>
+          <div class="rtext" id="r-findings"></div>
+        </div>
+        <div class="report-row">
+          <div class="rtag">IMPRESSION</div>
+          <div class="rtext" id="r-impression"></div>
+        </div>
+      </div>
+    </div>
+    <div class="warn-banner" id="wbanner">
+      <div class="warn-icon">⚠</div>
+      <div>
+        <div class="warn-head">위험 항목 감지</div>
+        <div class="warn-items" id="w-items"></div>
+      </div>
+    </div>
+    <div class="tropo-note" id="tropo-note"></div>
+    <div class="result-body">
+      <div class="gauge-area">
+        <div class="area-title">입력 수치 현황</div>
+        <div class="gi-grid" id="gauge-list">
+          <div class="gi-placeholder" style="grid-column:1/-1">수치를 입력하면<br>여기에 표시됩니다</div>
+        </div>
+      </div>
+      <div class="interp-area">
+        <div class="area-title">예측 결과 해석</div>
+        <div id="interp-list"><div class="interp-empty">ANALYZE 실행 후 해석이 표시됩니다</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /**
+   * API 엔드포인트 결정 우선순위:
+   * 1. nginx가 /api/ 로 프록시 → 상대경로 사용 (Docker/AWS 배포 시)
+   * 2. 직접 파일로 열었을 때 → localhost:8000 fallback
+   */
+  const API = '/api/predict';
+</script>
+
+<script>
+const DETS = [
+  { key:'hemoglobin_down', name:'Hemoglobin', kor:'감소', detail:'XGBoost · AUC 0.739' },
+  { key:'creatinine_up',   name:'Creatinine', kor:'증가', detail:'XGBoost · AUC 0.863' },
+  { key:'potassium_worse', name:'Potassium',  kor:'악화', detail:'XGBoost · AUC 0.630' },
+  { key:'lactate_up',      name:'Lactate',    kor:'증가', detail:'XGBoost · AUC 0.745' },
+  { key:'troponin_up',     name:'Troponin T', kor:'상승', detail:'XGBoost · AUC 0.858' },
+];
+
+const GAUGES = [
+  { id:'wbc_0h',        lb:'WBC',        unit:'K/uL',   min:0,   max:30,   n1:4,    n2:11    },
+  { id:'hemoglobin_0h', lb:'Hemoglobin', unit:'g/dL',   min:0,   max:20,   n1:12,   n2:17    },
+  { id:'platelet_0h',   lb:'Platelet',   unit:'K/uL',   min:0,   max:600,  n1:150,  n2:400   },
+  { id:'creatinine_0h', lb:'Creatinine', unit:'mg/dL',  min:0,   max:10,   n1:0.6,  n2:1.2   },
+  { id:'sodium_0h',     lb:'Sodium',     unit:'mEq/L',  min:110, max:165,  n1:136,  n2:145   },
+  { id:'potassium_0h',  lb:'Potassium',  unit:'mEq/L',  min:1,   max:9,    n1:3.5,  n2:5.0   },
+  { id:'glucose_0h',    lb:'Glucose',    unit:'mg/dL',  min:0,   max:500,  n1:70,   n2:100   },
+  { id:'lactate_0h',    lb:'Lactate',    unit:'mmol/L', min:0,   max:10,   n1:0.5,  n2:2.0   },
+  { id:'troponin_t_0h', lb:'Troponin T', unit:'ng/mL',  min:0,   max:2,    n1:0,    n2:0.014 },
+  { id:'bnp_0h',        lb:'BNP',        unit:'pg/mL',  min:0,   max:1000, n1:0,    n2:100   },
+];
+
+const GAUGE_TO_PRED = {
+  'hemoglobin_0h': 'hemoglobin_down',
+  'creatinine_0h': 'creatinine_up',
+  'potassium_0h':  'potassium_worse',
+  'lactate_0h':    'lactate_up',
+  'troponin_t_0h': 'troponin_up',
+};
+
+const INTERP = {
+  hemoglobin_down: {
+    name:'Hemoglobin 감소', unit:'g/dL',
+    what: '적혈구 내 산소 운반 단백질인 헤모글로빈이 6시간 내 유의미하게 감소할 가능성을 나타냅니다.',
+    low:  '현재 수치가 안정적으로 유지될 가능성이 높습니다. 정기 모니터링을 유지하세요.',
+    mid:  '경미한 감소 가능성이 있습니다. 출혈 징후 및 빈혈 증상(어지럼, 피로)을 주의 관찰하세요.',
+    high: '유의미한 헤모글로빈 감소 위험이 높습니다. 활성 출혈 여부 확인 및 수혈 필요성 평가를 권장합니다.',
+    action: { low:'추적 CBC 검사 권장', mid:'4–6시간 내 CBC 재검', high:'즉각 출혈 원인 평가 · 수혈 여부 결정' }
+  },
+  creatinine_up: {
+    name:'Creatinine 증가', unit:'mg/dL',
+    what: '신장 사구체 여과 기능의 저하를 반영하는 크레아티닌이 6시간 내 상승할 가능성입니다.',
+    low:  '신기능이 안정적으로 유지될 가능성이 높습니다.',
+    mid:  '경도 신기능 악화 가능성이 있습니다. 수분 섭취 상태와 nephrotoxic 약제 사용을 점검하세요.',
+    high: 'AKI(급성 신손상) 진행 위험이 높습니다. 수액 요법 및 신독성 약제 중단을 적극 고려하세요.',
+    action: { low:'수분 섭취 유지', mid:'6시간 내 BMP 재검 · 수액 최적화', high:'즉각 신장내과 협진 · Foley 삽입 고려' }
+  },
+  potassium_worse: {
+    name:'Potassium 악화', unit:'mEq/L',
+    what: '혈중 칼륨 수치가 정상 범위(3.5–5.0)를 벗어나거나 이상 범위가 심화될 가능성입니다.',
+    low:  '전해질 균형이 안정적으로 유지될 것으로 예측됩니다.',
+    mid:  '경도 전해질 이상 가능성이 있습니다. 고칼륨혈증/저칼륨혈증 증상(근력 저하, 부정맥)을 관찰하세요.',
+    high: '심각한 칼륨 이상 위험이 있습니다. 심전도 변화(peaked T, QRS widening) 모니터링 및 교정이 필요합니다.',
+    action: { low:'정기 BMP 추적', mid:'심전도 확인 · 전해질 보충 고려', high:'즉각 심전도 모니터링 · 칼륨 교정 시작' }
+  },
+  lactate_up: {
+    name:'Lactate 증가', unit:'mmol/L',
+    what: '조직 저산소증 또는 혐기성 대사를 반영하는 젖산이 6시간 내 상승할 가능성입니다.',
+    low:  '조직 관류가 적절히 유지될 가능성이 높습니다.',
+    mid:  '경도 조직 저관류 가능성이 있습니다. 혈압, 심박수, 소변량 등 관류 지표를 면밀히 모니터링하세요.',
+    high: '심각한 조직 저관류 또는 패혈증 가능성이 높습니다. 즉각적인 수액 소생 및 원인 교정이 필요합니다.',
+    action: { low:'활력징후 모니터링 유지', mid:'2시간 내 Lactate 재검 · 수액 반응성 평가', high:'즉각 소생 프로토콜 가동 · 중환자실 입원 고려' }
+  },
+  troponin_up: {
+    name:'Troponin T 상승', unit:'ng/mL',
+    what: '심근 세포 손상의 민감한 지표인 트로포닌 T가 6시간 내 상승할 가능성입니다.',
+    low:  '심근 손상 진행 가능성이 낮습니다.',
+    mid:  '경도 심근 손상 가능성이 있습니다. 심전도 변화 및 흉통 증상을 주의 관찰하세요.',
+    high: '심근 손상 진행 위험이 높습니다. NSTEMI/ACS 가능성을 고려하여 심장내과 협진이 필요합니다.',
+    action: { low:'증상 모니터링', mid:'3–6시간 후 Troponin 재검 · 심전도 추적', high:'즉각 심장내과 협진 · ACS 프로토콜 가동' }
+  }
+};
+
+const gv = id => { const v = document.getElementById(id).value; return v==='' ? null : parseFloat(v); };
+function barColor(p) { if(p>=0.7) return '#dc2626'; if(p>=0.5) return '#d97706'; if(p>=0.3) return '#1a6fd4'; return '#a0b0c4'; }
+function gcColor(v,n1,n2) { return (v<n1||v>n2)?'#d97706':'#0e9e5a'; }
+function predBadge(p) {
+  if(p>=0.7) return `<span style="font-family:var(--mono);font-size:7px;padding:1px 5px;background:rgba(220,38,38,0.1);color:#dc2626;border:1px solid rgba(220,38,38,0.3)">HIGH</span>`;
+  if(p>=0.5) return `<span style="font-family:var(--mono);font-size:7px;padding:1px 5px;background:rgba(217,119,6,0.1);color:#d97706;border:1px solid rgba(217,119,6,0.3)">MILD</span>`;
+  if(p>=0.3) return `<span style="font-family:var(--mono);font-size:7px;padding:1px 5px;background:rgba(26,111,212,0.1);color:#1a6fd4;border:1px solid rgba(26,111,212,0.3)">LOW</span>`;
+  return `<span style="font-family:var(--mono);font-size:7px;padding:1px 5px;background:rgba(14,158,90,0.1);color:#0e9e5a;border:1px solid rgba(14,158,90,0.3)">NORMAL</span>`;
+}
+
+function renderGauges(inp) {
+  const items = GAUGES.filter(g => inp[g.id] !== null);
+  const el = document.getElementById('gauge-list');
+  if (!items.length) { el.innerHTML = '<div class="gi-placeholder" style="grid-column:1/-1">수치를 입력하면<br>여기에 표시됩니다</div>'; return; }
+  el.innerHTML = items.map(g => {
+    const v=inp[g.id], rng=g.max-g.min;
+    const posP=Math.min(100,Math.max(0,(v-g.min)/rng*100));
+    const np1=Math.max(0,(g.n1-g.min)/rng*100), np2=Math.min(100,(g.n2-g.min)/rng*100);
+    const c=gcColor(v,g.n1,g.n2), abn=v<g.n1||v>g.n2, hasPred=!!GAUGE_TO_PRED[g.id];
+    return `<div class="gi">
+      <div class="gi-row">
+        <span class="gi-name">${g.lb}</span>
+        <span class="gi-val" style="color:${c}">${v} <span style="font-size:8px;color:var(--muted)">${g.unit}</span></span>
+      </div>
+      <div class="gi-track">
+        <div class="gi-norm" style="left:${np1}%;width:${np2-np1}%"></div>
+        <div class="gi-fill" id="gf${g.id}" style="background:${c}"></div>
+      </div>
+      <div class="gi-ref">정상 ${g.n1}–${g.n2}${abn?' ⚠':''}</div>
+      ${hasPred?`<div class="gi-pred">
+        <span class="gi-pred-label">6h 악화 확률</span>
+        <span class="gi-pred-bar-wrap"><div class="gi-pred-bar" id="gpbar${g.id}"></div></span>
+        <span class="gi-pred-pct" id="gppct${g.id}">—</span>
+        <span id="gpbadge${g.id}"></span>
+      </div>`:''}
+    </div>`;
+  }).join('');
+  setTimeout(()=>{ items.forEach(g=>{ const v=inp[g.id]; if(v===null) return; const el2=document.getElementById('gf'+g.id); if(el2) el2.style.width=Math.min(100,Math.max(0,(v-g.min)/(g.max-g.min)*100))+'%'; }); }, 60);
+}
+
+function updateGaugePredictions(data) {
+  Object.entries(GAUGE_TO_PRED).forEach(([gaugeId, predKey]) => {
+    const p=data[predKey]; if(p===undefined) return;
+    const c=barColor(p);
+    const pctEl=document.getElementById('gppct'+gaugeId);
+    const barEl=document.getElementById('gpbar'+gaugeId);
+    const badgeEl=document.getElementById('gpbadge'+gaugeId);
+    if(pctEl){ pctEl.textContent=(p*100).toFixed(1)+'%'; pctEl.style.color=c; }
+    if(badgeEl) badgeEl.innerHTML=predBadge(p);
+    if(barEl){ barEl.style.background=c; setTimeout(()=>{ barEl.style.width=(p*100)+'%'; },80); }
+  });
+}
+
+function renderInterpretations(data) {
+  const el = document.getElementById('interp-list');
+  el.innerHTML = DETS.map(d => {
+    const p=data[d.key], info=INTERP[d.key], pct=(p*100).toFixed(1), c=barColor(p);
+    let cardCls,badgeCls,badgeTxt,dotCls,interp,action;
+    if(p>=0.7){ cardCls='ic-danger';badgeCls='ib-h';badgeTxt='HIGH';  dotCls='r';interp=info.high;action=info.action.high; }
+    else if(p>=0.5){ cardCls='ic-mild';badgeCls='ib-m';badgeTxt='MILD'; dotCls='y';interp=info.mid; action=info.action.mid; }
+    else if(p>=0.3){ cardCls='ic-low'; badgeCls='ib-l';badgeTxt='LOW';  dotCls='b';interp=info.low; action=info.action.low; }
+    else{ cardCls='ic-ok'; badgeCls='ib-n';badgeTxt='NORMAL';dotCls='g';interp=info.low; action=info.action.low; }
+    return `<div class="interp-card ${cardCls}">
+      <div class="ic-head">
+        <div class="ic-left"><div class="ic-dot ${dotCls}"></div><span class="ic-name">${info.name}</span><span style="font-size:9px;color:var(--muted);margin-left:3px">${info.unit}</span></div>
+        <div class="ic-right"><span class="ic-pct" style="color:${c}">${pct}%</span><span class="ic-badge ${badgeCls}">${badgeTxt}</span></div>
+      </div>
+      <div class="ic-body">
+        <div class="ic-bar-track"><div class="ic-bar-fill" id="ibf${d.key}" style="background:${c}"></div></div>
+        <div class="ic-thresholds"><span>0%</span><span style="color:var(--green)">▲30% LOW</span><span style="color:var(--yellow)">▲50% MILD</span><span style="color:var(--red)">▲70% HIGH</span><span>100%</span></div>
+        <div class="ic-interp">
+          <span style="color:var(--muted);font-family:var(--mono);font-size:9px">이 지표는?</span><br>${info.what}
+          <div class="ic-action"><span class="ic-action-tag">→</span>${interp}</div>
+          <div class="ic-action" style="color:var(--accent)"><span class="ic-action-tag">권장:</span>${action}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  setTimeout(()=>{ DETS.forEach(d=>{ const el2=document.getElementById('ibf'+d.key); if(el2) el2.style.width=(data[d.key]*100)+'%'; }); }, 60);
+}
+
+function buildReport(data) {
+  const hi = DETS.filter(d => data[d.key]>=0.5);
+  if (!hi.length) return { f:'입력된 초기 혈액검사 수치에서 6시간 후 유의미한 악화 가능성은 낮게 예측됩니다. 전반적으로 안정적인 범위로 판단됩니다.', i:'1. 주요 혈액검사 수치 악화 가능성 낮음.\n2. 정기 추적 검사 및 임상 모니터링 권장.' };
+  const names = hi.map(d=>d.name+' '+d.kor).join(', ');
+  return { f:`초기 혈액검사 분석 결과 6시간 후 ${names}의 악화 가능성이 감지되었습니다. 임상 상관관계 및 추가 평가가 권장됩니다.`, i:hi.map((d,i)=>`${i+1}. ${d.name} ${d.kor} 위험 (${(data[d.key]*100).toFixed(0)}%). 임상 판단 권장.`).join('\n') };
+}
+
+function updatePipeline(ms, data) {
+  const pre=Math.floor(ms*0.12), xgb=Math.floor(ms*0.76), logic=ms-pre-xgb;
+  document.getElementById('t0').textContent=pre+'ms';
+  document.getElementById('t1').textContent=xgb+'ms';
+  document.getElementById('t2').textContent=logic+'ms';
+  const cnt=DETS.filter(d=>data[d.key]>=0.5).length;
+  const pm=document.getElementById('pm-count');
+  pm.textContent=cnt+'개 탐지'; pm.className='v '+(cnt>0?'warn':'ok');
+  const top=DETS.reduce((a,b)=>data[a.key]>data[b.key]?a:b);
+  document.getElementById('pm-top').textContent=`${top.name} ${(data[top.key]*100).toFixed(0)}%`;
+  const eb=document.getElementById('elapsed-badge'); eb.classList.add('show');
+  document.getElementById('elapsed-txt').textContent=ms+'ms';
+}
+
+async function run() {
+  const btn=document.getElementById('abtn'); btn.disabled=true;
+  document.getElementById('empty-st').style.display='none';
+  document.getElementById('report-content').style.display='none';
+  document.getElementById('wbanner').classList.remove('show');
+  document.getElementById('tropo-note').classList.remove('show');
+  document.getElementById('loading').classList.add('show');
+
+  const inp={};
+  GAUGES.forEach(g=>{ inp[g.id]=gv(g.id); });
+  renderGauges(inp);
+
+  const t0=Date.now();
+  try {
+    const res=await fetch(API,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(inp) });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const ms=Date.now()-t0;
+    document.getElementById('loading').classList.remove('show');
+    const {f,i}=buildReport(data);
+    document.getElementById('r-findings').textContent=f;
+    document.getElementById('r-impression').innerHTML=i.replace(/\n/g,'<br>');
+    document.getElementById('report-content').style.display='block';
+    if(data.warnings?.length){ document.getElementById('w-items').innerHTML=data.warnings.map(w=>'⚠ '+w).join('<br>'); document.getElementById('wbanner').classList.add('show'); }
+    if(data.troponin_note){ document.getElementById('tropo-note').textContent=data.troponin_note; document.getElementById('tropo-note').classList.add('show'); }
+    renderInterpretations(data);
+    updateGaugePredictions(data);
+    updatePipeline(ms,data);
+  } catch(e) {
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('r-findings').textContent='서버 연결 실패: '+e.message;
+    document.getElementById('r-impression').textContent='API 서버 상태를 확인하세요.';
+    document.getElementById('report-content').style.display='block';
+  } finally {
+    btn.disabled=false;
+  }
+}
+</script>
+</body>
+</html>

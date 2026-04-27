@@ -1,0 +1,50 @@
+version: "3.9"
+
+# ── 로컬 개발 및 AWS EC2 단일 서버 배포용 ──────────────────
+# AWS ECS/Fargate 배포 시에는 각 서비스를 별도 Task Definition으로 분리하세요.
+
+services:
+
+  # ── FastAPI 백엔드 ──────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: blood5-backend
+    # 외부에서 직접 접근 필요 없으면 ports 제거 가능 (nginx가 프록시)
+    # AWS ALB → nginx → backend 구조라면 아래 포트 노출 불필요
+    expose:
+      - "8000"
+    # 로컬 테스트용으로 직접 접근하려면 아래 주석 해제
+    # ports:
+    #   - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - app-network
+
+  # ── nginx 프론트엔드 ────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: blood5-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
